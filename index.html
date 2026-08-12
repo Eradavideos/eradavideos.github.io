@@ -1,16 +1,644 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ERADA Video Library</title><style>
-body{margin:0;font-family:Arial;background:#f5f6f8;color:#222}header{background:#111827;color:white;text-align:center;padding:30px}header h1{margin:0}.container{max-width:900px;margin:35px auto;padding:0 20px}.card{background:white;border-radius:14px;padding:20px;margin-bottom:22px;box-shadow:0 3px 14px #0001}.card h2{margin-top:0}.video{position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:10px;background:#000}iframe{position:absolute;inset:0;width:100%;height:100%;border:0}.watch{display:inline-block;margin-top:15px;padding:11px 18px;background:#111827;color:white;text-decoration:none;border-radius:8px}footer{text-align:center;padding:25px;color:#666}
-</style></head><body><header><h1>ERADA</h1><p>Video Library</p></header><main class="container"><div class="card"><h2>Video 01</h2>
-<div class="video"><iframe src="https://www.youtube.com/embed/LaZQJ1CernQ" title="Video 01" allowfullscreen></iframe></div>
-<a class="watch" href="https://youtu.be/LaZQJ1CernQ" target="_blank">Watch Video</a></div><div class="card"><h2>Video 02</h2>
-<div class="video"><iframe src="https://www.youtube.com/embed/iEyCVFx84PE" title="Video 02" allowfullscreen></iframe></div>
-<a class="watch" href="https://youtu.be/iEyCVFx84PE" target="_blank">Watch Video</a></div><div class="card"><h2>Video 03</h2>
-<div class="video"><iframe src="https://www.youtube.com/embed/9R6VFpTWPGo" title="Video 03" allowfullscreen></iframe></div>
-<a class="watch" href="https://youtu.be/9R6VFpTWPGo" target="_blank">Watch Video</a></div><div class="card"><h2>Video 04</h2>
-<div class="video"><iframe src="https://www.youtube.com/embed/phW4stjreaI" title="Video 04" allowfullscreen></iframe></div>
-<a class="watch" href="https://youtu.be/phW4stjreaI" target="_blank">Watch Video</a></div><div class="card"><h2>Video 05</h2>
-<div class="video"><iframe src="https://www.youtube.com/embed/_9JkkRoDPhI" title="Video 05" allowfullscreen></iframe></div>
-<a class="watch" href="https://youtu.be/_9JkkRoDPhI" target="_blank">Watch Video</a></div><div class="card"><h2>Video 06</h2>
-<div class="video"><iframe src="https://www.youtube.com/embed/ewYGbRJLudo" title="Video 06" allowfullscreen></iframe></div>
-<a class="watch" href="https://youtu.be/ewYGbRJLudo" target="_blank">Watch Video</a></div></main><footer>ERADA Video Library</footer></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <title>ERADA Video Library</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f6f8;
+      color: #222;
+    }
+
+    header {
+      background: #111827;
+      color: white;
+      text-align: center;
+      padding: 30px;
+    }
+
+    header h1 {
+      margin: 0;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 35px auto;
+      padding: 0 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 22px;
+      box-shadow: 0 3px 14px #0001;
+    }
+
+    .login-box {
+      max-width: 500px;
+      margin: 40px auto;
+    }
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 13px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 12px 18px;
+      border: 0;
+      border-radius: 8px;
+      background: #111827;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 8px;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .secondary {
+      background: #6b7280;
+      margin-left: 5px;
+    }
+
+    .message {
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .error {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .success {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    #videos {
+      display: none;
+    }
+
+    .video {
+      position: relative;
+      padding-bottom: 56.25%;
+      height: 0;
+      overflow: hidden;
+      border-radius: 10px;
+      background: #000;
+    }
+
+    iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    .watch {
+      display: inline-block;
+      margin-top: 15px;
+      padding: 11px 18px;
+      background: #111827;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+    }
+
+    .logout {
+      float: right;
+      background: #dc2626;
+    }
+
+    footer {
+      text-align: center;
+      padding: 25px;
+      color: #666;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>ERADA</h1>
+  <p>Video Library</p>
+</header>
+
+<main class="container">
+
+  <!-- LOGIN -->
+  <section id="loginBox" class="card login-box">
+
+    <h2>🔐 Secure Access</h2>
+
+    <p>
+      Enter your email to receive a verification code.
+    </p>
+
+    <!-- Email -->
+    <div id="emailStep">
+
+      <input
+        id="email"
+        type="email"
+        placeholder="Enter your email"
+        autocomplete="email"
+      >
+
+      <button id="sendOtp">
+        Send Verification Code
+      </button>
+
+    </div>
+
+    <!-- OTP -->
+    <div id="otpStep" style="display:none">
+
+      <p>
+        A verification code was sent to your email.
+      </p>
+
+      <input
+        id="otp"
+        type="text"
+        inputmode="numeric"
+        maxlength="6"
+        placeholder="Enter 6-digit code"
+        autocomplete="one-time-code"
+      >
+
+      <button id="verifyOtp">
+        Verify Code
+      </button>
+
+      <button id="backToEmail" class="secondary">
+        Change Email
+      </button>
+
+    </div>
+
+    <div id="message" class="message"></div>
+
+  </section>
+
+
+  <!-- VIDEOS -->
+  <section id="videos">
+
+    <button id="logout" class="logout">
+      Logout
+    </button>
+
+    <div style="clear:both"></div>
+
+
+    <!-- VIDEO 01 -->
+    <div class="card">
+      <h2>Video 01</h2>
+
+      <div class="video">
+        <iframe
+          src="https://www.youtube.com/embed/LaZQJ1CernQ"
+          title="Video 01"
+          allowfullscreen>
+        </iframe>
+      </div>
+
+      <a
+        class="watch"
+        href="https://youtu.be/LaZQJ1CernQ"
+        target="_blank">
+        Watch Video
+      </a>
+    </div>
+
+
+    <!-- VIDEO 02 -->
+    <div class="card">
+      <h2>Video 02</h2>
+
+      <div class="video">
+        <iframe
+          src="https://www.youtube.com/embed/iEyCVFx84PE"
+          title="Video 02"
+          allowfullscreen>
+        </iframe>
+      </div>
+
+      <a
+        class="watch"
+        href="https://youtu.be/iEyCVFx84PE"
+        target="_blank">
+        Watch Video
+      </a>
+    </div>
+
+
+    <!-- VIDEO 03 -->
+    <div class="card">
+      <h2>Video 03</h2>
+
+      <div class="video">
+        <iframe
+          src="https://www.youtube.com/embed/9R6VFpTWPGo"
+          title="Video 03"
+          allowfullscreen>
+        </iframe>
+      </div>
+
+      <a
+        class="watch"
+        href="https://youtu.be/9R6VFpTWPGo"
+        target="_blank">
+        Watch Video
+      </a>
+    </div>
+
+
+    <!-- VIDEO 04 -->
+    <div class="card">
+      <h2>Video 04</h2>
+
+      <div class="video">
+        <iframe
+          src="https://www.youtube.com/embed/phW4stjreaI"
+          title="Video 04"
+          allowfullscreen>
+        </iframe>
+      </div>
+
+      <a
+        class="watch"
+        href="https://youtu.be/phW4stjreaI"
+        target="_blank">
+        Watch Video
+      </a>
+    </div>
+
+
+    <!-- VIDEO 05 -->
+    <div class="card">
+      <h2>Video 05</h2>
+
+      <div class="video">
+        <iframe
+          src="https://www.youtube.com/embed/_9JkkRoDPhI"
+          title="Video 05"
+          allowfullscreen>
+        </iframe>
+      </div>
+
+      <a
+        class="watch"
+        href="https://youtu.be/_9JkkRoDPhI"
+        target="_blank">
+        Watch Video
+      </a>
+    </div>
+
+
+    <!-- VIDEO 06 -->
+    <div class="card">
+      <h2>Video 06</h2>
+
+      <div class="video">
+        <iframe
+          src="https://www.youtube.com/embed/ewYGbRJLudo"
+          title="Video 06"
+          allowfullscreen>
+        </iframe>
+      </div>
+
+      <a
+        class="watch"
+        href="https://youtu.be/ewYGbRJLudo"
+        target="_blank">
+        Watch Video
+      </a>
+    </div>
+
+  </section>
+
+</main>
+
+<footer>
+  ERADA Video Library
+</footer>
+
+
+<script>
+
+  /* =========================================
+     SUPABASE SETTINGS
+     ========================================= */
+
+  const SUPABASE_URL =
+    "https://laqwnqnnqtfhqfadjyvo.supabase.co";
+
+  const SUPABASE_PUBLISHABLE_KEY =
+    "sb_publishable_ropVS738K5BJiOoaZ-TeWA_WmkineZh";
+
+
+  const supabaseClient =
+    supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY
+    );
+
+
+  /* =========================================
+     ELEMENTS
+     ========================================= */
+
+  const emailInput =
+    document.getElementById("email");
+
+  const otpInput =
+    document.getElementById("otp");
+
+  const emailStep =
+    document.getElementById("emailStep");
+
+  const otpStep =
+    document.getElementById("otpStep");
+
+  const loginBox =
+    document.getElementById("loginBox");
+
+  const videos =
+    document.getElementById("videos");
+
+  const message =
+    document.getElementById("message");
+
+
+  /* =========================================
+     MESSAGE
+     ========================================= */
+
+  function showMessage(text, type) {
+
+    message.textContent = text;
+
+    message.className =
+      "message " + type;
+
+    message.style.display = "block";
+  }
+
+
+  /* =========================================
+     SEND OTP
+     ========================================= */
+
+  document
+    .getElementById("sendOtp")
+    .addEventListener("click", async function () {
+
+      const email =
+        emailInput.value.trim().toLowerCase();
+
+
+      if (!email || !email.includes("@")) {
+
+        showMessage(
+          "Please enter a valid email address.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      showMessage(
+        "Sending verification code...",
+        "success"
+      );
+
+
+      const { error } =
+        await supabaseClient.auth.signInWithOtp({
+
+          email: email,
+
+          options: {
+            shouldCreateUser: true
+          }
+
+        });
+
+
+      if (error) {
+
+        showMessage(
+          error.message,
+          "error"
+        );
+
+        return;
+      }
+
+
+      emailStep.style.display =
+        "none";
+
+      otpStep.style.display =
+        "block";
+
+
+      showMessage(
+        "A verification code was sent to your email.",
+        "success"
+      );
+
+    });
+
+
+  /* =========================================
+     VERIFY OTP
+     ========================================= */
+
+  document
+    .getElementById("verifyOtp")
+    .addEventListener("click", async function () {
+
+      const email =
+        emailInput.value.trim().toLowerCase();
+
+      const token =
+        otpInput.value.trim();
+
+
+      if (!email || !token) {
+
+        showMessage(
+          "Enter the verification code.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      showMessage(
+        "Verifying...",
+        "success"
+      );
+
+
+      const { data, error } =
+        await supabaseClient.auth.verifyOtp({
+
+          email: email,
+
+          token: token,
+
+          type: "email"
+
+        });
+
+
+      if (error) {
+
+        showMessage(
+          "Invalid or expired verification code.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      const authenticatedEmail =
+        data.user?.email
+          ? data.user.email.trim().toLowerCase()
+          : email;
+
+
+      /* Check Approved Users */
+
+      const { data: approved, error: approvedError } =
+        await supabaseClient
+          .from("approved_users")
+          .select("id,status")
+          .eq("email", authenticatedEmail)
+          .eq("status", "approved")
+          .maybeSingle();
+
+
+      if (approvedError) {
+
+        await supabaseClient.auth.signOut();
+
+        showMessage(
+          "Unable to check access permission.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      /* Not approved */
+
+      if (!approved) {
+
+        await supabaseClient.auth.signOut();
+
+        showMessage(
+          "Your email is verified, but it has not been approved for ERADA Video Library.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      /* Approved */
+
+      loginBox.style.display =
+        "none";
+
+      videos.style.display =
+        "block";
+
+  });
+
+
+  /* =========================================
+     CHANGE EMAIL
+     ========================================= */
+
+  document
+    .getElementById("backToEmail")
+    .addEventListener("click", function () {
+
+      otpStep.style.display =
+        "none";
+
+      emailStep.style.display =
+        "block";
+
+      otpInput.value = "";
+
+      message.style.display =
+        "none";
+
+    });
+
+
+  /* =========================================
+     LOGOUT
+     ========================================= */
+
+  document
+    .getElementById("logout")
+    .addEventListener("click", async function () {
+
+      await supabaseClient.auth.signOut();
+
+      videos.style.display =
+        "none";
+
+      loginBox.style.display =
+        "block";
+
+      otpStep.style.display =
+        "none";
+
+      emailStep.style.display =
+        "block";
+
+      otpInput.value = "";
+
+      showMessage(
+        "You have been logged out.",
+        "success"
+      );
+
+    });
+
+</script>
+
+</body>
+</html>
