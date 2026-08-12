@@ -204,144 +204,19 @@
     <div id="message" class="message"></div>
 
   </section>
+<!-- VIDEOS -->
+<section id="videos">
 
+  <button id="logout" class="logout">
+    Logout
+  </button>
 
-  <!-- VIDEOS -->
-  <section id="videos">
+  <div style="clear:both"></div>
 
-    <button id="logout" class="logout">
-      Logout
-    </button>
+  <div id="videosList"></div>
 
-    <div style="clear:both"></div>
+</section>
 
-
-    <!-- VIDEO 01 -->
-    <div class="card">
-      <h2>Video 01</h2>
-
-      <div class="video">
-        <iframe
-          src="https://www.youtube.com/embed/LaZQJ1CernQ"
-          title="Video 01"
-          allowfullscreen>
-        </iframe>
-      </div>
-
-      <a
-        class="watch"
-        href="https://youtu.be/LaZQJ1CernQ"
-        target="_blank">
-        Watch Video
-      </a>
-    </div>
-
-
-    <!-- VIDEO 02 -->
-    <div class="card">
-      <h2>Video 02</h2>
-
-      <div class="video">
-        <iframe
-          src="https://www.youtube.com/embed/iEyCVFx84PE"
-          title="Video 02"
-          allowfullscreen>
-        </iframe>
-      </div>
-
-      <a
-        class="watch"
-        href="https://youtu.be/iEyCVFx84PE"
-        target="_blank">
-        Watch Video
-      </a>
-    </div>
-
-
-    <!-- VIDEO 03 -->
-    <div class="card">
-      <h2>Video 03</h2>
-
-      <div class="video">
-        <iframe
-          src="https://www.youtube.com/embed/9R6VFpTWPGo"
-          title="Video 03"
-          allowfullscreen>
-        </iframe>
-      </div>
-
-      <a
-        class="watch"
-        href="https://youtu.be/9R6VFpTWPGo"
-        target="_blank">
-        Watch Video
-      </a>
-    </div>
-
-
-    <!-- VIDEO 04 -->
-    <div class="card">
-      <h2>Video 04</h2>
-
-      <div class="video">
-        <iframe
-          src="https://www.youtube.com/embed/phW4stjreaI"
-          title="Video 04"
-          allowfullscreen>
-        </iframe>
-      </div>
-
-      <a
-        class="watch"
-        href="https://youtu.be/phW4stjreaI"
-        target="_blank">
-        Watch Video
-      </a>
-    </div>
-
-
-    <!-- VIDEO 05 -->
-    <div class="card">
-      <h2>Video 05</h2>
-
-      <div class="video">
-        <iframe
-          src="https://www.youtube.com/embed/_9JkkRoDPhI"
-          title="Video 05"
-          allowfullscreen>
-        </iframe>
-      </div>
-
-      <a
-        class="watch"
-        href="https://youtu.be/_9JkkRoDPhI"
-        target="_blank">
-        Watch Video
-      </a>
-    </div>
-
-
-    <!-- VIDEO 06 -->
-    <div class="card">
-      <h2>Video 06</h2>
-
-      <div class="video">
-        <iframe
-          src="https://www.youtube.com/embed/ewYGbRJLudo"
-          title="Video 06"
-          allowfullscreen>
-        </iframe>
-      </div>
-
-      <a
-        class="watch"
-        href="https://youtu.be/ewYGbRJLudo"
-        target="_blank">
-        Watch Video
-      </a>
-    </div>
-
-  </section>
 
 </main>
 
@@ -577,14 +452,16 @@
         return;
       }
 
+/* Approved */
 
-      /* Approved */
+loginBox.style.display =
+  "none";
 
-      loginBox.style.display =
-        "none";
+videos.style.display =
+  "block";
 
-      videos.style.display =
-        "block";
+await loadVideos();
+    
 
   });
 
@@ -609,7 +486,122 @@
         "none";
 
     });
+/* =========================================
+   LOAD VIDEOS
+   ========================================= */
 
+async function loadVideos() {
+
+  const videosList =
+    document.getElementById("videosList");
+
+  videosList.innerHTML =
+    "<p>Loading videos...</p>";
+
+  const { data, error } =
+    await supabaseClient
+      .from("videos")
+      .select("id,title,youtube_url")
+      .order("created_at", {
+        ascending: true
+      });
+
+  if (error) {
+
+    console.error(error);
+
+    videosList.innerHTML =
+      "<p>Unable to load videos.</p>";
+
+    return;
+  }
+
+  if (!data || data.length === 0) {
+
+    videosList.innerHTML =
+      "<p>No videos available.</p>";
+
+    return;
+  }
+
+  videosList.innerHTML = "";
+
+  data.forEach(function(video) {
+
+    let youtubeId = "";
+
+    try {
+
+      const url =
+        new URL(video.youtube_url);
+
+      if (url.hostname.includes("youtu.be")) {
+
+        youtubeId =
+          url.pathname.substring(1);
+
+      } else {
+
+        youtubeId =
+          url.searchParams.get("v");
+
+        if (!youtubeId &&
+            url.pathname.includes("/embed/")) {
+
+          youtubeId =
+            url.pathname.split("/embed/")[1];
+
+        }
+
+      }
+
+    } catch (e) {
+
+      console.error(
+        "Invalid YouTube URL:",
+        video.youtube_url
+      );
+
+      return;
+    }
+
+    if (!youtubeId) {
+      return;
+    }
+
+    const card =
+      document.createElement("div");
+
+    card.className = "card";
+
+    card.innerHTML = `
+
+      <h2>${video.title}</h2>
+
+      <div class="video">
+
+        <iframe
+          src="https://www.youtube.com/embed/${youtubeId}"
+          title="${video.title}"
+          allowfullscreen>
+        </iframe>
+
+      </div>
+
+      <a
+        class="watch"
+        href="${video.youtube_url}"
+        target="_blank">
+        Watch Video
+      </a>
+
+    `;
+
+    videosList.appendChild(card);
+
+  });
+
+}
 
   /* =========================================
      LOGOUT
