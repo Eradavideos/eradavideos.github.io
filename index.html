@@ -537,13 +537,13 @@
 
       /* Check Approved Users */
 
-      const { data: approved, error: approvedError } =
-        await supabaseClient
-          .from("approved_users")
-          .select("id,status")
-          .eq("email", authenticatedEmail)
-          .eq("status", "approved")
-          .maybeSingle();
+     const { data: approved, error: approvedError } =
+  await supabaseClient
+    .from("approved_users")
+    .select("id,status")
+    .ilike("email", authenticatedEmail)
+    .eq("status", "approved")
+    .maybeSingle();
 
 
       if (approvedError) {
