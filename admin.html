@@ -285,12 +285,14 @@ document
     }
 
     const { data, error } =
-      await supabaseClient.auth.verifyOtp({
-        email: email,
-        token: token,
-        type: "email"
-      });
+  await supabaseClient.auth.verifyOtp({
+    email: email,
+    token: token,
+    type: "email"
+  });
 
+console.log("OTP verification result:", data);
+console.log("OTP verification error:", error);
     if (error) {
 
       console.error(error);
