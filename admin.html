@@ -149,7 +149,39 @@
 
 
 <div id="adminPanel" class="container hidden">
+<div class="card">
 
+  <h2>Add New Video</h2>
+
+  <input
+    type="text"
+    id="videoTitle"
+    placeholder="Video title"
+  >
+
+  <input
+    type="url"
+    id="videoUrl"
+    placeholder="YouTube video link"
+  >
+
+  <button id="addVideo" class="approve">
+    + Add Video
+  </button>
+
+  <div id="videoMessage"></div>
+
+</div>
+
+<div class="card">
+
+  <h2>Videos</h2>
+
+  <div id="videosList">
+    Loading...
+  </div>
+
+</div>
   <div class="card">
 
     <h2>Access Requests</h2>
@@ -335,7 +367,7 @@ console.log("OTP verification error:", error);
     adminPanel.classList.remove("hidden");
 
     loadRequests();
-
+    loadVideos();
   });
 
 
@@ -522,7 +554,127 @@ document
     );
 
   });
+const videoTitle =
+  document.getElementById("videoTitle");
 
+const videoUrl =
+  document.getElementById("videoUrl");
+
+const videoMessage =
+  document.getElementById("videoMessage");
+
+const videosList =
+  document.getElementById("videosList");
+
+
+document
+  .getElementById("addVideo")
+  .addEventListener("click", async function () {
+
+    const title =
+      videoTitle.value.trim();
+
+    const url =
+      videoUrl.value.trim();
+
+    if (!title || !url) {
+
+      videoMessage.innerHTML =
+        "Please enter the video title and YouTube link.";
+
+      return;
+    }
+
+    const { error } =
+      await supabaseClient
+        .from("videos")
+        .insert({
+          title: title,
+          youtube_url: url
+        });
+
+    if (error) {
+
+      console.error(error);
+
+      videoMessage.innerHTML =
+        "Unable to add video.";
+
+      return;
+    }
+
+    videoMessage.innerHTML =
+      "Video added successfully.";
+
+    videoTitle.value = "";
+    videoUrl.value = "";
+
+    loadVideos();
+
+  });
+
+
+async function loadVideos() {
+
+  videosList.innerHTML =
+    "Loading...";
+
+  const { data, error } =
+    await supabaseClient
+      .from("videos")
+      .select("id,title,youtube_url,created_at")
+      .order("created_at", {
+        ascending: false
+      });
+
+
+  if (error) {
+
+    console.error(error);
+
+    videosList.innerHTML =
+      "Unable to load videos.";
+
+    return;
+  }
+
+
+  if (!data || data.length === 0) {
+
+    videosList.innerHTML =
+      "<p>No videos added yet.</p>";
+
+    return;
+  }
+
+
+  videosList.innerHTML = "";
+
+
+  data.forEach(video => {
+
+    const div =
+      document.createElement("div");
+
+    div.className = "request";
+
+    div.innerHTML = `
+
+      <div class="email">
+        ${video.title}
+      </div>
+
+      <div>
+        ${video.youtube_url}
+      </div>
+
+    `;
+
+    videosList.appendChild(div);
+
+  });
+
+}
 </script>
 
 </body>
