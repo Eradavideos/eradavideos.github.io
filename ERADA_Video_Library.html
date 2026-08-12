@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ERADA Video Library</title>
+  <style>
+    body{margin:0;font-family:Arial,sans-serif;background:#f5f6f8;color:#222}
+    header{background:#111827;color:white;text-align:center;padding:28px 20px}
+    header h1{margin:0;font-size:32px}
+    header p{margin:8px 0 0;color:#d1d5db}
+    .container{max-width:900px;margin:35px auto;padding:0 20px}
+    .card{background:white;border-radius:14px;padding:20px;margin-bottom:20px;box-shadow:0 3px 14px rgba(0,0,0,.08)}
+    .card h2{margin:0 0 15px}
+    .video{position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:10px}
+    .video iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0}
+    .watch{display:inline-block;margin-top:15px;padding:11px 18px;background:#111827;color:white;text-decoration:none;border-radius:8px}
+    footer{text-align:center;color:#6b7280;padding:25px}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ERADA</h1>
+    <p>Video Library</p>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <h2>Video 01</h2>
+      <div class="video">
+        <iframe
+          src="https://www.youtube.com/embed/LaZQJ1CernQ"
+          title="ERADA Video 01"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen>
+        </iframe>
+      </div>
+      <a class="watch" href="https://youtu.be/LaZQJ1CernQ" target="_blank" rel="noopener">
+        Watch Video
+      </a>
+    </div>
+  </main>
+
+  <footer>ERADA Video Library</footer>
+</body>
+</html>
