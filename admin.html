@@ -1,1 +1,527 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
+  <title>ERADA Admin</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f6f8;
+      color: #222;
+    }
+
+    header {
+      background: #111827;
+      color: white;
+      text-align: center;
+      padding: 25px;
+    }
+
+    header h1 {
+      margin: 0;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 3px 14px #0001;
+    }
+
+    .request {
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 15px;
+      margin-top: 12px;
+    }
+
+    .email {
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 7px;
+      padding: 10px 16px;
+      cursor: pointer;
+      margin-right: 8px;
+    }
+
+    .approve {
+      background: #16a34a;
+      color: white;
+    }
+
+    .reject {
+      background: #dc2626;
+      color: white;
+    }
+
+    .logout {
+      background: #374151;
+      color: white;
+    }
+
+    #loginBox {
+      max-width: 450px;
+      margin: 60px auto;
+      padding: 25px;
+      background: white;
+      border-radius: 14px;
+      box-shadow: 0 3px 14px #0001;
+    }
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      margin: 8px 0 12px;
+      border: 1px solid #ccc;
+      border-radius: 7px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .message {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 7px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>ERADA Admin</h1>
+  <p>Access Management</p>
+</header>
+
+<div id="loginBox">
+
+  <h2>Administrator Login</h2>
+
+  <input
+    type="email"
+    id="adminEmail"
+    placeholder="Enter admin email"
+  >
+
+  <button id="sendAdminOtp">
+    Send Verification Code
+  </button>
+
+  <div id="otpSection" class="hidden">
+
+    <input
+      type="text"
+      id="adminOtp"
+      placeholder="Enter 6-digit code"
+      maxlength="6"
+      inputmode="numeric"
+    >
+
+    <button id="verifyAdminOtp">
+      Verify Code
+    </button>
+
+  </div>
+
+  <div id="loginMessage"></div>
+
+</div>
+
+
+<div id="adminPanel" class="container hidden">
+
+  <div class="card">
+
+    <h2>Access Requests</h2>
+
+    <button id="refreshRequests">
+      Refresh
+    </button>
+
+    <button id="logout" class="logout">
+      Logout
+    </button>
+
+    <div id="requestsList">
+      Loading...
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+const SUPABASE_URL =
+  "https://laqwnqnnqtfhqfadjyvo.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_ropVS738K5BJiOoaZ-TeWA_WmkineZh";
+
+const supabaseClient =
+  supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
+
+
+const adminEmail =
+  document.getElementById("adminEmail");
+
+const adminOtp =
+  document.getElementById("adminOtp");
+
+const loginMessage =
+  document.getElementById("loginMessage");
+
+const otpSection =
+  document.getElementById("otpSection");
+
+const loginBox =
+  document.getElementById("loginBox");
+
+const adminPanel =
+  document.getElementById("adminPanel");
+
+const requestsList =
+  document.getElementById("requestsList");
+
+
+function showLoginMessage(message) {
+
+  loginMessage.innerHTML =
+    `<div class="message">${message}</div>`;
+
+}
+
+
+/* SEND OTP */
+
+document
+  .getElementById("sendAdminOtp")
+  .addEventListener("click", async function () {
+
+    const email =
+      adminEmail.value.trim().toLowerCase();
+
+    if (email !== "it@erada.ly") {
+
+      showLoginMessage(
+        "Only IT@erada.ly can access the admin panel."
+      );
+
+      return;
+    }
+
+    showLoginMessage(
+      "Sending verification code..."
+    );
+
+    const { error } =
+      await supabaseClient.auth.signInWithOtp({
+        email: email
+      });
+
+    if (error) {
+
+      console.error(error);
+
+      showLoginMessage(
+        "Unable to send verification code."
+      );
+
+      return;
+    }
+
+    otpSection.classList.remove("hidden");
+
+    showLoginMessage(
+      "Verification code sent to IT@erada.ly."
+    );
+
+  });
+
+
+/* VERIFY OTP */
+
+document
+  .getElementById("verifyAdminOtp")
+  .addEventListener("click", async function () {
+
+    const email =
+      adminEmail.value.trim().toLowerCase();
+
+    const token =
+      adminOtp.value.trim();
+
+    if (token.length !== 6) {
+
+      showLoginMessage(
+        "Enter the 6-digit verification code."
+      );
+
+      return;
+    }
+
+    const { data, error } =
+      await supabaseClient.auth.verifyOtp({
+        email: email,
+        token: token,
+        type: "email"
+      });
+
+    if (error) {
+
+      console.error(error);
+
+      showLoginMessage(
+        "Invalid or expired verification code."
+      );
+
+      return;
+    }
+
+    const userEmail =
+      data.user.email.toLowerCase();
+
+
+    /* Check admin */
+
+    const { data: admin, error: adminError } =
+      await supabaseClient
+        .from("admin_users")
+        .select("id,email")
+        .ilike("email", userEmail)
+        .maybeSingle();
+
+
+    if (adminError || !admin) {
+
+      await supabaseClient.auth.signOut();
+
+      showLoginMessage(
+        "You are not authorized to access the admin panel."
+      );
+
+      return;
+    }
+
+
+    loginBox.classList.add("hidden");
+
+    adminPanel.classList.remove("hidden");
+
+    loadRequests();
+
+  });
+
+
+/* LOAD REQUESTS */
+
+async function loadRequests() {
+
+  requestsList.innerHTML =
+    "Loading...";
+
+
+  const { data, error } =
+    await supabaseClient
+      .from("access_requests")
+      .select("id,email,status,created_at")
+      .eq("status", "pending")
+      .order("created_at", {
+        ascending: false
+      });
+
+
+  if (error) {
+
+    console.error(error);
+
+    requestsList.innerHTML =
+      "Unable to load requests.";
+
+    return;
+  }
+
+
+  if (!data || data.length === 0) {
+
+    requestsList.innerHTML =
+      "<p>No pending requests.</p>";
+
+    return;
+  }
+
+
+  requestsList.innerHTML = "";
+
+
+  data.forEach(request => {
+
+    const div =
+      document.createElement("div");
+
+    div.className = "request";
+
+    div.innerHTML = `
+
+      <div class="email">
+        ${request.email}
+      </div>
+
+      <button
+        class="approve"
+        onclick="approveRequest('${request.id}')">
+        Approve
+      </button>
+
+      <button
+        class="reject"
+        onclick="rejectRequest('${request.id}')">
+        Reject
+      </button>
+
+    `;
+
+    requestsList.appendChild(div);
+
+  });
+
+}
+
+
+/* APPROVE */
+
+async function approveRequest(id) {
+
+  if (!confirm("Approve this email?")) {
+    return;
+  }
+
+
+  const { error } =
+    await supabaseClient.rpc(
+      "approve_access_request",
+      {
+        request_id: id
+      }
+    );
+
+
+  if (error) {
+
+    console.error(error);
+
+    alert(
+      "Unable to approve this request."
+    );
+
+    return;
+  }
+
+
+  alert(
+    "Access approved successfully."
+  );
+
+
+  loadRequests();
+
+}
+
+
+/* REJECT */
+
+async function rejectRequest(id) {
+
+  if (!confirm("Reject this email?")) {
+    return;
+  }
+
+
+  const { error } =
+    await supabaseClient.rpc(
+      "reject_access_request",
+      {
+        request_id: id
+      }
+    );
+
+
+  if (error) {
+
+    console.error(error);
+
+    alert(
+      "Unable to reject this request."
+    );
+
+    return;
+  }
+
+
+  alert(
+    "Request rejected."
+  );
+
+
+  loadRequests();
+
+}
+
+
+/* REFRESH */
+
+document
+  .getElementById("refreshRequests")
+  .addEventListener("click", loadRequests);
+
+
+/* LOGOUT */
+
+document
+  .getElementById("logout")
+  .addEventListener("click", async function () {
+
+    await supabaseClient.auth.signOut();
+
+    adminPanel.classList.add("hidden");
+
+    loginBox.classList.remove("hidden");
+
+    otpSection.classList.add("hidden");
+
+    adminOtp.value = "";
+
+    showLoginMessage(
+      "You have been logged out."
+    );
+
+  });
+
+</script>
+
+</body>
+</html>
