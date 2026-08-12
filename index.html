@@ -168,7 +168,11 @@
       <button id="sendOtp">
         Send Verification Code
       </button>
+<button id="requestAccess" type="button">
+  Request Access
+</button>
 
+<p id="accessMessage"></p>
     </div>
 
     <!-- OTP -->
@@ -637,6 +641,56 @@
       );
 
     });
+  document
+  .getElementById("requestAccess")
+  .addEventListener("click", async function () {
+
+    const email =
+      emailInput.value.trim().toLowerCase();
+
+    if (!email || !email.includes("@")) {
+
+      showMessage(
+        "Please enter a valid email address.",
+        "error"
+      );
+
+      return;
+    }
+
+    const { error } = await supabaseClient
+      .from("access_requests")
+      .insert({
+        email: email
+      });
+
+    if (error) {
+
+      if (error.code === "23505") {
+
+        showMessage(
+          "An access request already exists for this email.",
+          "error"
+        );
+
+      } else {
+
+        console.error(error);
+
+        showMessage(
+          "Unable to submit access request.",
+          "error"
+        );
+      }
+
+      return;
+    }
+
+    showMessage(
+      "Your access request has been sent. Please wait for approval.",
+      "success"
+    );
+  });
 
 </script>
 
