@@ -59,6 +59,7 @@
     .email {
       font-weight: bold;
       margin-bottom: 12px;
+      word-break: break-word;
     }
 
     .video-url {
@@ -78,6 +79,11 @@
 
     button:hover {
       opacity: 0.9;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
 
     .approve {
@@ -220,32 +226,33 @@
   <!-- =======================================
        ADD VIDEO
   ======================================== -->
-<div class="card">
 
-  <h2>🎬 Add New Video</h2>
+  <div class="card">
 
-  <input
-    type="text"
-    id="videoTitle"
-    placeholder="Enter video title"
-  >
+    <h2>🎬 Add New Video</h2>
 
-  <input
-    type="url"
-    id="videoUrl"
-    placeholder="Paste YouTube video link"
-  >
+    <input
+      type="text"
+      id="videoTitle"
+      placeholder="Enter video title"
+    >
 
-  <button
-    id="addVideo"
-    class="approve"
-  >
-    + Add Video
-  </button>
+    <input
+      type="url"
+      id="videoUrl"
+      placeholder="Paste YouTube video link"
+    >
 
-  <div id="videoMessage"></div>
+    <button
+      id="addVideo"
+      class="approve"
+    >
+      + Add Video
+    </button>
 
-</div>
+    <div id="videoMessage"></div>
+
+  </div>
 
 
   <!-- =======================================
@@ -261,37 +268,40 @@
     </div>
 
   </div>
-<!-- =======================================
-     APPROVED USERS
-======================================= -->
 
-<div class="card">
 
-  <h2>👥 Approved Users</h2>
+  <!-- =======================================
+       APPROVED USERS
+  ======================================== -->
 
-  <input
-    type="email"
-    id="approvedEmail"
-    placeholder="Enter user email"
-  >
+  <div class="card">
 
-  <button
-    id="approveUser"
-    class="approve"
-  >
-    + Approve User
-  </button>
+    <h2>👥 Approved Users</h2>
 
-  <div id="approvedUserMessage"></div>
+    <input
+      type="email"
+      id="approvedEmail"
+      placeholder="Enter user email"
+    >
 
-  <div
-    id="approvedUsersList"
-    style="margin-top: 15px;"
-  >
-    Loading...
+    <button
+      id="approveUser"
+      class="approve"
+    >
+      + Approve User
+    </button>
+
+    <div id="approvedUserMessage"></div>
+
+    <div
+      id="approvedUsersList"
+      style="margin-top: 15px;"
+    >
+      Loading...
+    </div>
+
   </div>
 
-</div>
 
   <!-- =======================================
        ACCESS REQUESTS
@@ -378,6 +388,18 @@ const videoMessage =
 const videosList =
   document.getElementById("videosList");
 
+const approvedEmailInput =
+  document.getElementById("approvedEmail");
+
+const approveUserButton =
+  document.getElementById("approveUser");
+
+const approvedUserMessage =
+  document.getElementById("approvedUserMessage");
+
+const approvedUsersList =
+  document.getElementById("approvedUsersList");
+
 
 /* =========================================
    LOGIN MESSAGE
@@ -390,7 +412,24 @@ function showLoginMessage(
 
   loginMessage.innerHTML =
     `<div class="message ${type}">
-      ${text}
+      ${escapeHtml(text)}
+    </div>`;
+
+}
+
+
+/* =========================================
+   APPROVED USER MESSAGE
+========================================= */
+
+function showApprovedUserMessage(
+  text,
+  type = "success"
+) {
+
+  approvedUserMessage.innerHTML =
+    `<div class="message ${type}">
+      ${escapeHtml(text)}
     </div>`;
 
 }
@@ -450,6 +489,8 @@ async function showAdminPanel() {
 
   await loadVideos();
 
+  await loadApprovedUsers();
+
 }
 
 
@@ -461,7 +502,7 @@ document
   .getElementById("adminLogin")
   .addEventListener(
     "click",
-    async function () {
+    async function() {
 
 
       const email =
@@ -473,8 +514,6 @@ document
       const password =
         adminPassword.value;
 
-
-      /* CHECK EMAIL */
 
       if (
         email !==
@@ -489,8 +528,6 @@ document
         return;
       }
 
-
-      /* CHECK PASSWORD */
 
       if (!password) {
 
@@ -509,8 +546,6 @@ document
       );
 
 
-      /* LOGIN WITH PASSWORD */
-
       const {
         data,
         error
@@ -525,8 +560,6 @@ document
 
           });
 
-
-      /* LOGIN ERROR */
 
       if (error) {
 
@@ -543,8 +576,6 @@ document
         return;
       }
 
-
-      /* CHECK AUTHENTICATED EMAIL */
 
       const authenticatedEmail =
         data.user?.email
@@ -571,8 +602,6 @@ document
       }
 
 
-      /* CHECK ADMIN TABLE */
-
       const isAdmin =
         await checkAdminUser(
           authenticatedEmail
@@ -594,8 +623,6 @@ document
         return;
       }
 
-
-      /* SUCCESS */
 
       adminPassword.value =
         "";
@@ -621,7 +648,7 @@ document
   .getElementById("forgotPassword")
   .addEventListener(
     "click",
-    async function () {
+    async function() {
 
 
       const email =
@@ -857,6 +884,8 @@ async function approveRequest(
 
   await loadRequests();
 
+  await loadApprovedUsers();
+
 }
 
 
@@ -940,7 +969,7 @@ document
   .getElementById("addVideo")
   .addEventListener(
     "click",
-    async function () {
+    async function() {
 
 
       const title =
@@ -1332,36 +1361,15 @@ async function deleteVideo(
 
 }
 
+
 /* =========================================
    APPROVED USERS
-   ========================================= */
-
-const approvedEmailInput =
-  document.getElementById("approvedEmail");
-
-const approveUserButton =
-  document.getElementById("approveUser");
-
-const approvedUserMessage =
-  document.getElementById("approvedUserMessage");
-
-const approvedUsersList =
-  document.getElementById("approvedUsersList");
+========================================= */
 
 
-function showApprovedUserMessage(
-  text,
-  type = "success"
-) {
-
-  approvedUserMessage.textContent =
-    text;
-
-  approvedUserMessage.className =
-    type;
-
-}
-
+/* =========================================
+   LOAD APPROVED USERS
+========================================= */
 
 async function loadApprovedUsers() {
 
@@ -1393,8 +1401,10 @@ async function loadApprovedUsers() {
       error
     );
 
+
     approvedUsersList.innerHTML =
       "Unable to load approved users.";
+
 
     return;
   }
@@ -1407,6 +1417,7 @@ async function loadApprovedUsers() {
 
     approvedUsersList.innerHTML =
       "<p>No approved users yet.</p>";
+
 
     return;
   }
@@ -1432,12 +1443,23 @@ async function loadApprovedUsers() {
       row.innerHTML = `
 
         <div class="email">
-          ${user.email}
+          ${escapeHtml(user.email)}
         </div>
 
         <div>
-          ${user.status}
+          Status:
+          <strong>
+            ${escapeHtml(user.status)}
+          </strong>
         </div>
+
+        <button
+          type="button"
+          class="reject"
+          data-user-id="${escapeHtml(user.id)}"
+        >
+          🗑️ Remove Access
+        </button>
 
       `;
 
@@ -1449,15 +1471,112 @@ async function loadApprovedUsers() {
     }
   );
 
+
+  /* =====================================
+     REMOVE ACCESS BUTTONS
+  ===================================== */
+
+  const removeButtons =
+    approvedUsersList.querySelectorAll(
+      "[data-user-id]"
+    );
+
+
+  removeButtons.forEach(
+    function(button) {
+
+      button.addEventListener(
+        "click",
+        async function() {
+
+          const userId =
+            button.dataset.userId;
+
+
+          const confirmed =
+            confirm(
+              "Are you sure you want to remove access for this user?"
+            );
+
+
+          if (!confirmed) {
+
+            return;
+
+          }
+
+
+          button.disabled =
+            true;
+
+
+          button.textContent =
+            "Removing...";
+
+
+          const {
+            error
+          } =
+            await supabaseClient
+              .from("approved_users")
+              .delete()
+              .eq(
+                "id",
+                userId
+              );
+
+
+          if (error) {
+
+            console.error(
+              "Remove access error:",
+              error
+            );
+
+
+            alert(
+              "Unable to remove access."
+            );
+
+
+            button.disabled =
+              false;
+
+
+            button.textContent =
+              "🗑️ Remove Access";
+
+
+            return;
+
+          }
+
+
+          alert(
+            "Access removed successfully."
+          );
+
+
+          await loadApprovedUsers();
+
+        }
+      );
+
+    }
+  );
+
 }
 
 
-/* Approve User */
+/* =========================================
+   APPROVE USER
+========================================= */
 
 approveUserButton
   .addEventListener(
     "click",
     async function() {
+
 
       const email =
         approvedEmailInput.value
@@ -1547,9 +1666,6 @@ approveUserButton
   );
 
 
-/* Load users */
-
-loadApprovedUsers();
 /* =========================================
    LOGOUT
 ========================================= */
@@ -1558,7 +1674,7 @@ document
   .getElementById("logout")
   .addEventListener(
     "click",
-    async function () {
+    async function() {
 
 
       await supabaseClient
