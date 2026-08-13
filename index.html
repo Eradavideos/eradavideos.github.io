@@ -9,6 +9,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
+
     body {
       margin: 0;
       font-family: Arial, sans-serif;
@@ -25,6 +26,15 @@
 
     header h1 {
       margin: 0;
+    }
+
+    .header-logo {
+      width: 130px;
+      height: 130px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto 10px;
+      border-radius: 12px;
     }
 
     .container {
@@ -44,6 +54,24 @@
     .login-box {
       max-width: 500px;
       margin: 40px auto;
+    }
+
+    .login-logo {
+      width: 180px;
+      height: 180px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto 20px;
+    }
+
+    .login-title {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .login-description {
+      text-align: center;
+      color: #555;
     }
 
     input {
@@ -134,28 +162,53 @@
       padding: 25px;
       color: #666;
     }
+
   </style>
 </head>
 
 <body>
 
 <header>
+
+  <img
+    src="erada-logo.png"
+    alt="ERADA Logo"
+    class="header-logo"
+  >
+
   <h1>ERADA</h1>
+
   <p>Video Library</p>
+
 </header>
+
 
 <main class="container">
 
   <!-- LOGIN -->
-  <section id="loginBox" class="card login-box">
 
-    <h2>🔐 Secure Access</h2>
+  <section
+    id="loginBox"
+    class="card login-box"
+  >
 
-    <p>
+    <img
+      src="erada-logo.png"
+      alt="ERADA Logo"
+      class="login-logo"
+    >
+
+    <h2 class="login-title">
+      🔐 Secure Access
+    </h2>
+
+    <p class="login-description">
       Enter your email to receive a verification code.
     </p>
 
+
     <!-- Email -->
+
     <div id="emailStep">
 
       <input
@@ -168,15 +221,25 @@
       <button id="sendOtp">
         Send Verification Code
       </button>
-<button id="requestAccess" type="button">
-  Request Access
-</button>
 
-<p id="accessMessage"></p>
+      <button
+        id="requestAccess"
+        type="button"
+      >
+        Request Access
+      </button>
+
+      <p id="accessMessage"></p>
+
     </div>
 
+
     <!-- OTP -->
-    <div id="otpStep" style="display:none">
+
+    <div
+      id="otpStep"
+      style="display:none"
+    >
 
       <p>
         A verification code was sent to your email.
@@ -195,30 +258,43 @@
         Verify Code
       </button>
 
-      <button id="backToEmail" class="secondary">
+      <button
+        id="backToEmail"
+        class="secondary"
+      >
         Change Email
       </button>
 
     </div>
 
-    <div id="message" class="message"></div>
+
+    <div
+      id="message"
+      class="message"
+    ></div>
 
   </section>
-<!-- VIDEOS -->
-<section id="videos">
 
-  <button id="logout" class="logout">
-    Logout
-  </button>
 
-  <div style="clear:both"></div>
+  <!-- VIDEOS -->
 
-  <div id="videosList"></div>
+  <section id="videos">
 
-</section>
+    <button
+      id="logout"
+      class="logout"
+    >
+      Logout
+    </button>
 
+    <div style="clear:both"></div>
+
+    <div id="videosList"></div>
+
+  </section>
 
 </main>
+
 
 <footer>
   ERADA Video Library
@@ -227,15 +303,19 @@
 
 <script>
 
-  /* =========================================
-     SUPABASE SETTINGS
-     ========================================= */
 
-  const SUPABASE_URL =
-    "https://laqwnqnnqtfhqfadjyvo.supabase.co";
+/* =========================================
+   SUPABASE SETTINGS
+========================================= */
 
-  const SUPABASE_PUBLISHABLE_KEY =
-    "sb_publishable_ropVS738K5BJiOoaZ-TeWA_WmkineZh";
+const SUPABASE_URL =
+  "https://laqwnqnnqtfhqfadjyvo.supabase.co";
+
+
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_ropVS738K5BJiOoaZ-TeWA_WmkineZh";
+
+
 const supabaseClient =
   supabase.createClient(
     SUPABASE_URL,
@@ -250,61 +330,69 @@ const supabaseClient =
   );
 
 
+/* =========================================
+   ELEMENTS
+========================================= */
 
-  /* =========================================
-     ELEMENTS
-     ========================================= */
+const emailInput =
+  document.getElementById("email");
 
-  const emailInput =
-    document.getElementById("email");
+const otpInput =
+  document.getElementById("otp");
 
-  const otpInput =
-    document.getElementById("otp");
+const emailStep =
+  document.getElementById("emailStep");
 
-  const emailStep =
-    document.getElementById("emailStep");
+const otpStep =
+  document.getElementById("otpStep");
 
-  const otpStep =
-    document.getElementById("otpStep");
+const loginBox =
+  document.getElementById("loginBox");
 
-  const loginBox =
-    document.getElementById("loginBox");
+const videos =
+  document.getElementById("videos");
 
-  const videos =
-    document.getElementById("videos");
-
-  const message =
-    document.getElementById("message");
-
-
-  /* =========================================
-     MESSAGE
-     ========================================= */
-
-  function showMessage(text, type) {
-
-    message.textContent = text;
-
-    message.className =
-      "message " + type;
-
-    message.style.display = "block";
-  }
+const message =
+  document.getElementById("message");
 
 
-  /* =========================================
-     SEND OTP
-     ========================================= */
+/* =========================================
+   MESSAGE
+========================================= */
 
-  document
-    .getElementById("sendOtp")
-    .addEventListener("click", async function () {
+function showMessage(text, type) {
+
+  message.textContent = text;
+
+  message.className =
+    "message " + type;
+
+  message.style.display =
+    "block";
+
+}
+
+
+/* =========================================
+   SEND OTP
+========================================= */
+
+document
+  .getElementById("sendOtp")
+  .addEventListener(
+    "click",
+    async function () {
 
       const email =
-        emailInput.value.trim().toLowerCase();
+        emailInput.value
+          .trim()
+          .toLowerCase();
 
 
-      if (!email || !email.includes("@")) {
+      if (
+        !email ||
+        !email.includes("@")
+      ) {
 
         showMessage(
           "Please enter a valid email address.",
@@ -322,15 +410,17 @@ const supabaseClient =
 
 
       const { error } =
-        await supabaseClient.auth.signInWithOtp({
+        await supabaseClient
+          .auth
+          .signInWithOtp({
 
-          email: email,
+            email: email,
 
-          options: {
-            shouldCreateUser: true
-          }
+            options: {
+              shouldCreateUser: true
+            }
 
-        });
+          });
 
 
       if (error) {
@@ -356,25 +446,34 @@ const supabaseClient =
         "success"
       );
 
-    });
+    }
+  );
 
 
-  /* =========================================
-     VERIFY OTP
-     ========================================= */
+/* =========================================
+   VERIFY OTP
+========================================= */
 
-  document
-    .getElementById("verifyOtp")
-    .addEventListener("click", async function () {
+document
+  .getElementById("verifyOtp")
+  .addEventListener(
+    "click",
+    async function () {
 
       const email =
-        emailInput.value.trim().toLowerCase();
+        emailInput.value
+          .trim()
+          .toLowerCase();
+
 
       const token =
         otpInput.value.trim();
 
 
-      if (!email || !token) {
+      if (
+        !email ||
+        !token
+      ) {
 
         showMessage(
           "Enter the verification code.",
@@ -391,16 +490,21 @@ const supabaseClient =
       );
 
 
-      const { data, error } =
-        await supabaseClient.auth.verifyOtp({
+      const {
+        data,
+        error
+      } =
+        await supabaseClient
+          .auth
+          .verifyOtp({
 
-          email: email,
+            email: email,
 
-          token: token,
+            token: token,
 
-          type: "email"
+            type: "email"
 
-        });
+          });
 
 
       if (error) {
@@ -416,24 +520,40 @@ const supabaseClient =
 
       const authenticatedEmail =
         data.user?.email
-          ? data.user.email.trim().toLowerCase()
+          ? data.user.email
+              .trim()
+              .toLowerCase()
           : email;
 
 
-      /* Check Approved Users */
+      /* =====================================
+         CHECK APPROVED USERS
+      ===================================== */
 
-     const { data: approved, error: approvedError } =
-  await supabaseClient
-    .from("approved_users")
-    .select("id,status")
-    .ilike("email", authenticatedEmail)
-    .eq("status", "approved")
-    .maybeSingle();
+      const {
+        data: approved,
+        error: approvedError
+      } =
+        await supabaseClient
+          .from("approved_users")
+          .select("id,status")
+          .ilike(
+            "email",
+            authenticatedEmail
+          )
+          .eq(
+            "status",
+            "approved"
+          )
+          .maybeSingle();
 
 
       if (approvedError) {
 
-        await supabaseClient.auth.signOut();
+        await supabaseClient
+          .auth
+          .signOut();
+
 
         showMessage(
           "Unable to check access permission.",
@@ -444,11 +564,16 @@ const supabaseClient =
       }
 
 
-      /* Not approved */
+      /* =====================================
+         NOT APPROVED
+      ===================================== */
 
       if (!approved) {
 
-        await supabaseClient.auth.signOut();
+        await supabaseClient
+          .auth
+          .signOut();
+
 
         showMessage(
           "Your email is verified, but it has not been approved for ERADA Video Library.",
@@ -458,27 +583,33 @@ const supabaseClient =
         return;
       }
 
-/* Approved */
 
-loginBox.style.display =
-  "none";
+      /* =====================================
+         APPROVED
+      ===================================== */
 
-videos.style.display =
-  "block";
+      loginBox.style.display =
+        "none";
 
-await loadVideos();
-    
-
-  });
+      videos.style.display =
+        "block";
 
 
-  /* =========================================
-     CHANGE EMAIL
-     ========================================= */
+      await loadVideos();
 
-  document
-    .getElementById("backToEmail")
-    .addEventListener("click", function () {
+    }
+  );
+
+
+/* =========================================
+   CHANGE EMAIL
+========================================= */
+
+document
+  .getElementById("backToEmail")
+  .addEventListener(
+    "click",
+    function () {
 
       otpStep.style.display =
         "none";
@@ -486,27 +617,36 @@ await loadVideos();
       emailStep.style.display =
         "block";
 
-      otpInput.value = "";
+      otpInput.value =
+        "";
 
       message.style.display =
         "none";
 
-    });
+    }
+  );
+
+
 /* =========================================
    LOAD VIDEOS
-   ========================================= */
+========================================= */
 
 async function loadVideos() {
 
   const videosList =
-    document.getElementById("videosList");
+    document.getElementById(
+      "videosList"
+    );
 
 
   videosList.innerHTML =
     "<p>Loading videos...</p>";
 
 
-  const { data, error } =
+  const {
+    data,
+    error
+  } =
     await supabaseClient
       .from("videos")
       .select(
@@ -527,8 +667,10 @@ async function loadVideos() {
       error
     );
 
+
     videosList.innerHTML =
       "<p>Unable to load videos.</p>";
+
 
     return;
   }
@@ -586,6 +728,7 @@ async function loadVideos() {
           "h2"
         );
 
+
       title.textContent =
         video.title;
 
@@ -594,6 +737,7 @@ async function loadVideos() {
         document.createElement(
           "div"
         );
+
 
       videoContainer.className =
         "video";
@@ -676,7 +820,7 @@ async function loadVideos() {
 
 /* =========================================
    GET YOUTUBE VIDEO ID
-   ========================================= */
+========================================= */
 
 function getYouTubeVideoId(
   urlString
@@ -797,9 +941,11 @@ function getYouTubeVideoId(
   }
 
 }
+
+
 /* =========================================
    RESTORE LOGIN SESSION
-   ========================================= */
+========================================= */
 
 async function restoreSession() {
 
@@ -807,7 +953,10 @@ async function restoreSession() {
     data: {
       session
     }
-  } = await supabaseClient.auth.getSession();
+  } =
+    await supabaseClient
+      .auth
+      .getSession();
 
 
   /* No saved login */
@@ -838,7 +987,10 @@ async function restoreSession() {
 
   if (!authenticatedEmail) {
 
-    await supabaseClient.auth.signOut();
+    await supabaseClient
+      .auth
+      .signOut();
+
 
     loginBox.style.display =
       "block";
@@ -858,7 +1010,9 @@ async function restoreSession() {
   } =
     await supabaseClient
       .from("approved_users")
-      .select("id,status")
+      .select(
+        "id,status"
+      )
       .ilike(
         "email",
         authenticatedEmail
@@ -887,13 +1041,17 @@ async function restoreSession() {
 
   if (!approved) {
 
-    await supabaseClient.auth.signOut();
+    await supabaseClient
+      .auth
+      .signOut();
+
 
     loginBox.style.display =
       "block";
 
     videos.style.display =
       "none";
+
 
     showMessage(
       "Your access has been removed.",
@@ -920,19 +1078,25 @@ async function restoreSession() {
 
 /* =========================================
    CHECK SAVED SESSION
-   ========================================= */
+========================================= */
 
 restoreSession();
 
-  /* =========================================
-     LOGOUT
-     ========================================= */
 
-  document
-    .getElementById("logout")
-    .addEventListener("click", async function () {
+/* =========================================
+   LOGOUT
+========================================= */
 
-      await supabaseClient.auth.signOut();
+document
+  .getElementById("logout")
+  .addEventListener(
+    "click",
+    async function () {
+
+      await supabaseClient
+        .auth
+        .signOut();
+
 
       videos.style.display =
         "none";
@@ -940,70 +1104,107 @@ restoreSession();
       loginBox.style.display =
         "block";
 
+
       otpStep.style.display =
         "none";
 
       emailStep.style.display =
         "block";
 
-      otpInput.value = "";
+
+      otpInput.value =
+        "";
+
 
       showMessage(
         "You have been logged out.",
         "success"
       );
 
-    });
-  document
-  .getElementById("requestAccess")
-  .addEventListener("click", async function () {
-
-    const email =
-      emailInput.value.trim().toLowerCase();
-
-    if (!email || !email.includes("@")) {
-
-      showMessage(
-        "Please enter a valid email address.",
-        "error"
-      );
-
-      return;
     }
+  );
 
-    const { error } = await supabaseClient
-      .from("access_requests")
-      .insert({
-        email: email
-      });
 
-    if (error) {
+/* =========================================
+   REQUEST ACCESS
+========================================= */
 
-      if (error.code === "23505") {
+document
+  .getElementById("requestAccess")
+  .addEventListener(
+    "click",
+    async function () {
+
+      const email =
+        emailInput.value
+          .trim()
+          .toLowerCase();
+
+
+      if (
+        !email ||
+        !email.includes("@")
+      ) {
 
         showMessage(
-          "An access request already exists for this email.",
+          "Please enter a valid email address.",
           "error"
         );
 
-      } else {
-
-        console.error(error);
-
-        showMessage(
-          "Unable to submit access request.",
-          "error"
-        );
+        return;
       }
 
-      return;
-    }
 
-    showMessage(
-      "Your access request has been sent. Please wait for approval.",
-      "success"
-    );
-  });
+      const {
+        error
+      } =
+        await supabaseClient
+          .from("access_requests")
+          .insert({
+
+            email: email
+
+          });
+
+
+      if (error) {
+
+        if (
+          error.code ===
+          "23505"
+        ) {
+
+          showMessage(
+            "An access request already exists for this email.",
+            "error"
+          );
+
+        } else {
+
+          console.error(
+            error
+          );
+
+
+          showMessage(
+            "Unable to submit access request.",
+            "error"
+          );
+
+        }
+
+        return;
+      }
+
+
+      showMessage(
+        "Your access request has been sent. Please wait for approval.",
+        "success"
+      );
+
+    }
+  );
+
 
 </script>
 
