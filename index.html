@@ -495,20 +495,31 @@ async function loadVideos() {
   const videosList =
     document.getElementById("videosList");
 
+
   videosList.innerHTML =
     "<p>Loading videos...</p>";
+
 
   const { data, error } =
     await supabaseClient
       .from("videos")
-      .select("id,title,youtube_url")
-      .order("created_at", {
-        ascending: true
-      });
+      .select(
+        "id,title,youtube_url,created_at"
+      )
+      .order(
+        "created_at",
+        {
+          ascending: true
+        }
+      );
+
 
   if (error) {
 
-    console.error(error);
+    console.error(
+      "Unable to load videos:",
+      error
+    );
 
     videosList.innerHTML =
       "<p>Unable to load videos.</p>";
@@ -516,7 +527,11 @@ async function loadVideos() {
     return;
   }
 
-  if (!data || data.length === 0) {
+
+  if (
+    !data ||
+    data.length === 0
+  ) {
 
     videosList.innerHTML =
       "<p>No videos available.</p>";
@@ -524,84 +539,259 @@ async function loadVideos() {
     return;
   }
 
-  videosList.innerHTML = "";
 
-  data.forEach(function(video) {
+  videosList.innerHTML =
+    "";
 
-    let youtubeId = "";
 
-    try {
+  data.forEach(
+    function(video) {
 
-      const url =
-        new URL(video.youtube_url);
 
-      if (url.hostname.includes("youtu.be")) {
+      const youtubeId =
+        getYouTubeVideoId(
+          video.youtube_url
+        );
 
-        youtubeId =
-          url.pathname.substring(1);
 
-      } else {
+      if (!youtubeId) {
 
-        youtubeId =
-          url.searchParams.get("v");
+        console.error(
+          "Invalid YouTube URL:",
+          video.youtube_url
+        );
 
-        if (!youtubeId &&
-            url.pathname.includes("/embed/")) {
+        return;
+      }
 
-          youtubeId =
-            url.pathname.split("/embed/")[1];
 
-        }
+      const card =
+        document.createElement(
+          "div"
+        );
+
+
+      card.className =
+        "card";
+
+
+      const title =
+        document.createElement(
+          "h2"
+        );
+
+      title.textContent =
+        video.title;
+
+
+      const videoContainer =
+        document.createElement(
+          "div"
+        );
+
+      videoContainer.className =
+        "video";
+
+
+      const iframe =
+        document.createElement(
+          "iframe"
+        );
+
+
+      iframe.src =
+        "https://www.youtube.com/embed/" +
+        youtubeId;
+
+
+      iframe.title =
+        video.title;
+
+
+      iframe.allowFullscreen =
+        true;
+
+
+      videoContainer.appendChild(
+        iframe
+      );
+
+
+      const watch =
+        document.createElement(
+          "a"
+        );
+
+
+      watch.className =
+        "watch";
+
+
+      watch.href =
+        video.youtube_url;
+
+
+      watch.target =
+        "_blank";
+
+
+      watch.rel =
+        "noopener noreferrer";
+
+
+      watch.textContent =
+        "Watch Video";
+
+
+      card.appendChild(
+        title
+      );
+
+
+      card.appendChild(
+        videoContainer
+      );
+
+
+      card.appendChild(
+        watch
+      );
+
+
+      videosList.appendChild(
+        card
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================
+   GET YOUTUBE VIDEO ID
+   ========================================= */
+
+function getYouTubeVideoId(
+  urlString
+) {
+
+  if (!urlString) {
+    return null;
+  }
+
+
+  try {
+
+    const url =
+      new URL(
+        urlString
+      );
+
+
+    const hostname =
+      url.hostname
+        .toLowerCase()
+        .replace(
+          "www.",
+          ""
+        );
+
+
+    /* youtu.be */
+
+    if (
+      hostname ===
+      "youtu.be"
+    ) {
+
+      return (
+        url.pathname
+          .split("/")
+          .filter(Boolean)[0]
+        || null
+      );
+
+    }
+
+
+    /* youtube.com */
+
+    if (
+      hostname ===
+        "youtube.com" ||
+      hostname ===
+        "m.youtube.com"
+    ) {
+
+
+      /* Normal watch URL */
+
+      const videoId =
+        url.searchParams.get(
+          "v"
+        );
+
+
+      if (videoId) {
+
+        return videoId;
 
       }
 
-    } catch (e) {
 
-      console.error(
-        "Invalid YouTube URL:",
-        video.youtube_url
-      );
+      /* /embed/VIDEO_ID */
 
-      return;
+      if (
+        url.pathname
+          .startsWith(
+            "/embed/"
+          )
+      ) {
+
+        return url.pathname
+          .split("/embed/")[1]
+          ?.split("/")[0]
+          || null;
+
+      }
+
+
+      /* /shorts/VIDEO_ID */
+
+      if (
+        url.pathname
+          .startsWith(
+            "/shorts/"
+          )
+      ) {
+
+        return url.pathname
+          .split("/shorts/")[1]
+          ?.split("/")[0]
+          || null;
+
+      }
+
     }
 
-    if (!youtubeId) {
-      return;
-    }
 
-    const card =
-      document.createElement("div");
+    return null;
 
-    card.className = "card";
 
-    card.innerHTML = `
+  } catch (error) {
 
-      <h2>${video.title}</h2>
+    console.error(
+      "Invalid YouTube URL:",
+      urlString
+    );
 
-      <div class="video">
+    return null;
 
-        <iframe
-          src="https://www.youtube.com/embed/${youtubeId}"
-          title="${video.title}"
-          allowfullscreen>
-        </iframe>
-
-      </div>
-
-      <a
-        class="watch"
-        href="${video.youtube_url}"
-        target="_blank">
-        Watch Video
-      </a>
-
-    `;
-
-    videosList.appendChild(card);
-
-  });
+  }
 
 }
+
 
   /* =========================================
      LOGOUT
