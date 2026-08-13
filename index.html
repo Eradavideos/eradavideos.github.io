@@ -1,3 +1,4 @@
+```html
 <!doctype html>
 <html lang="en">
 <head>
@@ -9,7 +10,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-
     body {
       margin: 0;
       font-family: Arial, sans-serif;
@@ -162,7 +162,6 @@
       padding: 25px;
       color: #666;
     }
-
   </style>
 </head>
 
@@ -207,7 +206,7 @@
     </p>
 
 
-    <!-- Email -->
+    <!-- EMAIL -->
 
     <div id="emailStep">
 
@@ -228,8 +227,6 @@
       >
         Request Access
       </button>
-
-      <p id="accessMessage"></p>
 
     </div>
 
@@ -303,7 +300,6 @@
 
 <script>
 
-
 /* =========================================
    SUPABASE SETTINGS
 ========================================= */
@@ -311,10 +307,8 @@
 const SUPABASE_URL =
   "https://laqwnqnnqtfhqfadjyvo.supabase.co";
 
-
 const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_ropVS738K5BJiOoaZ-TeWA_WmkineZh";
-
 
 const supabaseClient =
   supabase.createClient(
@@ -369,7 +363,6 @@ function showMessage(text, type) {
 
   message.style.display =
     "block";
-
 }
 
 
@@ -388,7 +381,6 @@ document
           .trim()
           .toLowerCase();
 
-
       if (
         !email ||
         !email.includes("@")
@@ -402,12 +394,10 @@ document
         return;
       }
 
-
       showMessage(
         "Sending verification code...",
         "success"
       );
-
 
       const { error } =
         await supabaseClient
@@ -422,7 +412,6 @@ document
 
           });
 
-
       if (error) {
 
         showMessage(
@@ -433,13 +422,11 @@ document
         return;
       }
 
-
       emailStep.style.display =
         "none";
 
       otpStep.style.display =
         "block";
-
 
       showMessage(
         "A verification code was sent to your email.",
@@ -465,10 +452,8 @@ document
           .trim()
           .toLowerCase();
 
-
       const token =
         otpInput.value.trim();
-
 
       if (
         !email ||
@@ -483,12 +468,10 @@ document
         return;
       }
 
-
       showMessage(
         "Verifying...",
         "success"
       );
-
 
       const {
         data,
@@ -506,7 +489,6 @@ document
 
           });
 
-
       if (error) {
 
         showMessage(
@@ -517,7 +499,6 @@ document
         return;
       }
 
-
       const authenticatedEmail =
         data.user?.email
           ? data.user.email
@@ -526,9 +507,7 @@ document
           : email;
 
 
-      /* =====================================
-         CHECK APPROVED USERS
-      ===================================== */
+      /* CHECK APPROVED USERS */
 
       const {
         data: approved,
@@ -554,7 +533,6 @@ document
           .auth
           .signOut();
 
-
         showMessage(
           "Unable to check access permission.",
           "error"
@@ -564,16 +542,13 @@ document
       }
 
 
-      /* =====================================
-         NOT APPROVED
-      ===================================== */
+      /* NOT APPROVED */
 
       if (!approved) {
 
         await supabaseClient
           .auth
           .signOut();
-
 
         showMessage(
           "Your email is verified, but it has not been approved for ERADA Video Library.",
@@ -584,16 +559,13 @@ document
       }
 
 
-      /* =====================================
-         APPROVED
-      ===================================== */
+      /* APPROVED */
 
       loginBox.style.display =
         "none";
 
       videos.style.display =
         "block";
-
 
       await loadVideos();
 
@@ -638,10 +610,8 @@ async function loadVideos() {
       "videosList"
     );
 
-
   videosList.innerHTML =
     "<p>Loading videos...</p>";
-
 
   const {
     data,
@@ -659,7 +629,6 @@ async function loadVideos() {
         }
       );
 
-
   if (error) {
 
     console.error(
@@ -667,14 +636,11 @@ async function loadVideos() {
       error
     );
 
-
     videosList.innerHTML =
       "<p>Unable to load videos.</p>";
 
-
     return;
   }
-
 
   if (
     !data ||
@@ -687,20 +653,16 @@ async function loadVideos() {
     return;
   }
 
-
   videosList.innerHTML =
     "";
 
-
   data.forEach(
     function(video) {
-
 
       const youtubeId =
         getYouTubeVideoId(
           video.youtube_url
         );
-
 
       if (!youtubeId) {
 
@@ -712,101 +674,80 @@ async function loadVideos() {
         return;
       }
 
-
       const card =
         document.createElement(
           "div"
         );
 
-
       card.className =
         "card";
-
 
       const title =
         document.createElement(
           "h2"
         );
 
-
       title.textContent =
         video.title;
-
 
       const videoContainer =
         document.createElement(
           "div"
         );
 
-
       videoContainer.className =
         "video";
-
 
       const iframe =
         document.createElement(
           "iframe"
         );
 
-
       iframe.src =
         "https://www.youtube.com/embed/" +
         youtubeId;
 
-
       iframe.title =
         video.title;
-
 
       iframe.allowFullscreen =
         true;
 
-
       videoContainer.appendChild(
         iframe
       );
-
 
       const watch =
         document.createElement(
           "a"
         );
 
-
       watch.className =
         "watch";
-
 
       watch.href =
         video.youtube_url;
 
-
       watch.target =
         "_blank";
-
 
       watch.rel =
         "noopener noreferrer";
 
-
       watch.textContent =
         "Watch Video";
-
 
       card.appendChild(
         title
       );
 
-
       card.appendChild(
         videoContainer
       );
 
-
       card.appendChild(
         watch
       );
-
 
       videosList.appendChild(
         card
@@ -830,14 +771,12 @@ function getYouTubeVideoId(
     return null;
   }
 
-
   try {
 
     const url =
       new URL(
         urlString
       );
-
 
     const hostname =
       url.hostname
@@ -847,8 +786,6 @@ function getYouTubeVideoId(
           ""
         );
 
-
-    /* youtu.be */
 
     if (
       hostname ===
@@ -865,8 +802,6 @@ function getYouTubeVideoId(
     }
 
 
-    /* youtube.com */
-
     if (
       hostname ===
         "youtube.com" ||
@@ -874,29 +809,18 @@ function getYouTubeVideoId(
         "m.youtube.com"
     ) {
 
-
-      /* Normal watch URL */
-
       const videoId =
         url.searchParams.get(
           "v"
         );
 
-
       if (videoId) {
-
         return videoId;
-
       }
-
-
-      /* /embed/VIDEO_ID */
 
       if (
         url.pathname
-          .startsWith(
-            "/embed/"
-          )
+          .startsWith("/embed/")
       ) {
 
         return url.pathname
@@ -906,14 +830,9 @@ function getYouTubeVideoId(
 
       }
 
-
-      /* /shorts/VIDEO_ID */
-
       if (
         url.pathname
-          .startsWith(
-            "/shorts/"
-          )
+          .startsWith("/shorts/")
       ) {
 
         return url.pathname
@@ -925,9 +844,7 @@ function getYouTubeVideoId(
 
     }
 
-
     return null;
-
 
   } catch (error) {
 
@@ -959,8 +876,6 @@ async function restoreSession() {
       .getSession();
 
 
-  /* No saved login */
-
   if (!session) {
 
     loginBox.style.display =
@@ -973,8 +888,6 @@ async function restoreSession() {
   }
 
 
-  /* Get logged-in email */
-
   const authenticatedEmail =
     session.user?.email
       ? session.user.email
@@ -983,14 +896,11 @@ async function restoreSession() {
       : "";
 
 
-  /* No email */
-
   if (!authenticatedEmail) {
 
     await supabaseClient
       .auth
       .signOut();
-
 
     loginBox.style.display =
       "block";
@@ -1001,8 +911,6 @@ async function restoreSession() {
     return;
   }
 
-
-  /* Check if user is still approved */
 
   const {
     data: approved,
@@ -1024,8 +932,6 @@ async function restoreSession() {
       .maybeSingle();
 
 
-  /* Error checking approval */
-
   if (approvedError) {
 
     console.error(
@@ -1037,21 +943,17 @@ async function restoreSession() {
   }
 
 
-  /* User is no longer approved */
-
   if (!approved) {
 
     await supabaseClient
       .auth
       .signOut();
 
-
     loginBox.style.display =
       "block";
 
     videos.style.display =
       "none";
-
 
     showMessage(
       "Your access has been removed.",
@@ -1062,14 +964,11 @@ async function restoreSession() {
   }
 
 
-  /* Approved user */
-
   loginBox.style.display =
     "none";
 
   videos.style.display =
     "block";
-
 
   await loadVideos();
 
@@ -1097,13 +996,11 @@ document
         .auth
         .signOut();
 
-
       videos.style.display =
         "none";
 
       loginBox.style.display =
         "block";
-
 
       otpStep.style.display =
         "none";
@@ -1111,10 +1008,8 @@ document
       emailStep.style.display =
         "block";
 
-
       otpInput.value =
         "";
-
 
       showMessage(
         "You have been logged out.",
@@ -1140,7 +1035,6 @@ document
           .trim()
           .toLowerCase();
 
-
       if (
         !email ||
         !email.includes("@")
@@ -1153,7 +1047,6 @@ document
 
         return;
       }
-
 
       const {
         error
@@ -1185,7 +1078,6 @@ document
             error
           );
 
-
           showMessage(
             "Unable to submit access request.",
             "error"
@@ -1205,8 +1097,8 @@ document
     }
   );
 
-
 </script>
 
 </body>
 </html>
+```
