@@ -125,6 +125,10 @@
       display: none;
     }
 
+    /* =========================================
+       PROTECTED VIDEO AREA
+    ========================================= */
+
     .video {
       position: relative;
       padding-bottom: 56.25%;
@@ -132,6 +136,8 @@
       overflow: hidden;
       border-radius: 10px;
       background: #000;
+      user-select: none;
+      -webkit-user-select: none;
     }
 
     iframe {
@@ -140,16 +146,8 @@
       width: 100%;
       height: 100%;
       border: 0;
-    }
-
-    .watch {
-      display: inline-block;
-      margin-top: 15px;
-      padding: 11px 18px;
-      background: #111827;
-      color: white;
-      text-decoration: none;
-      border-radius: 8px;
+      user-select: none;
+      -webkit-user-select: none;
     }
 
     .logout {
@@ -682,6 +680,9 @@ async function loadVideos() {
       card.className =
         "card";
 
+
+      /* VIDEO TITLE */
+
       const title =
         document.createElement(
           "h2"
@@ -690,6 +691,9 @@ async function loadVideos() {
       title.textContent =
         video.title;
 
+
+      /* VIDEO CONTAINER */
+
       const videoContainer =
         document.createElement(
           "div"
@@ -697,6 +701,9 @@ async function loadVideos() {
 
       videoContainer.className =
         "video";
+
+
+      /* YOUTUBE IFRAME */
 
       const iframe =
         document.createElement(
@@ -710,32 +717,53 @@ async function loadVideos() {
       iframe.title =
         video.title;
 
+      iframe.allow =
+        "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+
       iframe.allowFullscreen =
         true;
+
+      iframe.setAttribute(
+        "referrerpolicy",
+        "strict-origin-when-cross-origin"
+      );
+
+      iframe.setAttribute(
+        "loading",
+        "lazy"
+      );
+
+
+      /* BLOCK RIGHT CLICK ON VIDEO */
+
+      videoContainer.addEventListener(
+        "contextmenu",
+        function(event) {
+
+          event.preventDefault();
+
+        }
+      );
+
+
+      /* PREVENT DRAGGING */
+
+      videoContainer.addEventListener(
+        "dragstart",
+        function(event) {
+
+          event.preventDefault();
+
+        }
+      );
+
 
       videoContainer.appendChild(
         iframe
       );
 
-      const watch =
-        document.createElement(
-          "a"
-        );
 
-      watch.className =
-        "watch";
-
-      watch.href =
-        video.youtube_url;
-
-      watch.target =
-        "_blank";
-
-      watch.rel =
-        "noopener noreferrer";
-
-      watch.textContent =
-        "Watch Video";
+      /* ADD TITLE + VIDEO ONLY */
 
       card.appendChild(
         title
@@ -743,10 +771,6 @@ async function loadVideos() {
 
       card.appendChild(
         videoContainer
-      );
-
-      card.appendChild(
-        watch
       );
 
       videosList.appendChild(
@@ -818,6 +842,7 @@ function getYouTubeVideoId(
         return videoId;
       }
 
+
       if (
         url.pathname
           .startsWith("/embed/")
@@ -829,6 +854,7 @@ function getYouTubeVideoId(
           || null;
 
       }
+
 
       if (
         url.pathname
@@ -1096,6 +1122,46 @@ document
 
     }
   );
+
+
+/* =========================================
+   EXTRA PAGE PROTECTION
+========================================= */
+
+document.addEventListener(
+  "contextmenu",
+  function(event) {
+
+    if (
+      event.target.closest(
+        ".video"
+      )
+    ) {
+
+      event.preventDefault();
+
+    }
+
+  }
+);
+
+
+document.addEventListener(
+  "dragstart",
+  function(event) {
+
+    if (
+      event.target.closest(
+        ".video"
+      )
+    ) {
+
+      event.preventDefault();
+
+    }
+
+  }
+);
 
 </script>
 
