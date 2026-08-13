@@ -1,4 +1,3 @@
-```html
 <!doctype html>
 <html lang="en">
 
@@ -58,8 +57,13 @@
 
     .email {
       font-weight: bold;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       word-break: break-word;
+    }
+
+    .status {
+      margin-bottom: 12px;
+      color: #555;
     }
 
     .video-url {
@@ -98,6 +102,11 @@
 
     .logout {
       background: #374151;
+      color: white;
+    }
+
+    .refresh {
+      background: #2563eb;
       color: white;
     }
 
@@ -150,6 +159,18 @@
     .error {
       background: #fee2e2;
       color: #991b1b;
+    }
+
+    .user-actions {
+      margin-top: 12px;
+    }
+
+    .admin-user {
+      background: #f3f4f6;
+      color: #555;
+      padding: 8px 12px;
+      border-radius: 7px;
+      display: inline-block;
     }
 
   </style>
@@ -261,7 +282,7 @@
 
   <div class="card">
 
-    <h2>Videos</h2>
+    <h2>🎬 Videos</h2>
 
     <div id="videosList">
       Loading...
@@ -278,6 +299,10 @@
 
     <h2>👥 Approved Users</h2>
 
+    <p>
+      Add an email address to give access to the ERADA Video Library.
+    </p>
+
     <input
       type="email"
       id="approvedEmail"
@@ -289,6 +314,14 @@
       class="approve"
     >
       + Approve User
+    </button>
+
+    <button
+      id="refreshUsers"
+      class="refresh"
+      type="button"
+    >
+      🔄 Refresh Users
     </button>
 
     <div id="approvedUserMessage"></div>
@@ -309,15 +342,20 @@
 
   <div class="card">
 
-    <h2>Access Requests</h2>
+    <h2>📩 Access Requests</h2>
 
-    <button id="refreshRequests">
-      Refresh
+    <button
+      id="refreshRequests"
+      class="refresh"
+      type="button"
+    >
+      🔄 Refresh
     </button>
 
     <button
       id="logout"
       class="logout"
+      type="button"
     >
       Logout
     </button>
@@ -342,7 +380,6 @@
 const SUPABASE_URL =
   "https://laqwnqnnqtfhqfadjyvo.supabase.co";
 
-
 const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_ropVS738K5BJiOoaZ-TeWA_WmkineZh";
 
@@ -352,6 +389,14 @@ const supabaseClient =
     SUPABASE_URL,
     SUPABASE_PUBLISHABLE_KEY
   );
+
+
+/* =========================================
+   ADMIN EMAIL
+========================================= */
+
+const ADMIN_EMAIL =
+  "it@erada.ly";
 
 
 /* =========================================
@@ -400,6 +445,25 @@ const approvedUserMessage =
 const approvedUsersList =
   document.getElementById("approvedUsersList");
 
+const refreshUsersButton =
+  document.getElementById("refreshUsers");
+
+
+/* =========================================
+   ESCAPE HTML
+========================================= */
+
+function escapeHtml(text) {
+
+  return String(text ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+}
+
 
 /* =========================================
    LOGIN MESSAGE
@@ -439,12 +503,10 @@ function showApprovedUserMessage(
    CHECK ADMIN USER
 ========================================= */
 
-async function checkAdminUser(
-  email
-) {
+async function checkAdminUser(email) {
 
   const {
-    data: admin,
+    data,
     error
   } =
     await supabaseClient
@@ -465,7 +527,7 @@ async function checkAdminUser(
   }
 
 
-  return !!admin;
+  return !!data;
 
 }
 
@@ -476,13 +538,9 @@ async function checkAdminUser(
 
 async function showAdminPanel() {
 
-  loginBox.classList.add(
-    "hidden"
-  );
+  loginBox.classList.add("hidden");
 
-  adminPanel.classList.remove(
-    "hidden"
-  );
+  adminPanel.classList.remove("hidden");
 
 
   await loadRequests();
@@ -504,21 +562,16 @@ document
     "click",
     async function() {
 
-
       const email =
         adminEmail.value
           .trim()
           .toLowerCase();
 
-
       const password =
         adminPassword.value;
 
 
-      if (
-        email !==
-        "it@erada.ly"
-      ) {
+      if (email !== ADMIN_EMAIL) {
 
         showLoginMessage(
           "Only IT@erada.ly can access the admin panel.",
@@ -585,13 +638,12 @@ document
 
       if (
         authenticatedEmail !==
-        "it@erada.ly"
+        ADMIN_EMAIL
       ) {
 
         await supabaseClient
           .auth
           .signOut();
-
 
         showLoginMessage(
           "Only IT@erada.ly can access the admin panel.",
@@ -614,7 +666,6 @@ document
           .auth
           .signOut();
 
-
         showLoginMessage(
           "You are not authorized to access the admin panel.",
           "error"
@@ -624,8 +675,7 @@ document
       }
 
 
-      adminPassword.value =
-        "";
+      adminPassword.value = "";
 
 
       showLoginMessage(
@@ -650,17 +700,13 @@ document
     "click",
     async function() {
 
-
       const email =
         adminEmail.value
           .trim()
           .toLowerCase();
 
 
-      if (
-        email !==
-        "it@erada.ly"
-      ) {
+      if (email !== ADMIN_EMAIL) {
 
         showLoginMessage(
           "Enter IT@erada.ly first.",
@@ -685,10 +731,8 @@ document
           .resetPasswordForEmail(
             email,
             {
-
               redirectTo:
                 "https://eradavideos.github.io/reset-password.html"
-
             }
           );
 
@@ -756,10 +800,10 @@ async function loadRequests() {
       error
     );
 
-
     requestsList.innerHTML =
-      "Unable to load requests.";
-
+      `<div class="message error">
+        Unable to load requests.
+      </div>`;
 
     return;
   }
@@ -773,7 +817,6 @@ async function loadRequests() {
     requestsList.innerHTML =
       "<p>No pending requests.</p>";
 
-
     return;
   }
 
@@ -785,12 +828,8 @@ async function loadRequests() {
   data.forEach(
     function(request) {
 
-
       const div =
-        document.createElement(
-          "div"
-        );
-
+        document.createElement("div");
 
       div.className =
         "request";
@@ -804,14 +843,14 @@ async function loadRequests() {
 
         <button
           class="approve"
-          onclick="approveRequest('${request.id}')"
+          data-approve-request="${escapeHtml(request.id)}"
         >
           Approve
         </button>
 
         <button
           class="reject"
-          onclick="rejectRequest('${request.id}')"
+          data-reject-request="${escapeHtml(request.id)}"
         >
           Reject
         </button>
@@ -819,12 +858,50 @@ async function loadRequests() {
       `;
 
 
-      requestsList.appendChild(
-        div
-      );
+      requestsList.appendChild(div);
 
     }
   );
+
+
+  requestsList
+    .querySelectorAll("[data-approve-request]")
+    .forEach(
+      button => {
+
+        button.addEventListener(
+          "click",
+          function() {
+
+            approveRequest(
+              button.dataset.approveRequest
+            );
+
+          }
+        );
+
+      }
+    );
+
+
+  requestsList
+    .querySelectorAll("[data-reject-request]")
+    .forEach(
+      button => {
+
+        button.addEventListener(
+          "click",
+          function() {
+
+            rejectRequest(
+              button.dataset.rejectRequest
+            );
+
+          }
+        );
+
+      }
+    );
 
 }
 
@@ -833,10 +910,7 @@ async function loadRequests() {
    APPROVE REQUEST
 ========================================= */
 
-async function approveRequest(
-  id
-) {
-
+async function approveRequest(id) {
 
   if (
     !confirm(
@@ -867,11 +941,9 @@ async function approveRequest(
       error
     );
 
-
     alert(
       "Unable to approve this request."
     );
-
 
     return;
   }
@@ -893,10 +965,7 @@ async function approveRequest(
    REJECT REQUEST
 ========================================= */
 
-async function rejectRequest(
-  id
-) {
-
+async function rejectRequest(id) {
 
   if (
     !confirm(
@@ -927,11 +996,9 @@ async function rejectRequest(
       error
     );
 
-
     alert(
       "Unable to reject this request."
     );
-
 
     return;
   }
@@ -952,9 +1019,7 @@ async function rejectRequest(
 ========================================= */
 
 document
-  .getElementById(
-    "refreshRequests"
-  )
+  .getElementById("refreshRequests")
   .addEventListener(
     "click",
     loadRequests
@@ -971,21 +1036,14 @@ document
     "click",
     async function() {
 
-
       const title =
-        videoTitle.value
-          .trim();
-
+        videoTitle.value.trim();
 
       const url =
-        videoUrl.value
-          .trim();
+        videoUrl.value.trim();
 
 
-      if (
-        !title ||
-        !url
-      ) {
+      if (!title || !url) {
 
         videoMessage.innerHTML =
           `<div class="message error">
@@ -1017,12 +1075,10 @@ document
           error
         );
 
-
         videoMessage.innerHTML =
           `<div class="message error">
             Unable to add video.
           </div>`;
-
 
         return;
       }
@@ -1034,12 +1090,9 @@ document
         </div>`;
 
 
-      videoTitle.value =
-        "";
+      videoTitle.value = "";
 
-
-      videoUrl.value =
-        "";
+      videoUrl.value = "";
 
 
       await loadVideos();
@@ -1082,10 +1135,10 @@ async function loadVideos() {
       error
     );
 
-
     videosList.innerHTML =
-      "Unable to load videos.";
-
+      `<div class="message error">
+        Unable to load videos.
+      </div>`;
 
     return;
   }
@@ -1099,7 +1152,6 @@ async function loadVideos() {
     videosList.innerHTML =
       "<p>No videos added yet.</p>";
 
-
     return;
   }
 
@@ -1111,12 +1163,8 @@ async function loadVideos() {
   data.forEach(
     function(video) {
 
-
       const div =
-        document.createElement(
-          "div"
-        );
-
+        document.createElement("div");
 
       div.className =
         "request";
@@ -1134,14 +1182,14 @@ async function loadVideos() {
 
         <button
           class="approve"
-          onclick="editVideo('${video.id}')"
+          data-edit-video="${escapeHtml(video.id)}"
         >
           ✏️ Edit
         </button>
 
         <button
           class="reject"
-          onclick="deleteVideo('${video.id}')"
+          data-delete-video="${escapeHtml(video.id)}"
         >
           🗑️ Delete
         </button>
@@ -1149,44 +1197,49 @@ async function loadVideos() {
       `;
 
 
-      videosList.appendChild(
-        div
-      );
+      videosList.appendChild(div);
 
     }
   );
 
-}
+
+  videosList
+    .querySelectorAll("[data-edit-video]")
+    .forEach(
+      button => {
+
+        button.addEventListener(
+          "click",
+          function() {
+
+            editVideo(
+              button.dataset.editVideo
+            );
+
+          }
+        );
+
+      }
+    );
 
 
-/* =========================================
-   ESCAPE HTML
-========================================= */
+  videosList
+    .querySelectorAll("[data-delete-video]")
+    .forEach(
+      button => {
 
-function escapeHtml(
-  text
-) {
+        button.addEventListener(
+          "click",
+          function() {
 
-  return String(text)
-    .replace(
-      /&/g,
-      "&amp;"
-    )
-    .replace(
-      /</g,
-      "&lt;"
-    )
-    .replace(
-      />/g,
-      "&gt;"
-    )
-    .replace(
-      /"/g,
-      "&quot;"
-    )
-    .replace(
-      /'/g,
-      "&#039;"
+            deleteVideo(
+              button.dataset.deleteVideo
+            );
+
+          }
+        );
+
+      }
     );
 
 }
@@ -1196,10 +1249,7 @@ function escapeHtml(
    EDIT VIDEO
 ========================================= */
 
-async function editVideo(
-  id
-) {
-
+async function editVideo(id) {
 
   const newTitle =
     prompt(
@@ -1207,10 +1257,7 @@ async function editVideo(
     );
 
 
-  if (
-    newTitle === null
-  ) {
-
+  if (newTitle === null) {
     return;
   }
 
@@ -1235,10 +1282,7 @@ async function editVideo(
     );
 
 
-  if (
-    newUrl === null
-  ) {
-
+  if (newUrl === null) {
     return;
   }
 
@@ -1282,11 +1326,9 @@ async function editVideo(
       error
     );
 
-
     alert(
       "Unable to update video."
     );
-
 
     return;
   }
@@ -1306,18 +1348,13 @@ async function editVideo(
    DELETE VIDEO
 ========================================= */
 
-async function deleteVideo(
-  id
-) {
+async function deleteVideo(id) {
 
-
-  const confirmed =
-    confirm(
+  if (
+    !confirm(
       "Are you sure you want to delete this video?"
-    );
-
-
-  if (!confirmed) {
+    )
+  ) {
 
     return;
   }
@@ -1342,11 +1379,9 @@ async function deleteVideo(
       error
     );
 
-
     alert(
       "Unable to delete video."
     );
-
 
     return;
   }
@@ -1360,11 +1395,6 @@ async function deleteVideo(
   await loadVideos();
 
 }
-
-
-/* =========================================
-   APPROVED USERS
-========================================= */
 
 
 /* =========================================
@@ -1401,10 +1431,10 @@ async function loadApprovedUsers() {
       error
     );
 
-
     approvedUsersList.innerHTML =
-      "Unable to load approved users.";
-
+      `<div class="message error">
+        Unable to load approved users.
+      </div>`;
 
     return;
   }
@@ -1418,7 +1448,6 @@ async function loadApprovedUsers() {
     approvedUsersList.innerHTML =
       "<p>No approved users yet.</p>";
 
-
     return;
   }
 
@@ -1431,42 +1460,80 @@ async function loadApprovedUsers() {
     function(user) {
 
       const row =
-        document.createElement(
-          "div"
-        );
-
+        document.createElement("div");
 
       row.className =
         "request";
 
 
-      row.innerHTML = `
-
-        <div class="email">
-          ${escapeHtml(user.email)}
-        </div>
-
-        <div>
-          Status:
-          <strong>
-            ${escapeHtml(user.status)}
-          </strong>
-        </div>
-
-        <button
-          type="button"
-          class="reject"
-          data-user-id="${escapeHtml(user.id)}"
-        >
-          🗑️ Remove Access
-        </button>
-
-      `;
+      const normalizedEmail =
+        String(user.email)
+          .trim()
+          .toLowerCase();
 
 
-      approvedUsersList.appendChild(
-        row
-      );
+      /* ADMIN ACCOUNT */
+
+      if (
+        normalizedEmail ===
+        ADMIN_EMAIL
+      ) {
+
+        row.innerHTML = `
+
+          <div class="email">
+            ${escapeHtml(user.email)}
+          </div>
+
+          <div class="status">
+            Status:
+            <strong>Administrator</strong>
+          </div>
+
+          <div class="admin-user">
+            🔐 Admin account
+          </div>
+
+        `;
+
+      }
+
+
+      /* NORMAL USER */
+
+      else {
+
+        row.innerHTML = `
+
+          <div class="email">
+            ${escapeHtml(user.email)}
+          </div>
+
+          <div class="status">
+            Status:
+            <strong>
+              ${escapeHtml(user.status)}
+            </strong>
+          </div>
+
+          <div class="user-actions">
+
+            <button
+              type="button"
+              class="reject"
+              data-remove-user="${escapeHtml(user.id)}"
+            >
+              🗑️ Remove Access
+            </button>
+
+          </div>
+
+        `;
+
+      }
+
+
+      approvedUsersList.appendChild(row);
 
     }
   );
@@ -1477,9 +1544,10 @@ async function loadApprovedUsers() {
   ===================================== */
 
   const removeButtons =
-    approvedUsersList.querySelectorAll(
-      "[data-user-id]"
-    );
+    approvedUsersList
+      .querySelectorAll(
+        "[data-remove-user]"
+      );
 
 
   removeButtons.forEach(
@@ -1490,7 +1558,7 @@ async function loadApprovedUsers() {
         async function() {
 
           const userId =
-            button.dataset.userId;
+            button.dataset.removeUser;
 
 
           const confirmed =
@@ -1500,15 +1568,12 @@ async function loadApprovedUsers() {
 
 
           if (!confirmed) {
-
             return;
-
           }
 
 
           button.disabled =
             true;
-
 
           button.textContent =
             "Removing...";
@@ -1535,20 +1600,17 @@ async function loadApprovedUsers() {
 
 
             alert(
-              "Unable to remove access."
+              "Unable to remove access.\n\nCheck the browser console for details."
             );
 
 
             button.disabled =
               false;
 
-
             button.textContent =
               "🗑️ Remove Access";
 
-
             return;
-
           }
 
 
@@ -1577,7 +1639,6 @@ approveUserButton
     "click",
     async function() {
 
-
       const email =
         approvedEmailInput.value
           .trim()
@@ -1591,6 +1652,19 @@ approveUserButton
 
         showApprovedUserMessage(
           "Please enter a valid email address.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      if (
+        email === ADMIN_EMAIL
+      ) {
+
+        showApprovedUserMessage(
+          "This email is already the administrator.",
           "error"
         );
 
@@ -1641,7 +1715,6 @@ approveUserButton
         approveUserButton.disabled =
           false;
 
-
         return;
       }
 
@@ -1667,6 +1740,21 @@ approveUserButton
 
 
 /* =========================================
+   REFRESH APPROVED USERS
+========================================= */
+
+refreshUsersButton
+  .addEventListener(
+    "click",
+    async function() {
+
+      await loadApprovedUsers();
+
+    }
+  );
+
+
+/* =========================================
    LOGOUT
 ========================================= */
 
@@ -1675,7 +1763,6 @@ document
   .addEventListener(
     "click",
     async function() {
-
 
       await supabaseClient
         .auth
@@ -1694,7 +1781,6 @@ document
 
       adminEmail.value =
         "";
-
 
       adminPassword.value =
         "";
@@ -1715,4 +1801,3 @@ document
 </body>
 
 </html>
-```
