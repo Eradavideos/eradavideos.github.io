@@ -61,6 +61,12 @@
       margin-bottom: 12px;
     }
 
+    .video-url {
+      word-break: break-all;
+      margin: 8px 0 12px;
+      color: #555;
+    }
+
     button {
       border: 0;
       border-radius: 7px;
@@ -68,6 +74,10 @@
       cursor: pointer;
       margin-right: 8px;
       margin-top: 5px;
+    }
+
+    button:hover {
+      opacity: 0.9;
     }
 
     .approve {
@@ -85,16 +95,15 @@
       color: white;
     }
 
-    .secondary {
-      background: #6b7280;
-      color: white;
-    }
-
     .forgot {
       background: transparent;
       color: #2563eb;
       padding: 5px 0;
       margin-top: 10px;
+    }
+
+    .forgot:hover {
+      text-decoration: underline;
     }
 
     #loginBox {
@@ -137,12 +146,6 @@
       color: #991b1b;
     }
 
-    .video-url {
-      word-break: break-all;
-      color: #555;
-      margin: 8px 0;
-    }
-
   </style>
 
 </head>
@@ -160,9 +163,9 @@
 </header>
 
 
-<!-- ================================
+<!-- =========================================
      ADMIN LOGIN
-================================ -->
+========================================= -->
 
 <div id="loginBox">
 
@@ -189,6 +192,8 @@
     Login
   </button>
 
+  <br>
+
   <button
     id="forgotPassword"
     class="forgot"
@@ -202,9 +207,9 @@
 </div>
 
 
-<!-- ================================
+<!-- =========================================
      ADMIN PANEL
-================================ -->
+========================================= -->
 
 <div
   id="adminPanel"
@@ -212,9 +217,9 @@
 >
 
 
-  <!-- ================================
+  <!-- =======================================
        ADD VIDEO
-  ================================= -->
+  ======================================== -->
 
   <div class="card">
 
@@ -244,9 +249,9 @@
   </div>
 
 
-  <!-- ================================
+  <!-- =======================================
        VIDEOS
-  ================================= -->
+  ======================================== -->
 
   <div class="card">
 
@@ -259,9 +264,9 @@
   </div>
 
 
-  <!-- ================================
+  <!-- =======================================
        ACCESS REQUESTS
-  ================================= -->
+  ======================================== -->
 
   <div class="card">
 
@@ -317,38 +322,29 @@ const supabaseClient =
 const adminEmail =
   document.getElementById("adminEmail");
 
-
 const adminPassword =
   document.getElementById("adminPassword");
-
 
 const loginMessage =
   document.getElementById("loginMessage");
 
-
 const loginBox =
   document.getElementById("loginBox");
-
 
 const adminPanel =
   document.getElementById("adminPanel");
 
-
 const requestsList =
   document.getElementById("requestsList");
-
 
 const videoTitle =
   document.getElementById("videoTitle");
 
-
 const videoUrl =
   document.getElementById("videoUrl");
 
-
 const videoMessage =
   document.getElementById("videoMessage");
-
 
 const videosList =
   document.getElementById("videosList");
@@ -379,7 +375,10 @@ async function checkAdminUser(
   email
 ) {
 
-  const { data: admin, error } =
+  const {
+    data: admin,
+    error
+  } =
     await supabaseClient
       .from("admin_users")
       .select("id,email")
@@ -389,7 +388,10 @@ async function checkAdminUser(
 
   if (error) {
 
-    console.error(error);
+    console.error(
+      "Admin check error:",
+      error
+    );
 
     return false;
   }
@@ -406,9 +408,14 @@ async function checkAdminUser(
 
 async function showAdminPanel() {
 
-  loginBox.classList.add("hidden");
+  loginBox.classList.add(
+    "hidden"
+  );
 
-  adminPanel.classList.remove("hidden");
+  adminPanel.classList.remove(
+    "hidden"
+  );
+
 
   await loadRequests();
 
@@ -438,8 +445,11 @@ document
         adminPassword.value;
 
 
+      /* CHECK EMAIL */
+
       if (
-        email !== "it@erada.ly"
+        email !==
+        "it@erada.ly"
       ) {
 
         showLoginMessage(
@@ -450,6 +460,8 @@ document
         return;
       }
 
+
+      /* CHECK PASSWORD */
 
       if (!password) {
 
@@ -468,22 +480,31 @@ document
       );
 
 
+      /* LOGIN WITH PASSWORD */
+
       const {
         data,
         error
       } =
-        await supabaseClient.auth.signInWithPassword({
+        await supabaseClient
+          .auth
+          .signInWithPassword({
 
-          email: email,
+            email: email,
 
-          password: password
+            password: password
 
-        });
+          });
 
+
+      /* LOGIN ERROR */
 
       if (error) {
 
-        console.error(error);
+        console.error(
+          "Login error:",
+          error
+        );
 
         showLoginMessage(
           "Invalid email or password.",
@@ -493,6 +514,8 @@ document
         return;
       }
 
+
+      /* CHECK AUTHENTICATED EMAIL */
 
       const authenticatedEmail =
         data.user?.email
@@ -505,7 +528,10 @@ document
         "it@erada.ly"
       ) {
 
-        await supabaseClient.auth.signOut();
+        await supabaseClient
+          .auth
+          .signOut();
+
 
         showLoginMessage(
           "Only IT@erada.ly can access the admin panel.",
@@ -516,6 +542,8 @@ document
       }
 
 
+      /* CHECK ADMIN TABLE */
+
       const isAdmin =
         await checkAdminUser(
           authenticatedEmail
@@ -524,7 +552,10 @@ document
 
       if (!isAdmin) {
 
-        await supabaseClient.auth.signOut();
+        await supabaseClient
+          .auth
+          .signOut();
+
 
         showLoginMessage(
           "You are not authorized to access the admin panel.",
@@ -535,7 +566,17 @@ document
       }
 
 
-      adminPassword.value = "";
+      /* SUCCESS */
+
+      adminPassword.value =
+        "";
+
+
+      showLoginMessage(
+        "Login successful.",
+        "success"
+      );
+
 
       await showAdminPanel();
 
@@ -583,19 +624,25 @@ document
       const {
         error
       } =
-        await supabaseClient.auth
+        await supabaseClient
+          .auth
           .resetPasswordForEmail(
             email,
             {
+
               redirectTo:
                 "https://eradavideos.github.io/reset-password.html"
+
             }
           );
 
 
       if (error) {
 
-        console.error(error);
+        console.error(
+          "Password reset error:",
+          error
+        );
 
         showLoginMessage(
           "Unable to send password recovery email.",
@@ -648,10 +695,15 @@ async function loadRequests() {
 
   if (error) {
 
-    console.error(error);
+    console.error(
+      "Requests error:",
+      error
+    );
+
 
     requestsList.innerHTML =
       "Unable to load requests.";
+
 
     return;
   }
@@ -664,6 +716,7 @@ async function loadRequests() {
 
     requestsList.innerHTML =
       "<p>No pending requests.</p>";
+
 
     return;
   }
@@ -690,7 +743,7 @@ async function loadRequests() {
       div.innerHTML = `
 
         <div class="email">
-          ${request.email}
+          ${escapeHtml(request.email)}
         </div>
 
         <button
@@ -728,6 +781,7 @@ async function approveRequest(
   id
 ) {
 
+
   if (
     !confirm(
       "Approve this email?"
@@ -741,21 +795,27 @@ async function approveRequest(
   const {
     error
   } =
-    await supabaseClient.rpc(
-      "approve_access_request",
-      {
-        request_id: id
-      }
-    );
+    await supabaseClient
+      .rpc(
+        "approve_access_request",
+        {
+          request_id: id
+        }
+      );
 
 
   if (error) {
 
-    console.error(error);
+    console.error(
+      "Approve error:",
+      error
+    );
+
 
     alert(
       "Unable to approve this request."
     );
+
 
     return;
   }
@@ -779,6 +839,7 @@ async function rejectRequest(
   id
 ) {
 
+
   if (
     !confirm(
       "Reject this email?"
@@ -792,21 +853,27 @@ async function rejectRequest(
   const {
     error
   } =
-    await supabaseClient.rpc(
-      "reject_access_request",
-      {
-        request_id: id
-      }
-    );
+    await supabaseClient
+      .rpc(
+        "reject_access_request",
+        {
+          request_id: id
+        }
+      );
 
 
   if (error) {
 
-    console.error(error);
+    console.error(
+      "Reject error:",
+      error
+    );
+
 
     alert(
       "Unable to reject this request."
     );
+
 
     return;
   }
@@ -863,7 +930,9 @@ document
       ) {
 
         videoMessage.innerHTML =
-          "Please enter the video title and YouTube link.";
+          `<div class="message error">
+            Please enter the video title and YouTube link.
+          </div>`;
 
         return;
       }
@@ -875,28 +944,41 @@ document
         await supabaseClient
           .from("videos")
           .insert({
+
             title: title,
+
             youtube_url: url
+
           });
 
 
       if (error) {
 
-        console.error(error);
+        console.error(
+          "Add video error:",
+          error
+        );
+
 
         videoMessage.innerHTML =
-          "Unable to add video.";
+          `<div class="message error">
+            Unable to add video.
+          </div>`;
+
 
         return;
       }
 
 
       videoMessage.innerHTML =
-        "Video added successfully.";
+        `<div class="message success">
+          Video added successfully.
+        </div>`;
 
 
       videoTitle.value =
         "";
+
 
       videoUrl.value =
         "";
@@ -937,10 +1019,15 @@ async function loadVideos() {
 
   if (error) {
 
-    console.error(error);
+    console.error(
+      "Videos error:",
+      error
+    );
+
 
     videosList.innerHTML =
       "Unable to load videos.";
+
 
     return;
   }
@@ -953,6 +1040,7 @@ async function loadVideos() {
 
     videosList.innerHTML =
       "<p>No videos added yet.</p>";
+
 
     return;
   }
@@ -1117,8 +1205,11 @@ async function editVideo(
     await supabaseClient
       .from("videos")
       .update({
+
         title: title,
+
         youtube_url: youtube_url
+
       })
       .eq(
         "id",
@@ -1128,11 +1219,16 @@ async function editVideo(
 
   if (error) {
 
-    console.error(error);
+    console.error(
+      "Edit video error:",
+      error
+    );
+
 
     alert(
       "Unable to update video."
     );
+
 
     return;
   }
@@ -1183,11 +1279,16 @@ async function deleteVideo(
 
   if (error) {
 
-    console.error(error);
+    console.error(
+      "Delete video error:",
+      error
+    );
+
 
     alert(
       "Unable to delete video."
     );
+
 
     return;
   }
@@ -1229,91 +1330,25 @@ document
         .remove("hidden");
 
 
+      adminEmail.value =
+        "";
+
+
       adminPassword.value =
         "";
 
 
-      showLoginMessage(
-        "You have been logged out.",
-        "success"
-      );
+      loginMessage.innerHTML =
+        `<div class="message success">
+          You have been logged out.
+        </div>`;
 
     }
   );
 
 
-/* =========================================
-   CHECK EXISTING SESSION
-========================================= */
-
-async function checkExistingSession() {
-
-  const {
-    data
-  } =
-    await supabaseClient
-      .auth
-      .getSession();
-
-
-  const session =
-    data?.session;
-
-
-  if (!session) {
-
-    return;
-  }
-
-
-  const email =
-    session.user?.email
-      ?.trim()
-      .toLowerCase();
-
-
-  if (
-    email !==
-    "it@erada.ly"
-  ) {
-
-    await supabaseClient
-      .auth
-      .signOut();
-
-    return;
-  }
-
-
-  const isAdmin =
-    await checkAdminUser(
-      email
-    );
-
-
-  if (!isAdmin) {
-
-    await supabaseClient
-      .auth
-      .signOut();
-
-    return;
-  }
-
-
-  await showAdminPanel();
-
-}
-
-
-/* =========================================
-   START
-========================================= */
-
-checkExistingSession();
-
-
 </script>
+
 
 </body>
 
