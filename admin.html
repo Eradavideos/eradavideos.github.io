@@ -1332,7 +1332,224 @@ async function deleteVideo(
 
 }
 
+/* =========================================
+   APPROVED USERS
+   ========================================= */
 
+const approvedEmailInput =
+  document.getElementById("approvedEmail");
+
+const approveUserButton =
+  document.getElementById("approveUser");
+
+const approvedUserMessage =
+  document.getElementById("approvedUserMessage");
+
+const approvedUsersList =
+  document.getElementById("approvedUsersList");
+
+
+function showApprovedUserMessage(
+  text,
+  type = "success"
+) {
+
+  approvedUserMessage.textContent =
+    text;
+
+  approvedUserMessage.className =
+    type;
+
+}
+
+
+async function loadApprovedUsers() {
+
+  approvedUsersList.innerHTML =
+    "Loading...";
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("approved_users")
+      .select(
+        "id,email,status"
+      )
+      .order(
+        "email",
+        {
+          ascending: true
+        }
+      );
+
+
+  if (error) {
+
+    console.error(
+      "Approved users error:",
+      error
+    );
+
+    approvedUsersList.innerHTML =
+      "Unable to load approved users.";
+
+    return;
+  }
+
+
+  if (
+    !data ||
+    data.length === 0
+  ) {
+
+    approvedUsersList.innerHTML =
+      "<p>No approved users yet.</p>";
+
+    return;
+  }
+
+
+  approvedUsersList.innerHTML =
+    "";
+
+
+  data.forEach(
+    function(user) {
+
+      const row =
+        document.createElement(
+          "div"
+        );
+
+
+      row.className =
+        "request";
+
+
+      row.innerHTML = `
+
+        <div class="email">
+          ${user.email}
+        </div>
+
+        <div>
+          ${user.status}
+        </div>
+
+      `;
+
+
+      approvedUsersList.appendChild(
+        row
+      );
+
+    }
+  );
+
+}
+
+
+/* Approve User */
+
+approveUserButton
+  .addEventListener(
+    "click",
+    async function() {
+
+      const email =
+        approvedEmailInput.value
+          .trim()
+          .toLowerCase();
+
+
+      if (
+        !email ||
+        !email.includes("@")
+      ) {
+
+        showApprovedUserMessage(
+          "Please enter a valid email address.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      approveUserButton.disabled =
+        true;
+
+
+      showApprovedUserMessage(
+        "Approving user...",
+        "success"
+      );
+
+
+      const {
+        error
+      } =
+        await supabaseClient
+          .from("approved_users")
+          .upsert(
+            {
+              email: email,
+              status: "approved"
+            },
+            {
+              onConflict: "email"
+            }
+          );
+
+
+      if (error) {
+
+        console.error(
+          "Approve user error:",
+          error
+        );
+
+
+        showApprovedUserMessage(
+          "Unable to approve this user.",
+          "error"
+        );
+
+
+        approveUserButton.disabled =
+          false;
+
+
+        return;
+      }
+
+
+      approvedEmailInput.value =
+        "";
+
+
+      showApprovedUserMessage(
+        "User approved successfully.",
+        "success"
+      );
+
+
+      await loadApprovedUsers();
+
+
+      approveUserButton.disabled =
+        false;
+
+    }
+  );
+
+
+/* Load users */
+
+loadApprovedUsers();
 /* =========================================
    LOGOUT
 ========================================= */
