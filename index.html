@@ -236,13 +236,19 @@
 
   const SUPABASE_PUBLISHABLE_KEY =
     "sb_publishable_ropVS738K5BJiOoaZ-TeWA_WmkineZh";
+const supabaseClient =
+  supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY,
+    {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    }
+  );
 
-
-  const supabaseClient =
-    supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_PUBLISHABLE_KEY
-    );
 
 
   /* =========================================
@@ -791,7 +797,132 @@ function getYouTubeVideoId(
   }
 
 }
+/* =========================================
+   RESTORE LOGIN SESSION
+   ========================================= */
 
+async function restoreSession() {
+
+  const {
+    data: {
+      session
+    }
+  } = await supabaseClient.auth.getSession();
+
+
+  /* No saved login */
+
+  if (!session) {
+
+    loginBox.style.display =
+      "block";
+
+    videos.style.display =
+      "none";
+
+    return;
+  }
+
+
+  /* Get logged-in email */
+
+  const authenticatedEmail =
+    session.user?.email
+      ? session.user.email
+          .trim()
+          .toLowerCase()
+      : "";
+
+
+  /* No email */
+
+  if (!authenticatedEmail) {
+
+    await supabaseClient.auth.signOut();
+
+    loginBox.style.display =
+      "block";
+
+    videos.style.display =
+      "none";
+
+    return;
+  }
+
+
+  /* Check if user is still approved */
+
+  const {
+    data: approved,
+    error: approvedError
+  } =
+    await supabaseClient
+      .from("approved_users")
+      .select("id,status")
+      .ilike(
+        "email",
+        authenticatedEmail
+      )
+      .eq(
+        "status",
+        "approved"
+      )
+      .maybeSingle();
+
+
+  /* Error checking approval */
+
+  if (approvedError) {
+
+    console.error(
+      "Approval check error:",
+      approvedError
+    );
+
+    return;
+  }
+
+
+  /* User is no longer approved */
+
+  if (!approved) {
+
+    await supabaseClient.auth.signOut();
+
+    loginBox.style.display =
+      "block";
+
+    videos.style.display =
+      "none";
+
+    showMessage(
+      "Your access has been removed.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  /* Approved user */
+
+  loginBox.style.display =
+    "none";
+
+  videos.style.display =
+    "block";
+
+
+  await loadVideos();
+
+}
+
+
+/* =========================================
+   CHECK SAVED SESSION
+   ========================================= */
+
+restoreSession();
 
   /* =========================================
      LOGOUT
