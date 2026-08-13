@@ -1,14 +1,22 @@
+```html
 <!doctype html>
 <html lang="en">
+
 <head>
+
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
 
   <title>ERADA Admin</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
+
     body {
       margin: 0;
       font-family: Arial, sans-serif;
@@ -59,6 +67,7 @@
       padding: 10px 16px;
       cursor: pointer;
       margin-right: 8px;
+      margin-top: 5px;
     }
 
     .approve {
@@ -74,6 +83,18 @@
     .logout {
       background: #374151;
       color: white;
+    }
+
+    .secondary {
+      background: #6b7280;
+      color: white;
+    }
+
+    .forgot {
+      background: transparent;
+      color: #2563eb;
+      padding: 5px 0;
+      margin-top: 10px;
     }
 
     #loginBox {
@@ -92,6 +113,7 @@
       margin: 8px 0 12px;
       border: 1px solid #ccc;
       border-radius: 7px;
+      font-size: 15px;
     }
 
     .hidden {
@@ -102,16 +124,45 @@
       margin-top: 12px;
       padding: 10px;
       border-radius: 7px;
+      background: #f3f4f6;
     }
+
+    .success {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .error {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .video-url {
+      word-break: break-all;
+      color: #555;
+      margin: 8px 0;
+    }
+
   </style>
+
 </head>
+
 
 <body>
 
+
 <header>
+
   <h1>ERADA Admin</h1>
+
   <p>Access Management</p>
+
 </header>
+
+
+<!-- ================================
+     ADMIN LOGIN
+================================ -->
 
 <div id="loginBox">
 
@@ -121,67 +172,97 @@
     type="email"
     id="adminEmail"
     placeholder="Enter admin email"
+    autocomplete="email"
   >
 
-  <button id="sendAdminOtp">
-    Send Verification Code
+  <input
+    type="password"
+    id="adminPassword"
+    placeholder="Enter admin password"
+    autocomplete="current-password"
+  >
+
+  <button
+    id="adminLogin"
+    class="approve"
+  >
+    Login
   </button>
 
-  <div id="otpSection" class="hidden">
-
-    <input
-      type="text"
-      id="adminOtp"
-      placeholder="Enter 6-digit code"
-      maxlength="6"
-      inputmode="numeric"
-    >
-
-    <button id="verifyAdminOtp">
-      Verify Code
-    </button>
-
-  </div>
+  <button
+    id="forgotPassword"
+    class="forgot"
+    type="button"
+  >
+    Forgot Password?
+  </button>
 
   <div id="loginMessage"></div>
 
 </div>
 
 
-<div id="adminPanel" class="container hidden">
-<div class="card">
+<!-- ================================
+     ADMIN PANEL
+================================ -->
 
-  <h2>Add New Video</h2>
+<div
+  id="adminPanel"
+  class="container hidden"
+>
 
-  <input
-    type="text"
-    id="videoTitle"
-    placeholder="Video title"
-  >
 
-  <input
-    type="url"
-    id="videoUrl"
-    placeholder="YouTube video link"
-  >
+  <!-- ================================
+       ADD VIDEO
+  ================================= -->
 
-  <button id="addVideo" class="approve">
-    + Add Video
-  </button>
+  <div class="card">
 
-  <div id="videoMessage"></div>
+    <h2>Add New Video</h2>
 
-</div>
+    <input
+      type="text"
+      id="videoTitle"
+      placeholder="Video title"
+    >
 
-<div class="card">
+    <input
+      type="url"
+      id="videoUrl"
+      placeholder="YouTube video link"
+    >
 
-  <h2>Videos</h2>
+    <button
+      id="addVideo"
+      class="approve"
+    >
+      + Add Video
+    </button>
 
-  <div id="videosList">
-    Loading...
+    <div id="videoMessage"></div>
+
   </div>
 
-</div>
+
+  <!-- ================================
+       VIDEOS
+  ================================= -->
+
+  <div class="card">
+
+    <h2>Videos</h2>
+
+    <div id="videosList">
+      Loading...
+    </div>
+
+  </div>
+
+
+  <!-- ================================
+       ACCESS REQUESTS
+  ================================= -->
+
   <div class="card">
 
     <h2>Access Requests</h2>
@@ -190,7 +271,10 @@
       Refresh
     </button>
 
-    <button id="logout" class="logout">
+    <button
+      id="logout"
+      class="logout"
+    >
       Logout
     </button>
 
@@ -200,16 +284,24 @@
 
   </div>
 
+
 </div>
 
 
 <script>
 
+
+/* =========================================
+   SUPABASE SETTINGS
+========================================= */
+
 const SUPABASE_URL =
   "https://laqwnqnnqtfhqfadjyvo.supabase.co";
 
+
 const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_ropVS738K5BJiOoaZ-TeWA_WmkineZh";
+
 
 const supabaseClient =
   supabase.createClient(
@@ -218,160 +310,314 @@ const supabaseClient =
   );
 
 
+/* =========================================
+   ELEMENTS
+========================================= */
+
 const adminEmail =
   document.getElementById("adminEmail");
 
-const adminOtp =
-  document.getElementById("adminOtp");
+
+const adminPassword =
+  document.getElementById("adminPassword");
+
 
 const loginMessage =
   document.getElementById("loginMessage");
 
-const otpSection =
-  document.getElementById("otpSection");
 
 const loginBox =
   document.getElementById("loginBox");
 
+
 const adminPanel =
   document.getElementById("adminPanel");
+
 
 const requestsList =
   document.getElementById("requestsList");
 
 
-function showLoginMessage(message) {
+const videoTitle =
+  document.getElementById("videoTitle");
+
+
+const videoUrl =
+  document.getElementById("videoUrl");
+
+
+const videoMessage =
+  document.getElementById("videoMessage");
+
+
+const videosList =
+  document.getElementById("videosList");
+
+
+/* =========================================
+   LOGIN MESSAGE
+========================================= */
+
+function showLoginMessage(
+  text,
+  type = ""
+) {
 
   loginMessage.innerHTML =
-    `<div class="message">${message}</div>`;
+    `<div class="message ${type}">
+      ${text}
+    </div>`;
 
 }
 
 
-/* SEND OTP */
+/* =========================================
+   CHECK ADMIN USER
+========================================= */
+
+async function checkAdminUser(
+  email
+) {
+
+  const { data: admin, error } =
+    await supabaseClient
+      .from("admin_users")
+      .select("id,email")
+      .ilike("email", email)
+      .maybeSingle();
+
+
+  if (error) {
+
+    console.error(error);
+
+    return false;
+  }
+
+
+  return !!admin;
+
+}
+
+
+/* =========================================
+   SHOW ADMIN PANEL
+========================================= */
+
+async function showAdminPanel() {
+
+  loginBox.classList.add("hidden");
+
+  adminPanel.classList.remove("hidden");
+
+  await loadRequests();
+
+  await loadVideos();
+
+}
+
+
+/* =========================================
+   ADMIN LOGIN
+========================================= */
 
 document
-  .getElementById("sendAdminOtp")
-  .addEventListener("click", async function () {
+  .getElementById("adminLogin")
+  .addEventListener(
+    "click",
+    async function () {
 
-    const email =
-      adminEmail.value.trim().toLowerCase();
 
-    if (email !== "it@erada.ly") {
+      const email =
+        adminEmail.value
+          .trim()
+          .toLowerCase();
+
+
+      const password =
+        adminPassword.value;
+
+
+      if (
+        email !== "it@erada.ly"
+      ) {
+
+        showLoginMessage(
+          "Only IT@erada.ly can access the admin panel.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      if (!password) {
+
+        showLoginMessage(
+          "Please enter your password.",
+          "error"
+        );
+
+        return;
+      }
+
 
       showLoginMessage(
-        "Only IT@erada.ly can access the admin panel."
+        "Signing in...",
+        ""
       );
 
-      return;
+
+      const {
+        data,
+        error
+      } =
+        await supabaseClient.auth.signInWithPassword({
+
+          email: email,
+
+          password: password
+
+        });
+
+
+      if (error) {
+
+        console.error(error);
+
+        showLoginMessage(
+          "Invalid email or password.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      const authenticatedEmail =
+        data.user?.email
+          ?.trim()
+          .toLowerCase();
+
+
+      if (
+        authenticatedEmail !==
+        "it@erada.ly"
+      ) {
+
+        await supabaseClient.auth.signOut();
+
+        showLoginMessage(
+          "Only IT@erada.ly can access the admin panel.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      const isAdmin =
+        await checkAdminUser(
+          authenticatedEmail
+        );
+
+
+      if (!isAdmin) {
+
+        await supabaseClient.auth.signOut();
+
+        showLoginMessage(
+          "You are not authorized to access the admin panel.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      adminPassword.value = "";
+
+      await showAdminPanel();
+
     }
-
-    showLoginMessage(
-      "Sending verification code..."
-    );
-
-    const { error } =
-      await supabaseClient.auth.signInWithOtp({
-        email: email
-      });
-
-    if (error) {
-
-      console.error(error);
-
-      showLoginMessage(
-        "Unable to send verification code."
-      );
-
-      return;
-    }
-
-    otpSection.classList.remove("hidden");
-
-    showLoginMessage(
-      "Verification code sent to IT@erada.ly."
-    );
-
-  });
+  );
 
 
-/* VERIFY OTP */
+/* =========================================
+   FORGOT PASSWORD
+========================================= */
 
 document
-  .getElementById("verifyAdminOtp")
-  .addEventListener("click", async function () {
+  .getElementById("forgotPassword")
+  .addEventListener(
+    "click",
+    async function () {
 
-    const email =
-      adminEmail.value.trim().toLowerCase();
 
-    const token =
-      adminOtp.value.trim();
+      const email =
+        adminEmail.value
+          .trim()
+          .toLowerCase();
 
-    if (token.length !== 6) {
+
+      if (
+        email !==
+        "it@erada.ly"
+      ) {
+
+        showLoginMessage(
+          "Enter IT@erada.ly first.",
+          "error"
+        );
+
+        return;
+      }
+
 
       showLoginMessage(
-        "Enter the 6-digit verification code."
+        "Sending password recovery email...",
+        ""
       );
 
-      return;
-    }
 
-    const { data, error } =
-  await supabaseClient.auth.verifyOtp({
-    email: email,
-    token: token,
-    type: "email"
-  });
+      const {
+        error
+      } =
+        await supabaseClient.auth
+          .resetPasswordForEmail(
+            email,
+            {
+              redirectTo:
+                "https://eradavideos.github.io/reset-password.html"
+            }
+          );
 
-console.log("OTP verification result:", data);
-console.log("OTP verification error:", error);
-    if (error) {
 
-      console.error(error);
+      if (error) {
+
+        console.error(error);
+
+        showLoginMessage(
+          "Unable to send password recovery email.",
+          "error"
+        );
+
+        return;
+      }
+
 
       showLoginMessage(
-        "Invalid or expired verification code."
+        "Password recovery link has been sent to IT@erada.ly.",
+        "success"
       );
 
-      return;
     }
-
-    const userEmail =
-      data.user.email.toLowerCase();
+  );
 
 
-    /* Check admin */
-
-    const { data: admin, error: adminError } =
-      await supabaseClient
-        .from("admin_users")
-        .select("id,email")
-        .ilike("email", userEmail)
-        .maybeSingle();
-
-
-    if (adminError || !admin) {
-
-      await supabaseClient.auth.signOut();
-
-      showLoginMessage(
-        "You are not authorized to access the admin panel."
-      );
-
-      return;
-    }
-
-
-    loginBox.classList.add("hidden");
-
-adminPanel.classList.remove("hidden");
-
-loadRequests();
-loadVideos();
-  });
-
-
-/* LOAD REQUESTS */
+/* =========================================
+   LOAD ACCESS REQUESTS
+========================================= */
 
 async function loadRequests() {
 
@@ -379,14 +625,25 @@ async function loadRequests() {
     "Loading...";
 
 
-  const { data, error } =
+  const {
+    data,
+    error
+  } =
     await supabaseClient
       .from("access_requests")
-      .select("id,email,status,created_at")
-      .eq("status", "pending")
-      .order("created_at", {
-        ascending: false
-      });
+      .select(
+        "id,email,status,created_at"
+      )
+      .eq(
+        "status",
+        "pending"
+      )
+      .order(
+        "created_at",
+        {
+          ascending: false
+        }
+      );
 
 
   if (error) {
@@ -400,7 +657,10 @@ async function loadRequests() {
   }
 
 
-  if (!data || data.length === 0) {
+  if (
+    !data ||
+    data.length === 0
+  ) {
 
     requestsList.innerHTML =
       "<p>No pending requests.</p>";
@@ -409,53 +669,78 @@ async function loadRequests() {
   }
 
 
-  requestsList.innerHTML = "";
+  requestsList.innerHTML =
+    "";
 
 
-  data.forEach(request => {
+  data.forEach(
+    function(request) {
 
-    const div =
-      document.createElement("div");
 
-    div.className = "request";
+      const div =
+        document.createElement(
+          "div"
+        );
 
-    div.innerHTML = `
 
-      <div class="email">
-        ${request.email}
-      </div>
+      div.className =
+        "request";
 
-      <button
-        class="approve"
-        onclick="approveRequest('${request.id}')">
-        Approve
-      </button>
 
-      <button
-        class="reject"
-        onclick="rejectRequest('${request.id}')">
-        Reject
-      </button>
+      div.innerHTML = `
 
-    `;
+        <div class="email">
+          ${request.email}
+        </div>
 
-    requestsList.appendChild(div);
+        <button
+          class="approve"
+          onclick="approveRequest('${request.id}')"
+        >
+          Approve
+        </button>
 
-  });
+        <button
+          class="reject"
+          onclick="rejectRequest('${request.id}')"
+        >
+          Reject
+        </button>
+
+      `;
+
+
+      requestsList.appendChild(
+        div
+      );
+
+    }
+  );
 
 }
 
 
-/* APPROVE */
+/* =========================================
+   APPROVE REQUEST
+========================================= */
 
-async function approveRequest(id) {
+async function approveRequest(
+  id
+) {
 
-  if (!confirm("Approve this email?")) {
+  if (
+    !confirm(
+      "Approve this email?"
+    )
+  ) {
+
     return;
   }
 
 
-  const { error } =
+  const {
+    error
+  } =
     await supabaseClient.rpc(
       "approve_access_request",
       {
@@ -481,21 +766,32 @@ async function approveRequest(id) {
   );
 
 
-  loadRequests();
+  await loadRequests();
 
 }
 
 
-/* REJECT */
+/* =========================================
+   REJECT REQUEST
+========================================= */
 
-async function rejectRequest(id) {
+async function rejectRequest(
+  id
+) {
 
-  if (!confirm("Reject this email?")) {
+  if (
+    !confirm(
+      "Reject this email?"
+    )
+  ) {
+
     return;
   }
 
 
-  const { error } =
+  const {
+    error
+  } =
     await supabaseClient.rpc(
       "reject_access_request",
       {
@@ -521,111 +817,122 @@ async function rejectRequest(id) {
   );
 
 
-  loadRequests();
+  await loadRequests();
 
 }
 
 
-/* REFRESH */
+/* =========================================
+   REFRESH REQUESTS
+========================================= */
 
 document
-  .getElementById("refreshRequests")
-  .addEventListener("click", loadRequests);
+  .getElementById(
+    "refreshRequests"
+  )
+  .addEventListener(
+    "click",
+    loadRequests
+  );
 
 
-/* LOGOUT */
-
-document
-  .getElementById("logout")
-  .addEventListener("click", async function () {
-
-    await supabaseClient.auth.signOut();
-
-    adminPanel.classList.add("hidden");
-
-    loginBox.classList.remove("hidden");
-
-    otpSection.classList.add("hidden");
-
-    adminOtp.value = "";
-
-    showLoginMessage(
-      "You have been logged out."
-    );
-
-  });
-const videoTitle =
-  document.getElementById("videoTitle");
-
-const videoUrl =
-  document.getElementById("videoUrl");
-
-const videoMessage =
-  document.getElementById("videoMessage");
-
-const videosList =
-  document.getElementById("videosList");
-
+/* =========================================
+   ADD VIDEO
+========================================= */
 
 document
   .getElementById("addVideo")
-  .addEventListener("click", async function () {
+  .addEventListener(
+    "click",
+    async function () {
 
-    const title =
-      videoTitle.value.trim();
 
-    const url =
-      videoUrl.value.trim();
+      const title =
+        videoTitle.value
+          .trim();
 
-    if (!title || !url) {
+
+      const url =
+        videoUrl.value
+          .trim();
+
+
+      if (
+        !title ||
+        !url
+      ) {
+
+        videoMessage.innerHTML =
+          "Please enter the video title and YouTube link.";
+
+        return;
+      }
+
+
+      const {
+        error
+      } =
+        await supabaseClient
+          .from("videos")
+          .insert({
+            title: title,
+            youtube_url: url
+          });
+
+
+      if (error) {
+
+        console.error(error);
+
+        videoMessage.innerHTML =
+          "Unable to add video.";
+
+        return;
+      }
+
 
       videoMessage.innerHTML =
-        "Please enter the video title and YouTube link.";
+        "Video added successfully.";
 
-      return;
+
+      videoTitle.value =
+        "";
+
+      videoUrl.value =
+        "";
+
+
+      await loadVideos();
+
     }
+  );
 
-    const { error } =
-      await supabaseClient
-        .from("videos")
-        .insert({
-          title: title,
-          youtube_url: url
-        });
 
-    if (error) {
-
-      console.error(error);
-
-      videoMessage.innerHTML =
-        "Unable to add video.";
-
-      return;
-    }
-
-    videoMessage.innerHTML =
-      "Video added successfully.";
-
-    videoTitle.value = "";
-    videoUrl.value = "";
-
-    loadVideos();
-
-  });
-
+/* =========================================
+   LOAD VIDEOS
+========================================= */
 
 async function loadVideos() {
 
   videosList.innerHTML =
     "Loading...";
 
-  const { data, error } =
+
+  const {
+    data,
+    error
+  } =
     await supabaseClient
       .from("videos")
-      .select("id,title,youtube_url,created_at")
-      .order("created_at", {
-        ascending: false
-      });
+      .select(
+        "id,title,youtube_url,created_at"
+      )
+      .order(
+        "created_at",
+        {
+          ascending: false
+        }
+      );
 
 
   if (error) {
@@ -639,7 +946,10 @@ async function loadVideos() {
   }
 
 
-  if (!data || data.length === 0) {
+  if (
+    !data ||
+    data.length === 0
+  ) {
 
     videosList.innerHTML =
       "<p>No videos added yet.</p>";
@@ -648,34 +958,364 @@ async function loadVideos() {
   }
 
 
-  videosList.innerHTML = "";
+  videosList.innerHTML =
+    "";
 
 
-  data.forEach(video => {
+  data.forEach(
+    function(video) {
 
-    const div =
-      document.createElement("div");
 
-    div.className = "request";
+      const div =
+        document.createElement(
+          "div"
+        );
 
-    div.innerHTML = `
 
-      <div class="email">
-        ${video.title}
-      </div>
+      div.className =
+        "request";
 
-      <div>
-        ${video.youtube_url}
-      </div>
 
-    `;
+      div.innerHTML = `
 
-    videosList.appendChild(div);
+        <div class="email">
+          ${escapeHtml(video.title)}
+        </div>
 
-  });
+        <div class="video-url">
+          ${escapeHtml(video.youtube_url)}
+        </div>
+
+        <button
+          class="approve"
+          onclick="editVideo('${video.id}')"
+        >
+          ✏️ Edit
+        </button>
+
+        <button
+          class="reject"
+          onclick="deleteVideo('${video.id}')"
+        >
+          🗑️ Delete
+        </button>
+
+      `;
+
+
+      videosList.appendChild(
+        div
+      );
+
+    }
+  );
 
 }
+
+
+/* =========================================
+   ESCAPE HTML
+========================================= */
+
+function escapeHtml(
+  text
+) {
+
+  return String(text)
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+    .replace(
+      /</g,
+      "&lt;"
+    )
+    .replace(
+      />/g,
+      "&gt;"
+    )
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+    .replace(
+      /'/g,
+      "&#039;"
+    );
+
+}
+
+
+/* =========================================
+   EDIT VIDEO
+========================================= */
+
+async function editVideo(
+  id
+) {
+
+
+  const newTitle =
+    prompt(
+      "Enter the new video title:"
+    );
+
+
+  if (
+    newTitle === null
+  ) {
+
+    return;
+  }
+
+
+  const title =
+    newTitle.trim();
+
+
+  if (!title) {
+
+    alert(
+      "Video title cannot be empty."
+    );
+
+    return;
+  }
+
+
+  const newUrl =
+    prompt(
+      "Enter the new YouTube link:"
+    );
+
+
+  if (
+    newUrl === null
+  ) {
+
+    return;
+  }
+
+
+  const youtube_url =
+    newUrl.trim();
+
+
+  if (!youtube_url) {
+
+    alert(
+      "YouTube link cannot be empty."
+    );
+
+    return;
+  }
+
+
+  const {
+    error
+  } =
+    await supabaseClient
+      .from("videos")
+      .update({
+        title: title,
+        youtube_url: youtube_url
+      })
+      .eq(
+        "id",
+        id
+      );
+
+
+  if (error) {
+
+    console.error(error);
+
+    alert(
+      "Unable to update video."
+    );
+
+    return;
+  }
+
+
+  alert(
+    "Video updated successfully."
+  );
+
+
+  await loadVideos();
+
+}
+
+
+/* =========================================
+   DELETE VIDEO
+========================================= */
+
+async function deleteVideo(
+  id
+) {
+
+
+  const confirmed =
+    confirm(
+      "Are you sure you want to delete this video?"
+    );
+
+
+  if (!confirmed) {
+
+    return;
+  }
+
+
+  const {
+    error
+  } =
+    await supabaseClient
+      .from("videos")
+      .delete()
+      .eq(
+        "id",
+        id
+      );
+
+
+  if (error) {
+
+    console.error(error);
+
+    alert(
+      "Unable to delete video."
+    );
+
+    return;
+  }
+
+
+  alert(
+    "Video deleted successfully."
+  );
+
+
+  await loadVideos();
+
+}
+
+
+/* =========================================
+   LOGOUT
+========================================= */
+
+document
+  .getElementById("logout")
+  .addEventListener(
+    "click",
+    async function () {
+
+
+      await supabaseClient
+        .auth
+        .signOut();
+
+
+      adminPanel
+        .classList
+        .add("hidden");
+
+
+      loginBox
+        .classList
+        .remove("hidden");
+
+
+      adminPassword.value =
+        "";
+
+
+      showLoginMessage(
+        "You have been logged out.",
+        "success"
+      );
+
+    }
+  );
+
+
+/* =========================================
+   CHECK EXISTING SESSION
+========================================= */
+
+async function checkExistingSession() {
+
+  const {
+    data
+  } =
+    await supabaseClient
+      .auth
+      .getSession();
+
+
+  const session =
+    data?.session;
+
+
+  if (!session) {
+
+    return;
+  }
+
+
+  const email =
+    session.user?.email
+      ?.trim()
+      .toLowerCase();
+
+
+  if (
+    email !==
+    "it@erada.ly"
+  ) {
+
+    await supabaseClient
+      .auth
+      .signOut();
+
+    return;
+  }
+
+
+  const isAdmin =
+    await checkAdminUser(
+      email
+    );
+
+
+  if (!isAdmin) {
+
+    await supabaseClient
+      .auth
+      .signOut();
+
+    return;
+  }
+
+
+  await showAdminPanel();
+
+}
+
+
+/* =========================================
+   START
+========================================= */
+
+checkExistingSession();
+
+
 </script>
 
 </body>
+
 </html>
+```
