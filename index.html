@@ -1,4 +1,4 @@
-```html
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -10,6 +10,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
+
     body {
       margin: 0;
       font-family: Arial, sans-serif;
@@ -99,11 +100,6 @@
       opacity: 0.9;
     }
 
-    .secondary {
-      background: #6b7280;
-      margin-left: 5px;
-    }
-
     .message {
       margin-top: 15px;
       padding: 12px;
@@ -125,29 +121,39 @@
       display: none;
     }
 
-    /* =========================================
-       PROTECTED VIDEO AREA
-    ========================================= */
+    /*
+      PRIVATE VIDEO
+      ===============================
+      Videos are NOT loaded from YouTube.
+      They will come from the private
+      Google Drive / Edge Function.
+    */
 
     .video {
       position: relative;
-      padding-bottom: 56.25%;
-      height: 0;
-      overflow: hidden;
-      border-radius: 10px;
+      width: 100%;
       background: #000;
-      user-select: none;
-      -webkit-user-select: none;
+      border-radius: 10px;
+      overflow: hidden;
     }
 
-    iframe {
-      position: absolute;
-      inset: 0;
+    video {
+      display: block;
       width: 100%;
-      height: 100%;
+      max-height: 600px;
+      background: #000;
       border: 0;
-      user-select: none;
-      -webkit-user-select: none;
+    }
+
+    .video-title {
+      margin-top: 0;
+      margin-bottom: 15px;
+    }
+
+    .video-info {
+      color: #666;
+      font-size: 14px;
+      margin-top: 10px;
     }
 
     .logout {
@@ -155,11 +161,18 @@
       background: #dc2626;
     }
 
+    .empty {
+      text-align: center;
+      padding: 30px;
+      color: #666;
+    }
+
     footer {
       text-align: center;
       padding: 25px;
       color: #666;
     }
+
   </style>
 </head>
 
@@ -175,14 +188,14 @@
 
   <h1>ERADA</h1>
 
-  <p>Video Library</p>
+  <p>Private Video Library</p>
 
 </header>
 
 
 <main class="container">
 
-  <!-- LOGIN -->
+  <!-- LOGIN / ACCESS -->
 
   <section
     id="loginBox"
@@ -196,15 +209,13 @@
     >
 
     <h2 class="login-title">
-      🔐 Secure Access
+      🔐 ERADA Secure Access
     </h2>
 
     <p class="login-description">
-      Enter your email to receive a verification code.
+      Enter your approved email address.
     </p>
 
-
-    <!-- EMAIL -->
 
     <div id="emailStep">
 
@@ -215,49 +226,15 @@
         autocomplete="email"
       >
 
-      <button id="sendOtp">
-        Send Verification Code
-      </button>
-
-      <button
-        id="requestAccess"
-        type="button"
-      >
+      <button id="requestAccess">
         Request Access
       </button>
 
-    </div>
-
-
-    <!-- OTP -->
-
-    <div
-      id="otpStep"
-      style="display:none"
-    >
-
-      <p>
-        A verification code was sent to your email.
-      </p>
-
-      <input
-        id="otp"
-        type="text"
-        inputmode="numeric"
-        maxlength="6"
-        placeholder="Enter 6-digit code"
-        autocomplete="one-time-code"
-      >
-
-      <button id="verifyOtp">
-        Verify Code
-      </button>
-
       <button
-        id="backToEmail"
-        class="secondary"
+        id="checkAccess"
+        type="button"
       >
-        Change Email
+        Check Access
       </button>
 
     </div>
@@ -284,7 +261,10 @@
 
     <div style="clear:both"></div>
 
-    <div id="videosList"></div>
+    <div
+      id="videosList"
+      style="margin-top:20px"
+    ></div>
 
   </section>
 
@@ -292,21 +272,23 @@
 
 
 <footer>
-  ERADA Video Library
+  ERADA Private Video Library
 </footer>
 
 
 <script>
 
 /* =========================================
-   SUPABASE SETTINGS
+   SUPABASE
 ========================================= */
 
 const SUPABASE_URL =
   "https://laqwnqnnqtfhqfadjyvo.supabase.co";
 
+
 const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_ropVS738K5BJiOoaZ-TeWA_WmkineZh";
+
 
 const supabaseClient =
   supabase.createClient(
@@ -323,20 +305,20 @@ const supabaseClient =
 
 
 /* =========================================
+   EDGE FUNCTION URL
+========================================= */
+
+const VIDEO_FUNCTION_URL =
+  SUPABASE_URL +
+  "/functions/v1/list-private-videos";
+
+
+/* =========================================
    ELEMENTS
 ========================================= */
 
 const emailInput =
   document.getElementById("email");
-
-const otpInput =
-  document.getElementById("otp");
-
-const emailStep =
-  document.getElementById("emailStep");
-
-const otpStep =
-  document.getElementById("otpStep");
 
 const loginBox =
   document.getElementById("loginBox");
@@ -347,6 +329,9 @@ const videos =
 const message =
   document.getElementById("message");
 
+const videosList =
+  document.getElementById("videosList");
+
 
 /* =========================================
    MESSAGE
@@ -354,696 +339,16 @@ const message =
 
 function showMessage(text, type) {
 
-  message.textContent = text;
+  message.textContent =
+    text;
 
   message.className =
     "message " + type;
 
   message.style.display =
     "block";
-}
-
-
-/* =========================================
-   SEND OTP
-========================================= */
-
-document
-  .getElementById("sendOtp")
-  .addEventListener(
-    "click",
-    async function () {
-
-      const email =
-        emailInput.value
-          .trim()
-          .toLowerCase();
-
-      if (
-        !email ||
-        !email.includes("@")
-      ) {
-
-        showMessage(
-          "Please enter a valid email address.",
-          "error"
-        );
-
-        return;
-      }
-
-      showMessage(
-        "Sending verification code...",
-        "success"
-      );
-
-      const { error } =
-        await supabaseClient
-          .auth
-          .signInWithOtp({
-
-            email: email,
-
-            options: {
-              shouldCreateUser: true
-            }
-
-          });
-
-      if (error) {
-
-        showMessage(
-          error.message,
-          "error"
-        );
-
-        return;
-      }
-
-      emailStep.style.display =
-        "none";
-
-      otpStep.style.display =
-        "block";
-
-      showMessage(
-        "A verification code was sent to your email.",
-        "success"
-      );
-
-    }
-  );
-
-
-/* =========================================
-   VERIFY OTP
-========================================= */
-
-document
-  .getElementById("verifyOtp")
-  .addEventListener(
-    "click",
-    async function () {
-
-      const email =
-        emailInput.value
-          .trim()
-          .toLowerCase();
-
-      const token =
-        otpInput.value.trim();
-
-      if (
-        !email ||
-        !token
-      ) {
-
-        showMessage(
-          "Enter the verification code.",
-          "error"
-        );
-
-        return;
-      }
-
-      showMessage(
-        "Verifying...",
-        "success"
-      );
-
-      const {
-        data,
-        error
-      } =
-        await supabaseClient
-          .auth
-          .verifyOtp({
-
-            email: email,
-
-            token: token,
-
-            type: "email"
-
-          });
-
-      if (error) {
-
-        showMessage(
-          "Invalid or expired verification code.",
-          "error"
-        );
-
-        return;
-      }
-
-      const authenticatedEmail =
-        data.user?.email
-          ? data.user.email
-              .trim()
-              .toLowerCase()
-          : email;
-
-
-      /* CHECK APPROVED USERS */
-
-      const {
-        data: approved,
-        error: approvedError
-      } =
-        await supabaseClient
-          .from("approved_users")
-          .select("id,status")
-          .ilike(
-            "email",
-            authenticatedEmail
-          )
-          .eq(
-            "status",
-            "approved"
-          )
-          .maybeSingle();
-
-
-      if (approvedError) {
-
-        await supabaseClient
-          .auth
-          .signOut();
-
-        showMessage(
-          "Unable to check access permission.",
-          "error"
-        );
-
-        return;
-      }
-
-
-      /* NOT APPROVED */
-
-      if (!approved) {
-
-        await supabaseClient
-          .auth
-          .signOut();
-
-        showMessage(
-          "Your email is verified, but it has not been approved for ERADA Video Library.",
-          "error"
-        );
-
-        return;
-      }
-
-
-      /* APPROVED */
-
-      loginBox.style.display =
-        "none";
-
-      videos.style.display =
-        "block";
-
-      await loadVideos();
-
-    }
-  );
-
-
-/* =========================================
-   CHANGE EMAIL
-========================================= */
-
-document
-  .getElementById("backToEmail")
-  .addEventListener(
-    "click",
-    function () {
-
-      otpStep.style.display =
-        "none";
-
-      emailStep.style.display =
-        "block";
-
-      otpInput.value =
-        "";
-
-      message.style.display =
-        "none";
-
-    }
-  );
-
-
-/* =========================================
-   LOAD VIDEOS
-========================================= */
-
-async function loadVideos() {
-
-  const videosList =
-    document.getElementById(
-      "videosList"
-    );
-
-  videosList.innerHTML =
-    "<p>Loading videos...</p>";
-
-  const {
-    data,
-    error
-  } =
-    await supabaseClient
-      .from("videos")
-      .select(
-        "id,title,youtube_url,created_at"
-      )
-      .order(
-        "created_at",
-        {
-          ascending: true
-        }
-      );
-
-  if (error) {
-
-    console.error(
-      "Unable to load videos:",
-      error
-    );
-
-    videosList.innerHTML =
-      "<p>Unable to load videos.</p>";
-
-    return;
-  }
-
-  if (
-    !data ||
-    data.length === 0
-  ) {
-
-    videosList.innerHTML =
-      "<p>No videos available.</p>";
-
-    return;
-  }
-
-  videosList.innerHTML =
-    "";
-
-  data.forEach(
-    function(video) {
-
-      const youtubeId =
-        getYouTubeVideoId(
-          video.youtube_url
-        );
-
-      if (!youtubeId) {
-
-        console.error(
-          "Invalid YouTube URL:",
-          video.youtube_url
-        );
-
-        return;
-      }
-
-      const card =
-        document.createElement(
-          "div"
-        );
-
-      card.className =
-        "card";
-
-
-      /* VIDEO TITLE */
-
-      const title =
-        document.createElement(
-          "h2"
-        );
-
-      title.textContent =
-        video.title;
-
-
-      /* VIDEO CONTAINER */
-
-      const videoContainer =
-        document.createElement(
-          "div"
-        );
-
-      videoContainer.className =
-        "video";
-
-
-      /* YOUTUBE IFRAME */
-
-      const iframe =
-        document.createElement(
-          "iframe"
-        );
-
-      iframe.src =
-        "https://www.youtube.com/embed/" +
-        youtubeId;
-
-      iframe.title =
-        video.title;
-
-      iframe.allow =
-        "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
-
-      iframe.allowFullscreen =
-        true;
-
-      iframe.setAttribute(
-        "referrerpolicy",
-        "strict-origin-when-cross-origin"
-      );
-
-      iframe.setAttribute(
-        "loading",
-        "lazy"
-      );
-
-
-      /* BLOCK RIGHT CLICK ON VIDEO */
-
-      videoContainer.addEventListener(
-        "contextmenu",
-        function(event) {
-
-          event.preventDefault();
-
-        }
-      );
-
-
-      /* PREVENT DRAGGING */
-
-      videoContainer.addEventListener(
-        "dragstart",
-        function(event) {
-
-          event.preventDefault();
-
-        }
-      );
-
-
-      videoContainer.appendChild(
-        iframe
-      );
-
-
-      /* ADD TITLE + VIDEO ONLY */
-
-      card.appendChild(
-        title
-      );
-
-      card.appendChild(
-        videoContainer
-      );
-
-      videosList.appendChild(
-        card
-      );
-
-    }
-  );
 
 }
-
-
-/* =========================================
-   GET YOUTUBE VIDEO ID
-========================================= */
-
-function getYouTubeVideoId(
-  urlString
-) {
-
-  if (!urlString) {
-    return null;
-  }
-
-  try {
-
-    const url =
-      new URL(
-        urlString
-      );
-
-    const hostname =
-      url.hostname
-        .toLowerCase()
-        .replace(
-          "www.",
-          ""
-        );
-
-
-    if (
-      hostname ===
-      "youtu.be"
-    ) {
-
-      return (
-        url.pathname
-          .split("/")
-          .filter(Boolean)[0]
-        || null
-      );
-
-    }
-
-
-    if (
-      hostname ===
-        "youtube.com" ||
-      hostname ===
-        "m.youtube.com"
-    ) {
-
-      const videoId =
-        url.searchParams.get(
-          "v"
-        );
-
-      if (videoId) {
-        return videoId;
-      }
-
-
-      if (
-        url.pathname
-          .startsWith("/embed/")
-      ) {
-
-        return url.pathname
-          .split("/embed/")[1]
-          ?.split("/")[0]
-          || null;
-
-      }
-
-
-      if (
-        url.pathname
-          .startsWith("/shorts/")
-      ) {
-
-        return url.pathname
-          .split("/shorts/")[1]
-          ?.split("/")[0]
-          || null;
-
-      }
-
-    }
-
-    return null;
-
-  } catch (error) {
-
-    console.error(
-      "Invalid YouTube URL:",
-      urlString
-    );
-
-    return null;
-
-  }
-
-}
-
-
-/* =========================================
-   RESTORE LOGIN SESSION
-========================================= */
-
-async function restoreSession() {
-
-  const {
-    data: {
-      session
-    }
-  } =
-    await supabaseClient
-      .auth
-      .getSession();
-
-
-  if (!session) {
-
-    loginBox.style.display =
-      "block";
-
-    videos.style.display =
-      "none";
-
-    return;
-  }
-
-
-  const authenticatedEmail =
-    session.user?.email
-      ? session.user.email
-          .trim()
-          .toLowerCase()
-      : "";
-
-
-  if (!authenticatedEmail) {
-
-    await supabaseClient
-      .auth
-      .signOut();
-
-    loginBox.style.display =
-      "block";
-
-    videos.style.display =
-      "none";
-
-    return;
-  }
-
-
-  const {
-    data: approved,
-    error: approvedError
-  } =
-    await supabaseClient
-      .from("approved_users")
-      .select(
-        "id,status"
-      )
-      .ilike(
-        "email",
-        authenticatedEmail
-      )
-      .eq(
-        "status",
-        "approved"
-      )
-      .maybeSingle();
-
-
-  if (approvedError) {
-
-    console.error(
-      "Approval check error:",
-      approvedError
-    );
-
-    return;
-  }
-
-
-  if (!approved) {
-
-    await supabaseClient
-      .auth
-      .signOut();
-
-    loginBox.style.display =
-      "block";
-
-    videos.style.display =
-      "none";
-
-    showMessage(
-      "Your access has been removed.",
-      "error"
-    );
-
-    return;
-  }
-
-
-  loginBox.style.display =
-    "none";
-
-  videos.style.display =
-    "block";
-
-  await loadVideos();
-
-}
-
-
-/* =========================================
-   CHECK SAVED SESSION
-========================================= */
-
-restoreSession();
-
-
-/* =========================================
-   LOGOUT
-========================================= */
-
-document
-  .getElementById("logout")
-  .addEventListener(
-    "click",
-    async function () {
-
-      await supabaseClient
-        .auth
-        .signOut();
-
-      videos.style.display =
-        "none";
-
-      loginBox.style.display =
-        "block";
-
-      otpStep.style.display =
-        "none";
-
-      emailStep.style.display =
-        "block";
-
-      otpInput.value =
-        "";
-
-      showMessage(
-        "You have been logged out.",
-        "success"
-      );
-
-    }
-  );
 
 
 /* =========================================
@@ -1061,6 +366,7 @@ document
           .trim()
           .toLowerCase();
 
+
       if (
         !email ||
         !email.includes("@")
@@ -1074,19 +380,30 @@ document
         return;
       }
 
+
+      showMessage(
+        "Sending access request...",
+        "success"
+      );
+
+
       const {
         error
       } =
         await supabaseClient
           .from("access_requests")
           .insert({
-
             email: email
-
           });
 
 
       if (error) {
+
+        console.error(
+          "Access request error:",
+          error
+        );
+
 
         if (
           error.code ===
@@ -1099,10 +416,6 @@ document
           );
 
         } else {
-
-          console.error(
-            error
-          );
 
           showMessage(
             "Unable to submit access request.",
@@ -1125,7 +438,478 @@ document
 
 
 /* =========================================
-   EXTRA PAGE PROTECTION
+   CHECK ACCESS
+========================================= */
+
+document
+  .getElementById("checkAccess")
+  .addEventListener(
+    "click",
+    async function () {
+
+      const email =
+        emailInput.value
+          .trim()
+          .toLowerCase();
+
+
+      if (
+        !email ||
+        !email.includes("@")
+      ) {
+
+        showMessage(
+          "Please enter your email address.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      showMessage(
+        "Checking access...",
+        "success"
+      );
+
+
+      const {
+        data: approved,
+        error
+      } =
+        await supabaseClient
+          .from("approved_users")
+          .select(
+            "id,email,status"
+          )
+          .ilike(
+            "email",
+            email
+          )
+          .eq(
+            "status",
+            "approved"
+          )
+          .maybeSingle();
+
+
+      if (error) {
+
+        console.error(
+          "Approval error:",
+          error
+        );
+
+
+        showMessage(
+          "Unable to check your access.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      if (!approved) {
+
+        showMessage(
+          "Your email has not been approved yet.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      /*
+        Save approved email locally.
+        This is only for remembering
+        the browser state.
+      */
+
+      localStorage.setItem(
+        "eradaApprovedEmail",
+        email
+      );
+
+
+      showMessage(
+        "Access approved. Loading private videos...",
+        "success"
+      );
+
+
+      await loadPrivateVideos(
+        email
+      );
+
+    }
+  );
+
+
+/* =========================================
+   LOAD PRIVATE VIDEOS
+========================================= */
+
+async function loadPrivateVideos(
+  email
+) {
+
+  videosList.innerHTML =
+    "<p>Loading private videos...</p>";
+
+
+  /*
+    Get current Supabase session.
+  */
+
+  const {
+    data: {
+      session
+    }
+  } =
+    await supabaseClient
+      .auth
+      .getSession();
+
+
+  /*
+    The Edge Function currently
+    requires a valid Supabase session.
+  */
+
+  if (!session) {
+
+    showMessage(
+      "A secure session is required. We will complete the login connection in the next step.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  const response =
+    await fetch(
+      VIDEO_FUNCTION_URL,
+      {
+        method: "GET",
+
+        headers: {
+          "Authorization":
+            "Bearer " +
+            session.access_token,
+
+          "apikey":
+            SUPABASE_PUBLISHABLE_KEY
+        }
+      }
+    );
+
+
+  const result =
+    await response.json();
+
+
+  console.log(
+    "Private video response:",
+    result
+  );
+
+
+  if (
+    !response.ok ||
+    !result.success
+  ) {
+
+    console.error(
+      "Private video error:",
+      result
+    );
+
+
+    showMessage(
+      result.error ||
+      "Unable to load private videos.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  /*
+    Hide login
+  */
+
+  loginBox.style.display =
+    "none";
+
+  videos.style.display =
+    "block";
+
+
+  renderPrivateVideos(
+    result.files || []
+  );
+
+}
+
+
+/* =========================================
+   RENDER PRIVATE VIDEOS
+========================================= */
+
+function renderPrivateVideos(
+  files
+) {
+
+  videosList.innerHTML =
+    "";
+
+
+  if (
+    !files ||
+    files.length === 0
+  ) {
+
+    videosList.innerHTML =
+      `
+        <div class="card empty">
+          <h2>No videos available</h2>
+          <p>There are currently no videos in the private library.</p>
+        </div>
+      `;
+
+    return;
+  }
+
+
+  files.forEach(
+    function(file) {
+
+      /*
+        Only display actual video files.
+      */
+
+      if (
+        !file.mimeType ||
+        !file.mimeType.startsWith(
+          "video/"
+        )
+      ) {
+
+        return;
+      }
+
+
+      const card =
+        document.createElement(
+          "div"
+        );
+
+
+      card.className =
+        "card";
+
+
+      const title =
+        document.createElement(
+          "h2"
+        );
+
+
+      title.className =
+        "video-title";
+
+
+      title.textContent =
+        file.name;
+
+
+      /*
+        VIDEO CONTAINER
+      */
+
+      const videoContainer =
+        document.createElement(
+          "div"
+        );
+
+
+      videoContainer.className =
+        "video";
+
+
+      /*
+        IMPORTANT:
+        We DO NOT use Google Drive
+        public link here.
+
+        The actual protected stream
+        will be connected through
+        our Edge Function.
+      */
+
+      const videoElement =
+        document.createElement(
+          "video"
+        );
+
+
+      videoElement.controls =
+        true;
+
+
+      videoElement.controlsList =
+        "nodownload";
+
+
+      videoElement.disablePictureInPicture =
+        true;
+
+
+      videoElement.setAttribute(
+        "playsinline",
+        ""
+      );
+
+
+      videoElement.setAttribute(
+        "preload",
+        "metadata"
+      );
+
+
+      /*
+        The source will be added
+        after the streaming endpoint
+        is completed.
+      */
+
+
+      videoContainer.appendChild(
+        videoElement
+      );
+
+
+      const info =
+        document.createElement(
+          "div"
+        );
+
+
+      info.className =
+        "video-info";
+
+
+      info.textContent =
+        "🔒 Private ERADA Video";
+
+
+      card.appendChild(
+        title
+      );
+
+
+      card.appendChild(
+        videoContainer
+      );
+
+
+      card.appendChild(
+        info
+      );
+
+
+      videosList.appendChild(
+        card
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================
+   RESTORE APPROVED EMAIL
+========================================= */
+
+function restoreApprovedEmail() {
+
+  const savedEmail =
+    localStorage.getItem(
+      "eradaApprovedEmail"
+    );
+
+
+  if (
+    savedEmail
+  ) {
+
+    emailInput.value =
+      savedEmail;
+
+  }
+
+}
+
+
+restoreApprovedEmail();
+
+
+/* =========================================
+   LOGOUT
+========================================= */
+
+document
+  .getElementById("logout")
+  .addEventListener(
+    "click",
+    async function () {
+
+      /*
+        Sign out Supabase
+      */
+
+      await supabaseClient
+        .auth
+        .signOut();
+
+
+      /*
+        Remove local access
+      */
+
+      localStorage.removeItem(
+        "eradaApprovedEmail"
+      );
+
+
+      videos.style.display =
+        "none";
+
+
+      loginBox.style.display =
+        "block";
+
+
+      videosList.innerHTML =
+        "";
+
+
+      showMessage(
+        "You have been logged out.",
+        "success"
+      );
+
+    }
+  );
+
+
+/* =========================================
+   PROTECTION
 ========================================= */
 
 document.addEventListener(
@@ -1154,6 +938,45 @@ document.addEventListener(
       event.target.closest(
         ".video"
       )
+    ) {
+
+      event.preventDefault();
+
+    }
+
+  }
+);
+
+
+/* =========================================
+   DISABLE COMMON VIDEO SHORTCUTS
+========================================= */
+
+document.addEventListener(
+  "keydown",
+  function(event) {
+
+    /*
+      Prevent Ctrl+S
+    */
+
+    if (
+      event.ctrlKey &&
+      event.key.toLowerCase() === "s"
+    ) {
+
+      event.preventDefault();
+
+    }
+
+
+    /*
+      Prevent Ctrl+U
+    */
+
+    if (
+      event.ctrlKey &&
+      event.key.toLowerCase() === "u"
     ) {
 
       event.preventDefault();
