@@ -1,9 +1,15 @@
-
+```html
 <!doctype html>
 <html lang="en">
+
 <head>
+
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  >
 
   <title>ERADA Video Library</title>
 
@@ -121,14 +127,6 @@
       display: none;
     }
 
-    /*
-      PRIVATE VIDEO
-      ===============================
-      Videos are NOT loaded from YouTube.
-      They will come from the private
-      Google Drive / Edge Function.
-    */
-
     .video {
       position: relative;
       width: 100%;
@@ -174,9 +172,12 @@
     }
 
   </style>
+
 </head>
 
+
 <body>
+
 
 <header>
 
@@ -195,7 +196,10 @@
 
 <main class="container">
 
-  <!-- LOGIN / ACCESS -->
+
+  <!-- =========================================
+       LOGIN / ACCESS
+  ========================================== -->
 
   <section
     id="loginBox"
@@ -226,9 +230,11 @@
         autocomplete="email"
       >
 
+
       <button id="requestAccess">
         Request Access
       </button>
+
 
       <button
         id="checkAccess"
@@ -248,7 +254,9 @@
   </section>
 
 
-  <!-- VIDEOS -->
+  <!-- =========================================
+       VIDEOS
+  ========================================== -->
 
   <section id="videos">
 
@@ -278,6 +286,7 @@
 
 <script>
 
+
 /* =========================================
    SUPABASE
 ========================================= */
@@ -306,11 +315,13 @@ const supabaseClient =
 
 /* =========================================
    EDGE FUNCTION URL
+   IMPORTANT:
+   Function name is get-video
 ========================================= */
 
 const VIDEO_FUNCTION_URL =
   SUPABASE_URL +
-  "/functions/v1/list-private-videos";
+  "/functions/v1/get-video";
 
 
 /* =========================================
@@ -337,7 +348,10 @@ const videosList =
    MESSAGE
 ========================================= */
 
-function showMessage(text, type) {
+function showMessage(
+  text,
+  type
+) {
 
   message.textContent =
     text;
@@ -523,8 +537,6 @@ document
 
       /*
         Save approved email locally.
-        This is only for remembering
-        the browser state.
       */
 
       localStorage.setItem(
@@ -556,7 +568,11 @@ async function loadPrivateVideos(
 ) {
 
   videosList.innerHTML =
-    "<p>Loading private videos...</p>";
+    `
+      <div class="card">
+        <p>Loading private videos...</p>
+      </div>
+    `;
 
 
   /*
@@ -574,19 +590,28 @@ async function loadPrivateVideos(
 
 
   /*
-    The Edge Function currently
+    The current get-video Edge Function
     requires a valid Supabase session.
   */
 
   if (!session) {
 
     showMessage(
-      "A secure session is required. We will complete the login connection in the next step.",
+      "A secure Supabase session is required. Please log in first.",
       "error"
     );
 
+    videosList.innerHTML =
+      "";
+
     return;
   }
+
+
+  console.log(
+    "Calling Edge Function:",
+    VIDEO_FUNCTION_URL
+  );
 
 
   const response =
@@ -596,23 +621,49 @@ async function loadPrivateVideos(
         method: "GET",
 
         headers: {
+
           "Authorization":
             "Bearer " +
             session.access_token,
 
           "apikey":
-            SUPABASE_PUBLISHABLE_KEY
+            SUPABASE_PUBLISHABLE_KEY,
+
+          "Content-Type":
+            "application/json"
+
         }
       }
     );
 
 
-  const result =
-    await response.json();
+  let result;
+
+
+  try {
+
+    result =
+      await response.json();
+
+  } catch (error) {
+
+    console.error(
+      "Invalid Edge Function response:",
+      error
+    );
+
+    showMessage(
+      "The server returned an invalid response.",
+      "error"
+    );
+
+    return;
+
+  }
 
 
   console.log(
-    "Private video response:",
+    "get-video response:",
     result
   );
 
@@ -634,12 +685,15 @@ async function loadPrivateVideos(
       "error"
     );
 
+    videosList.innerHTML =
+      "";
+
     return;
   }
 
 
   /*
-    Hide login
+    Hide login.
   */
 
   loginBox.style.display =
@@ -648,6 +702,11 @@ async function loadPrivateVideos(
   videos.style.display =
     "block";
 
+
+  /*
+    Render files returned
+    from Google Drive.
+  */
 
   renderPrivateVideos(
     result.files || []
@@ -676,13 +735,25 @@ function renderPrivateVideos(
     videosList.innerHTML =
       `
         <div class="card empty">
-          <h2>No videos available</h2>
-          <p>There are currently no videos in the private library.</p>
+
+          <h2>
+            No videos available
+          </h2>
+
+          <p>
+            There are currently no videos
+            in the private library.
+          </p>
+
         </div>
       `;
 
     return;
   }
+
+
+  let videoCount =
+    0;
 
 
   files.forEach(
@@ -701,6 +772,9 @@ function renderPrivateVideos(
 
         return;
       }
+
+
+      videoCount++;
 
 
       const card =
@@ -727,10 +801,6 @@ function renderPrivateVideos(
         file.name;
 
 
-      /*
-        VIDEO CONTAINER
-      */
-
       const videoContainer =
         document.createElement(
           "div"
@@ -740,16 +810,6 @@ function renderPrivateVideos(
       videoContainer.className =
         "video";
 
-
-      /*
-        IMPORTANT:
-        We DO NOT use Google Drive
-        public link here.
-
-        The actual protected stream
-        will be connected through
-        our Edge Function.
-      */
 
       const videoElement =
         document.createElement(
@@ -782,11 +842,17 @@ function renderPrivateVideos(
 
 
       /*
-        The source will be added
-        after the streaming endpoint
-        is completed.
-      */
+        IMPORTANT:
 
+        The current get-video Edge Function
+        only returns file information.
+
+        It does NOT yet return a protected
+        streaming URL.
+
+        Therefore we intentionally do NOT
+        put a Google Drive public URL here.
+      */
 
       videoContainer.appendChild(
         videoElement
@@ -829,6 +895,34 @@ function renderPrivateVideos(
     }
   );
 
+
+  /*
+    If Google Drive contains files but
+    none are videos.
+  */
+
+  if (
+    videoCount === 0
+  ) {
+
+    videosList.innerHTML =
+      `
+        <div class="card empty">
+
+          <h2>
+            No video files found
+          </h2>
+
+          <p>
+            The Google Drive folder was accessed,
+            but no video files were found.
+          </p>
+
+        </div>
+      `;
+
+  }
+
 }
 
 
@@ -869,18 +963,10 @@ document
     "click",
     async function () {
 
-      /*
-        Sign out Supabase
-      */
-
       await supabaseClient
         .auth
         .signOut();
 
-
-      /*
-        Remove local access
-      */
 
       localStorage.removeItem(
         "eradaApprovedEmail"
@@ -949,7 +1035,7 @@ document.addEventListener(
 
 
 /* =========================================
-   DISABLE COMMON VIDEO SHORTCUTS
+   DISABLE COMMON SHORTCUTS
 ========================================= */
 
 document.addEventListener(
@@ -989,5 +1075,6 @@ document.addEventListener(
 </script>
 
 </body>
+
 </html>
 ```
