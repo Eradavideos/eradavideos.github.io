@@ -1,566 +1,2964 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ERADA Admin v2</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:Arial,sans-serif;
-      background:#071426;
-      color:#fff;
-    }
-    button,input{font:inherit}
-    button{
-      border:1px solid rgba(255,255,255,.32);
-      border-radius:9px;
-      padding:10px 15px;
-      cursor:pointer;
-      background:rgba(255,255,255,.08);
-      color:#fff;
-      transition:.2s;
-    }
-    button:hover{
-      background:rgba(255,255,255,.16);
-      border-color:rgba(255,255,255,.58);
-    }
-    button:disabled{opacity:.55;cursor:not-allowed}
 
-    .login-wrap{
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:20px;
-      background:
-        radial-gradient(circle at 50% 42%, rgba(35,125,255,.20) 0, rgba(20,85,180,.10) 25%, transparent 52%),
-        #071426;
-    }
-    .login-card{
-      width:100%;
-      max-width:430px;
-      background:rgba(10,27,50,.90);
-      padding:32px;
-      border-radius:18px;
-      border:1px solid rgba(255,255,255,.22);
-      box-shadow:
-        0 0 45px rgba(31,111,235,.18),
-        0 15px 45px rgba(0,0,0,.35);
-      backdrop-filter:blur(12px);
-    }
-    .brand{text-align:center;margin-bottom:25px}
-    .brand h1{margin:0;font-size:30px;color:#fff}
-    .brand p{color:rgba(255,255,255,.70)}
+<meta charset="utf-8">
 
-    label{color:rgba(255,255,255,.88)}
-    input{
-      width:100%;
-      padding:12px 13px;
-      border:1px solid rgba(255,255,255,.25);
-      border-radius:9px;
-      margin:7px 0 12px;
-      background:rgba(255,255,255,.07);
-      color:#fff;
-      outline:none;
-    }
-    input::placeholder{color:rgba(255,255,255,.48)}
-    input:focus{
-      border-color:rgba(255,255,255,.70);
-      box-shadow:0 0 0 3px rgba(255,255,255,.08);
-    }
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1"
+>
 
-    .btn-primary,.btn-success,.btn-danger,.btn-secondary,.btn-warning,.btn-light{
-      background:rgba(255,255,255,.10);
-      color:#fff;
-      border:1px solid rgba(255,255,255,.32);
-    }
-    .btn-primary:hover,.btn-success:hover,.btn-danger:hover,.btn-secondary:hover,.btn-warning:hover,.btn-light:hover{
-      background:rgba(255,255,255,.18);
-      border-color:rgba(255,255,255,.62);
-    }
+<title>ERADA Admin v3</title>
 
-    .hidden{display:none!important}
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    .app{
-      min-height:100vh;
-      background:
-        radial-gradient(circle at 70% 10%, rgba(30,100,220,.08), transparent 35%),
-        #071426;
-    }
-    .topbar{
-      height:68px;
-      background:rgba(5,18,36,.94);
-      color:#fff;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:0 24px;
-      position:sticky;
-      top:0;
-      z-index:20;
-      border-bottom:1px solid rgba(255,255,255,.14);
-      backdrop-filter:blur(10px);
-    }
-    .topbar h1{font-size:20px;margin:0;color:#fff}
-    .top-actions{display:flex;align-items:center;gap:10px}
+<style>
 
-    .sidebar{
-      position:fixed;
-      top:68px;
-      bottom:0;
-      left:0;
-      width:235px;
-      background:rgba(5,18,36,.94);
-      border-right:1px solid rgba(255,255,255,.14);
-      padding:18px 12px;
-    }
-    .nav-btn{
-      width:100%;
-      text-align:left;
-      background:transparent;
-      color:rgba(255,255,255,.72);
-      margin:3px 0;
-      border:1px solid transparent;
-    }
-    .nav-btn.active,.nav-btn:hover{
-      background:rgba(255,255,255,.10);
-      color:#fff;
-      border-color:rgba(255,255,255,.18);
-    }
+*{
+  box-sizing:border-box;
+}
 
-    .main{margin-left:235px;padding:28px;max-width:1500px}
-    .page-title{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin-bottom:22px
-    }
-    .page-title h2{margin:0;color:#fff}
-    .muted{color:rgba(255,255,255,.58)}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#071426;
+  color:#fff;
+}
 
-    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-    .stat{
-      background:rgba(255,255,255,.055);
-      border-radius:15px;
-      padding:20px;
-      border:1px solid rgba(255,255,255,.13);
-      box-shadow:0 8px 25px rgba(0,0,0,.16);
-    }
-    .stat .label{color:rgba(255,255,255,.58);font-size:14px}
-    .stat .value{font-size:30px;font-weight:700;margin-top:8px;color:#fff}
+button,
+input{
+  font:inherit;
+}
 
-    .card{
-      background:rgba(255,255,255,.055);
-      border-radius:15px;
-      padding:20px;
-      margin-bottom:18px;
-      border:1px solid rgba(255,255,255,.13);
-      box-shadow:0 8px 25px rgba(0,0,0,.16);
-    }
-    .card h3{margin-top:0;color:#fff}
+button{
+  border:1px solid rgba(255,255,255,.32);
+  border-radius:9px;
+  padding:10px 15px;
+  cursor:pointer;
+  background:rgba(255,255,255,.08);
+  color:#fff;
+  transition:.2s;
+}
 
-    .two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-    .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px}
-    .toolbar input{max-width:350px;margin:0}
+button:hover{
+  background:rgba(255,255,255,.16);
+  border-color:rgba(255,255,255,.58);
+}
 
-    .table-wrap{overflow:auto}
-    table{width:100%;border-collapse:collapse;min-width:650px}
-    th,td{
-      text-align:left;
-      padding:12px;
-      border-bottom:1px solid rgba(255,255,255,.10);
-      vertical-align:middle;
-      color:rgba(255,255,255,.88);
-    }
-    th{
-      background:rgba(255,255,255,.05);
-      color:rgba(255,255,255,.68);
-      font-size:13px;
-    }
+button:disabled{
+  opacity:.55;
+  cursor:not-allowed;
+}
 
-    .badge{
-      display:inline-block;
-      padding:5px 9px;
-      border-radius:999px;
-      font-size:12px;
-      font-weight:bold;
-      border:1px solid rgba(255,255,255,.22);
-      background:rgba(255,255,255,.10);
-      color:#fff;
-    }
-    .approved,.pending,.rejected{
-      background:rgba(255,255,255,.10);
-      color:#fff;
-    }
+.hidden{
+  display:none!important;
+}
 
-    .actions{display:flex;gap:7px;flex-wrap:wrap}
-    .actions button{padding:7px 10px;font-size:13px}
 
-    .message{
-      padding:11px 13px;
-      border-radius:9px;
-      margin-top:12px;
-      background:rgba(255,255,255,.07);
-      color:rgba(255,255,255,.88);
-      border:1px solid rgba(255,255,255,.13);
-    }
-    .message.success,.message.error{
-      background:rgba(255,255,255,.08);
-      color:#fff;
-      border-color:rgba(255,255,255,.25);
-    }
+/* =========================
+   LOGIN
+========================= */
 
-    .video-card{
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.035);
-      border-radius:12px;
-      padding:14px;
-      margin-bottom:10px;
-    }
-    .video-title{font-weight:bold;color:#fff}
-    .url{font-size:13px;color:rgba(255,255,255,.55);word-break:break-all;margin:7px 0}
+.login-wrap{
+  min-height:100vh;
 
-    .empty{padding:25px;text-align:center;color:rgba(255,255,255,.55)}
-    .status-line{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      align-items:center
-    }
+  display:flex;
+  align-items:center;
+  justify-content:center;
 
-    .mobile-menu{display:none}
+  padding:20px;
 
-    @media(max-width:900px){
-      .grid{grid-template-columns:repeat(2,1fr)}
-      .sidebar{
-        transform:translateX(-100%);
-        transition:.2s;
-        z-index:30
-      }
-      .sidebar.open{transform:translateX(0)}
-      .main{margin-left:0}
-      .mobile-menu{display:block}
-      .two{grid-template-columns:1fr}
-    }
-    @media(max-width:550px){
-      .grid{grid-template-columns:1fr}
-      .main{padding:16px}
-      .topbar{padding:0 14px}
-      .top-actions .admin-name{display:none}
-    }
-  </style>
+  background:
+    radial-gradient(
+      circle at 50% 42%,
+      rgba(35,125,255,.20) 0,
+      rgba(20,85,180,.10) 25%,
+      transparent 52%
+    ),
+    #071426;
+}
+
+.login-card{
+
+  width:100%;
+  max-width:430px;
+
+  background:rgba(10,27,50,.90);
+
+  padding:32px;
+
+  border-radius:18px;
+
+  border:1px solid rgba(255,255,255,.22);
+
+  box-shadow:
+    0 0 45px rgba(31,111,235,.18),
+    0 15px 45px rgba(0,0,0,.35);
+
+  backdrop-filter:blur(12px);
+}
+
+.brand{
+  text-align:center;
+  margin-bottom:25px;
+}
+
+.brand h1{
+  margin:0;
+  font-size:30px;
+  color:#fff;
+}
+
+.brand p{
+  color:rgba(255,255,255,.70);
+}
+
+label{
+  color:rgba(255,255,255,.88);
+}
+
+input{
+
+  width:100%;
+
+  padding:12px 13px;
+
+  border:
+    1px solid rgba(255,255,255,.25);
+
+  border-radius:9px;
+
+  margin:7px 0 12px;
+
+  background:rgba(255,255,255,.07);
+
+  color:#fff;
+
+  outline:none;
+}
+
+input::placeholder{
+  color:rgba(255,255,255,.48);
+}
+
+input:focus{
+
+  border-color:
+    rgba(255,255,255,.70);
+
+  box-shadow:
+    0 0 0 3px
+    rgba(255,255,255,.08);
+}
+
+
+/* =========================
+   BUTTONS
+========================= */
+
+.btn-primary,
+.btn-success,
+.btn-danger,
+.btn-secondary,
+.btn-warning,
+.btn-light{
+
+  background:
+    rgba(255,255,255,.10);
+
+  color:#fff;
+
+  border:
+    1px solid rgba(255,255,255,.32);
+}
+
+.btn-primary:hover,
+.btn-success:hover,
+.btn-danger:hover,
+.btn-secondary:hover,
+.btn-warning:hover,
+.btn-light:hover{
+
+  background:
+    rgba(255,255,255,.18);
+
+  border-color:
+    rgba(255,255,255,.62);
+}
+
+
+/* =========================
+   APP
+========================= */
+
+.app{
+
+  min-height:100vh;
+
+  background:
+    radial-gradient(
+      circle at 70% 10%,
+      rgba(30,100,220,.08),
+      transparent 35%
+    ),
+    #071426;
+}
+
+
+/* =========================
+   TOP BAR
+========================= */
+
+.topbar{
+
+  height:68px;
+
+  background:
+    rgba(5,18,36,.94);
+
+  color:#fff;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:space-between;
+
+  padding:0 24px;
+
+  position:sticky;
+
+  top:0;
+
+  z-index:20;
+
+  border-bottom:
+    1px solid rgba(255,255,255,.14);
+
+  backdrop-filter:blur(10px);
+}
+
+.topbar h1{
+  font-size:20px;
+  margin:0;
+}
+
+.top-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+
+/* =========================
+   SIDEBAR
+========================= */
+
+.sidebar{
+
+  position:fixed;
+
+  top:68px;
+  bottom:0;
+  left:0;
+
+  width:235px;
+
+  background:
+    rgba(5,18,36,.94);
+
+  border-right:
+    1px solid rgba(255,255,255,.14);
+
+  padding:18px 12px;
+}
+
+.nav-btn{
+
+  width:100%;
+
+  text-align:left;
+
+  background:transparent;
+
+  color:
+    rgba(255,255,255,.72);
+
+  margin:3px 0;
+
+  border:
+    1px solid transparent;
+}
+
+.nav-btn.active,
+.nav-btn:hover{
+
+  background:
+    rgba(255,255,255,.10);
+
+  color:#fff;
+
+  border-color:
+    rgba(255,255,255,.18);
+}
+
+
+/* =========================
+   MAIN
+========================= */
+
+.main{
+
+  margin-left:235px;
+
+  padding:28px;
+
+  max-width:1500px;
+}
+
+.page-title{
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+
+  margin-bottom:22px;
+}
+
+.page-title h2{
+  margin:0;
+}
+
+.muted{
+  color:
+    rgba(255,255,255,.58);
+}
+
+
+/* =========================
+   STATS
+========================= */
+
+.grid{
+
+  display:grid;
+
+  grid-template-columns:
+    repeat(4,1fr);
+
+  gap:16px;
+}
+
+.stat{
+
+  background:
+    rgba(255,255,255,.055);
+
+  border-radius:15px;
+
+  padding:20px;
+
+  border:
+    1px solid rgba(255,255,255,.13);
+
+  box-shadow:
+    0 8px 25px rgba(0,0,0,.16);
+}
+
+.stat .label{
+
+  color:
+    rgba(255,255,255,.58);
+
+  font-size:14px;
+}
+
+.stat .value{
+
+  font-size:30px;
+
+  font-weight:700;
+
+  margin-top:8px;
+}
+
+
+/* =========================
+   CARDS
+========================= */
+
+.card{
+
+  background:
+    rgba(255,255,255,.055);
+
+  border-radius:15px;
+
+  padding:20px;
+
+  margin-bottom:18px;
+
+  border:
+    1px solid rgba(255,255,255,.13);
+
+  box-shadow:
+    0 8px 25px rgba(0,0,0,.16);
+}
+
+.card h3{
+  margin-top:0;
+}
+
+.two{
+
+  display:grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap:18px;
+}
+
+
+/* =========================
+   TOOLBAR
+========================= */
+
+.toolbar{
+
+  display:flex;
+
+  gap:10px;
+
+  flex-wrap:wrap;
+
+  margin-bottom:15px;
+}
+
+.toolbar input{
+
+  max-width:350px;
+
+  margin:0;
+}
+
+
+/* =========================
+   TABLE
+========================= */
+
+.table-wrap{
+  overflow:auto;
+}
+
+table{
+
+  width:100%;
+
+  border-collapse:
+    collapse;
+
+  min-width:700px;
+}
+
+th,
+td{
+
+  text-align:left;
+
+  padding:12px;
+
+  border-bottom:
+    1px solid rgba(255,255,255,.10);
+
+  vertical-align:middle;
+}
+
+th{
+
+  background:
+    rgba(255,255,255,.05);
+
+  color:
+    rgba(255,255,255,.68);
+
+  font-size:13px;
+}
+
+
+/* =========================
+   BADGES
+========================= */
+
+.badge{
+
+  display:inline-block;
+
+  padding:5px 9px;
+
+  border-radius:999px;
+
+  font-size:12px;
+
+  font-weight:bold;
+
+  border:
+    1px solid rgba(255,255,255,.22);
+
+  background:
+    rgba(255,255,255,.10);
+}
+
+.approved{
+  color:#fff;
+}
+
+.pending{
+  color:#fff;
+}
+
+.rejected{
+  color:#fff;
+}
+
+
+/* =========================
+   ACTIONS
+========================= */
+
+.actions{
+
+  display:flex;
+
+  gap:7px;
+
+  flex-wrap:wrap;
+}
+
+.actions button{
+
+  padding:7px 10px;
+
+  font-size:13px;
+}
+
+
+/* =========================
+   MESSAGES
+========================= */
+
+.message{
+
+  padding:11px 13px;
+
+  border-radius:9px;
+
+  margin-top:12px;
+
+  background:
+    rgba(255,255,255,.07);
+
+  color:
+    rgba(255,255,255,.88);
+
+  border:
+    1px solid rgba(255,255,255,.13);
+}
+
+.message.success,
+.message.error{
+
+  background:
+    rgba(255,255,255,.08);
+
+  color:#fff;
+
+  border-color:
+    rgba(255,255,255,.25);
+}
+
+
+/* =========================
+   VIDEO
+========================= */
+
+.video-card{
+
+  border:
+    1px solid rgba(255,255,255,.14);
+
+  background:
+    rgba(255,255,255,.035);
+
+  border-radius:12px;
+
+  padding:14px;
+
+  margin-bottom:10px;
+}
+
+.video-title{
+
+  font-weight:bold;
+
+  color:#fff;
+}
+
+.url{
+
+  font-size:13px;
+
+  color:
+    rgba(255,255,255,.55);
+
+  word-break:break-all;
+
+  margin:7px 0;
+}
+
+.empty{
+
+  padding:25px;
+
+  text-align:center;
+
+  color:
+    rgba(255,255,255,.55);
+}
+
+.status-line{
+
+  display:flex;
+
+  justify-content:space-between;
+
+  gap:10px;
+
+  align-items:center;
+}
+
+.mobile-menu{
+  display:none;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:900px){
+
+  .grid{
+    grid-template-columns:
+      repeat(2,1fr);
+  }
+
+  .sidebar{
+
+    transform:
+      translateX(-100%);
+
+    transition:.2s;
+
+    z-index:30;
+  }
+
+  .sidebar.open{
+    transform:
+      translateX(0);
+  }
+
+  .main{
+    margin-left:0;
+  }
+
+  .mobile-menu{
+    display:block;
+  }
+
+  .two{
+    grid-template-columns:1fr;
+  }
+}
+
+@media(max-width:550px){
+
+  .grid{
+    grid-template-columns:1fr;
+  }
+
+  .main{
+    padding:16px;
+  }
+
+  .topbar{
+    padding:0 14px;
+  }
+
+  .top-actions .admin-name{
+    display:none;
+  }
+}
+
+</style>
+
 </head>
+
 <body>
 
+
+<!-- =====================================================
+     LOGIN
+===================================================== -->
+
 <div id="loginScreen" class="login-wrap">
+
   <div class="login-card">
+
     <div class="brand">
+
       <h1>ERADA Admin</h1>
-      <p>Video Library Management</p>
+
+      <p>
+        Video Library Management
+      </p>
+
     </div>
-    <label>Administrator Email</label>
-    <input id="adminEmail" type="email" placeholder="it@erada.ly" autocomplete="email">
-    <label>Password</label>
-    <input id="adminPassword" type="password" placeholder="Enter password" autocomplete="current-password">
-    <button id="loginBtn" class="btn-success" style="width:100%">Login</button>
-    <button id="forgotBtn" class="btn-light" style="width:100%;margin-top:8px">Forgot Password?</button>
+
+
+    <label>
+      Administrator Email
+    </label>
+
+    <input
+      id="adminEmail"
+      type="email"
+      placeholder="it@erada.ly"
+      autocomplete="email"
+    >
+
+
+    <label>
+      Password
+    </label>
+
+    <input
+      id="adminPassword"
+      type="password"
+      placeholder="Enter password"
+      autocomplete="current-password"
+    >
+
+
+    <button
+      id="loginBtn"
+      class="btn-success"
+      style="width:100%"
+    >
+      Login
+    </button>
+
+
+    <button
+      id="forgotBtn"
+      class="btn-light"
+      style="width:100%;margin-top:8px"
+    >
+      Forgot Password?
+    </button>
+
+
     <div id="loginMessage"></div>
+
   </div>
+
 </div>
+
+
+
+<!-- =====================================================
+     APPLICATION
+===================================================== -->
 
 <div id="app" class="app hidden">
-  <header class="topbar">
-    <div class="top-actions">
-      <button id="mobileMenu" class="btn-light mobile-menu">☰</button>
-      <h1>ERADA Admin</h1>
+
+
+<header class="topbar">
+
+  <div class="top-actions">
+
+    <button
+      id="mobileMenu"
+      class="btn-light mobile-menu"
+    >
+      ☰
+    </button>
+
+    <h1>
+      ERADA Admin
+    </h1>
+
+  </div>
+
+
+  <div class="top-actions">
+
+    <span
+      id="adminName"
+      class="admin-name"
+    ></span>
+
+    <button
+      id="logoutBtn"
+      class="btn-secondary"
+    >
+      Logout
+    </button>
+
+  </div>
+
+</header>
+
+
+
+<!-- =====================================================
+     SIDEBAR
+===================================================== -->
+
+<aside
+  id="sidebar"
+  class="sidebar"
+>
+
+  <button
+    class="nav-btn active"
+    data-page="dashboard"
+  >
+    📊 Dashboard
+  </button>
+
+
+  <button
+    class="nav-btn"
+    data-page="requests"
+  >
+    📩 Access Requests
+  </button>
+
+
+  <button
+    class="nav-btn"
+    data-page="users"
+  >
+    👥 Users
+  </button>
+
+
+  <button
+    class="nav-btn"
+    data-page="videos"
+  >
+    🎬 Videos
+  </button>
+
+</aside>
+
+
+
+<!-- =====================================================
+     MAIN
+===================================================== -->
+
+<main class="main">
+
+
+<!-- =====================================================
+     DASHBOARD
+===================================================== -->
+
+<section
+  id="dashboardPage"
+  class="page"
+>
+
+  <div class="page-title">
+
+    <div>
+
+      <h2>
+        Dashboard
+      </h2>
+
+      <div class="muted">
+        ERADA Video Library overview
+      </div>
+
     </div>
-    <div class="top-actions">
-      <span id="adminName" class="admin-name"></span>
-      <button id="logoutBtn" class="btn-secondary">Logout</button>
+
+
+    <button
+      id="dashboardRefresh"
+      class="btn-primary"
+    >
+      🔄 Refresh
+    </button>
+
+  </div>
+
+
+  <div class="grid">
+
+    <div class="stat">
+
+      <div class="label">
+        Approved Users
+      </div>
+
+      <div
+        id="statUsers"
+        class="value"
+      >
+        0
+      </div>
+
     </div>
-  </header>
 
-  <aside id="sidebar" class="sidebar">
-    <button class="nav-btn active" data-page="dashboard">📊 Dashboard</button>
-    <button class="nav-btn" data-page="requests">📩 Access Requests</button>
-    <button class="nav-btn" data-page="users">👥 Users</button>
-    <button class="nav-btn" data-page="videos">🎬 Videos</button>
-    <button class="nav-btn" data-page="drive">☁️ Google Drive</button>
-  </aside>
 
-  <main class="main">
-    <section id="dashboardPage" class="page">
-      <div class="page-title"><div><h2>Dashboard</h2><div class="muted">ERADA Video Library overview</div></div><button id="dashboardRefresh" class="btn-primary">🔄 Refresh</button></div>
-      <div class="grid">
-        <div class="stat"><div class="label">Approved Users</div><div id="statUsers" class="value">0</div></div>
-        <div class="stat"><div class="label">Pending Requests</div><div id="statRequests" class="value">0</div></div>
-        <div class="stat"><div class="label">YouTube Videos</div><div id="statVideos" class="value">0</div></div>
-        <div class="stat"><div class="label">Private Drive Files</div><div id="statDrive" class="value">—</div></div>
+    <div class="stat">
+
+      <div class="label">
+        Pending Requests
       </div>
-      <div class="two" style="margin-top:18px">
-        <div class="card"><h3>Recent Access Requests</h3><div id="recentRequests"></div></div>
-        <div class="card"><h3>System Status</h3><div id="systemStatus"></div></div>
-      </div>
-    </section>
 
-    <section id="requestsPage" class="page hidden">
-      <div class="page-title"><div><h2>Access Requests</h2><div class="muted">Approve or reject library access</div></div><button id="refreshRequests" class="btn-primary">🔄 Refresh</button></div>
-      <div class="card">
-        <div class="toolbar"><input id="requestSearch" placeholder="Search email..."></div>
-        <div class="table-wrap"><table><thead><tr><th>Email</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead><tbody id="requestsTable"></tbody></table></div>
+      <div
+        id="statRequests"
+        class="value"
+      >
+        0
       </div>
-    </section>
 
-    <section id="usersPage" class="page hidden">
-      <div class="page-title"><div><h2>Users</h2><div class="muted">Manage approved users</div></div><button id="refreshUsers" class="btn-primary">🔄 Refresh</button></div>
-      <div class="card">
-        <div class="toolbar">
-          <input id="newUserEmail" type="email" placeholder="Enter user email">
-          <button id="addUserBtn" class="btn-success">+ Approve User</button>
-        </div>
-        <div id="userMessage"></div>
+    </div>
+
+
+    <div class="stat">
+
+      <div class="label">
+        Total Requests
       </div>
-      <div class="card"><div class="toolbar"><input id="userSearch" placeholder="Search users..."></div><div class="table-wrap"><table><thead><tr><th>Email</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead><tbody id="usersTable"></tbody></table></div></div>
-    </section>
 
-    <section id="videosPage" class="page hidden">
-      <div class="page-title"><div><h2>YouTube Videos</h2><div class="muted">Manage public/library video entries</div></div><button id="refreshVideos" class="btn-primary">🔄 Refresh</button></div>
-      <div class="card">
-        <h3>Add New Video</h3>
-        <input id="videoTitle" placeholder="Video title">
-        <input id="videoUrl" type="url" placeholder="YouTube video link">
-        <button id="addVideoBtn" class="btn-success">+ Add Video</button>
-        <div id="videoMessage"></div>
+      <div
+        id="statTotalRequests"
+        class="value"
+      >
+        0
       </div>
-      <div class="card"><div class="toolbar"><input id="videoSearch" placeholder="Search videos..."></div><div id="videosList"></div></div>
-    </section>
 
-    <section id="drivePage" class="page hidden">
-      <div class="page-title"><div><h2>Google Drive</h2><div class="muted">Private video connection</div></div><button id="refreshDrive" class="btn-primary">🔄 Refresh</button></div>
-      <div class="card"><div id="driveStatus"></div><div id="driveFiles" style="margin-top:15px"></div></div>
-    </section>
-  </main>
+    </div>
+
+
+    <div class="stat">
+
+      <div class="label">
+        YouTube Videos
+      </div>
+
+      <div
+        id="statVideos"
+        class="value"
+      >
+        0
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <div
+    class="two"
+    style="margin-top:18px"
+  >
+
+    <div class="card">
+
+      <h3>
+        Recent Access Requests
+      </h3>
+
+      <div id="recentRequests"></div>
+
+    </div>
+
+
+    <div class="card">
+
+      <h3>
+        System Status
+      </h3>
+
+      <div id="systemStatus"></div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     REQUESTS
+===================================================== -->
+
+<section
+  id="requestsPage"
+  class="page hidden"
+>
+
+  <div class="page-title">
+
+    <div>
+
+      <h2>
+        Access Requests
+      </h2>
+
+      <div class="muted">
+        Approve or reject library access
+      </div>
+
+    </div>
+
+
+    <button
+      id="refreshRequests"
+      class="btn-primary"
+    >
+      🔄 Refresh
+    </button>
+
+  </div>
+
+
+  <div class="card">
+
+    <div class="toolbar">
+
+      <input
+        id="requestSearch"
+        placeholder="Search email..."
+      >
+
+      <button
+        id="showPendingBtn"
+        class="btn-warning"
+      >
+        Pending Only
+      </button>
+
+      <button
+        id="showAllBtn"
+        class="btn-light"
+      >
+        Show All
+      </button>
+
+    </div>
+
+
+    <div
+      id="requestMessage"
+    ></div>
+
+
+    <div class="table-wrap">
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>
+              Email
+            </th>
+
+            <th>
+              Status
+            </th>
+
+            <th>
+              Created
+            </th>
+
+            <th>
+              Actions
+            </th>
+
+          </tr>
+
+        </thead>
+
+        <tbody
+          id="requestsTable"
+        ></tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     USERS
+===================================================== -->
+
+<section
+  id="usersPage"
+  class="page hidden"
+>
+
+  <div class="page-title">
+
+    <div>
+
+      <h2>
+        Users
+      </h2>
+
+      <div class="muted">
+        Manage approved users
+      </div>
+
+    </div>
+
+
+    <button
+      id="refreshUsers"
+      class="btn-primary"
+    >
+      🔄 Refresh
+    </button>
+
+  </div>
+
+
+  <div class="card">
+
+    <div class="toolbar">
+
+      <input
+        id="newUserEmail"
+        type="email"
+        placeholder="Enter user email"
+      >
+
+      <button
+        id="addUserBtn"
+        class="btn-success"
+      >
+        + Approve User
+      </button>
+
+    </div>
+
+
+    <div id="userMessage"></div>
+
+  </div>
+
+
+  <div class="card">
+
+    <div class="toolbar">
+
+      <input
+        id="userSearch"
+        placeholder="Search users..."
+      >
+
+    </div>
+
+
+    <div class="table-wrap">
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>
+              Email
+            </th>
+
+            <th>
+              Status
+            </th>
+
+            <th>
+              Created
+            </th>
+
+            <th>
+              Actions
+            </th>
+
+          </tr>
+
+        </thead>
+
+        <tbody
+          id="usersTable"
+        ></tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     VIDEOS
+===================================================== -->
+
+<section
+  id="videosPage"
+  class="page hidden"
+>
+
+  <div class="page-title">
+
+    <div>
+
+      <h2>
+        YouTube Videos
+      </h2>
+
+      <div class="muted">
+        Manage ERADA library videos
+      </div>
+
+    </div>
+
+
+    <button
+      id="refreshVideos"
+      class="btn-primary"
+    >
+      🔄 Refresh
+    </button>
+
+  </div>
+
+
+  <div class="card">
+
+    <h3>
+      Add New Video
+    </h3>
+
+
+    <input
+      id="videoTitle"
+      placeholder="Video title"
+    >
+
+
+    <input
+      id="videoUrl"
+      type="url"
+      placeholder="YouTube video link"
+    >
+
+
+    <button
+      id="addVideoBtn"
+      class="btn-success"
+    >
+      + Add Video
+    </button>
+
+
+    <div
+      id="videoMessage"
+    ></div>
+
+  </div>
+
+
+  <div class="card">
+
+    <div class="toolbar">
+
+      <input
+        id="videoSearch"
+        placeholder="Search videos..."
+      >
+
+    </div>
+
+
+    <div id="videosList"></div>
+
+  </div>
+
+</section>
+
+
+</main>
+
 </div>
 
+
+
 <script>
-const SUPABASE_URL = "https://laqwnqnnqtfhqfadjyvo.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_ropVS738K5BJiOoaZ-TeWA_WmkineZh";
-const ADMIN_EMAIL = "it@erada.ly";
-const GET_VIDEO_FUNCTION = SUPABASE_URL + "/functions/v1/get-video";
 
-const db = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+/* =====================================================
+   SUPABASE
+===================================================== */
 
-const $ = id => document.getElementById(id);
-const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
-const dateText = value => value ? new Date(value).toLocaleString() : "—";
-const badge = status => `<span class="badge ${esc(status)}">${esc(status)}</span>`;
+const SUPABASE_URL =
+  "https://laqwnqnnqtfhqfadjyvo.supabase.co";
 
-function message(el, text, type="success"){ el.innerHTML = `<div class="message ${type}">${esc(text)}</div>`; }
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_ropVS738K5BJiOoaZ-TeWA_WmkineZh";
 
-async function checkAdmin(email){
-  const {data,error} = await db.from("admin_users").select("id,email").ilike("email",email).maybeSingle();
-  if(error){console.error(error);return false}
-  return !!data;
+const ADMIN_EMAIL =
+  "it@erada.ly";
+
+
+const db =
+  supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
+
+
+/* =====================================================
+   HELPERS
+===================================================== */
+
+const $ =
+  id =>
+    document.getElementById(id);
+
+
+const esc =
+  value =>
+    String(value ?? "")
+      .replace(
+        /[&<>"']/g,
+        c =>
+          ({
+            "&":"&amp;",
+            "<":"&lt;",
+            ">":"&gt;",
+            '"':"&quot;",
+            "'":"&#039;"
+          }[c])
+      );
+
+
+const dateText =
+  value =>
+    value
+      ? new Date(value).toLocaleString()
+      : "—";
+
+
+const badge =
+  status =>
+    `<span class="badge ${esc(status)}">
+      ${esc(status)}
+    </span>`;
+
+
+function message(
+  el,
+  text,
+  type="success"
+){
+
+  el.innerHTML =
+    `<div class="message ${type}">
+      ${esc(text)}
+    </div>`;
+
 }
+
+
+/* =====================================================
+   ADMIN CHECK
+===================================================== */
+
+async function checkAdmin(){
+
+  const {
+    data,
+    error
+  } =
+    await db.rpc(
+      "is_admin"
+    );
+
+
+  if(error){
+
+    console.error(
+      "Admin check error:",
+      error
+    );
+
+    return false;
+  }
+
+
+  return data === true;
+
+}
+
+
+/* =====================================================
+   LOGIN
+===================================================== */
 
 async function login(){
-  const email = $("adminEmail").value.trim().toLowerCase();
-  const password = $("adminPassword").value;
-  if(email !== ADMIN_EMAIL){message($("loginMessage"),"Only IT@erada.ly can access the admin panel.","error");return}
-  if(!password){message($("loginMessage"),"Please enter your password.","error");return}
-  message($("loginMessage"),"Signing in...");
-  const {data,error} = await db.auth.signInWithPassword({email,password});
-  if(error){console.error(error);message($("loginMessage"),"Invalid email or password.","error");return}
-  const authEmail = data.user?.email?.trim().toLowerCase();
-  if(authEmail !== ADMIN_EMAIL || !(await checkAdmin(authEmail))){
-    await db.auth.signOut();message($("loginMessage"),"You are not authorized to access the admin panel.","error");return;
+
+  const email =
+    $("adminEmail")
+      .value
+      .trim()
+      .toLowerCase();
+
+
+  const password =
+    $("adminPassword")
+      .value;
+
+
+  if(
+    email !== ADMIN_EMAIL
+  ){
+
+    message(
+      $("loginMessage"),
+      "Only IT@erada.ly can access the admin panel.",
+      "error"
+    );
+
+    return;
   }
-  $("loginMessage").innerHTML="";
-  $("adminName").textContent=authEmail;
-  $("loginScreen").classList.add("hidden");
-  $("app").classList.remove("hidden");
+
+
+  if(!password){
+
+    message(
+      $("loginMessage"),
+      "Please enter your password.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  message(
+    $("loginMessage"),
+    "Signing in..."
+  );
+
+
+  const {
+    data,
+    error
+  } =
+    await db.auth.signInWithPassword({
+      email,
+      password
+    });
+
+
+  if(error){
+
+    console.error(error);
+
+    message(
+      $("loginMessage"),
+      "Invalid email or password.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  const isAdmin =
+    await checkAdmin();
+
+
+  if(!isAdmin){
+
+    await db.auth.signOut();
+
+    message(
+      $("loginMessage"),
+      "You are not authorized to access the admin panel.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  $("loginMessage").innerHTML = "";
+
+  $("adminName").textContent =
+    data.user?.email || ADMIN_EMAIL;
+
+
+  $("loginScreen")
+    .classList
+    .add("hidden");
+
+
+  $("app")
+    .classList
+    .remove("hidden");
+
+
   await refreshAll();
+
 }
 
-$("loginBtn").onclick=login;
-$("adminPassword").addEventListener("keydown",e=>{if(e.key==="Enter")login()});
 
-$("forgotBtn").onclick=async()=>{
-  const email=$("adminEmail").value.trim().toLowerCase();
-  if(email!==ADMIN_EMAIL){message($("loginMessage"),"Enter IT@erada.ly first.","error");return}
-  const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:"https://eradavideos.github.io/reset-password.html"});
-  if(error){console.error(error);message($("loginMessage"),"Unable to send recovery email.","error");return}
-  message($("loginMessage"),"Password recovery link has been sent to IT@erada.ly.");
-};
+/* =====================================================
+   LOGIN EVENTS
+===================================================== */
+
+$("loginBtn").onclick =
+  login;
+
+
+$("adminPassword")
+  .addEventListener(
+    "keydown",
+    e => {
+
+      if(e.key === "Enter")
+        login();
+
+    }
+  );
+
+
+/* =====================================================
+   FORGOT PASSWORD
+===================================================== */
+
+$("forgotBtn").onclick =
+  async () => {
+
+    const email =
+      $("adminEmail")
+        .value
+        .trim()
+        .toLowerCase();
+
+
+    if(
+      email !== ADMIN_EMAIL
+    ){
+
+      message(
+        $("loginMessage"),
+        "Enter IT@erada.ly first.",
+        "error"
+      );
+
+      return;
+    }
+
+
+    const {
+      error
+    } =
+      await db.auth
+        .resetPasswordForEmail(
+          email,
+          {
+            redirectTo:
+              "https://eradavideos.github.io/reset-password.html"
+          }
+        );
+
+
+    if(error){
+
+      console.error(error);
+
+      message(
+        $("loginMessage"),
+        "Unable to send recovery email.",
+        "error"
+      );
+
+      return;
+    }
+
+
+    message(
+      $("loginMessage"),
+      "Password recovery link has been sent."
+    );
+
+  };
+
+
+/* =====================================================
+   ACCESS REQUESTS
+===================================================== */
+
+let allRequests = [];
+
+let requestFilter =
+  "all";
+
 
 async function loadRequests(){
-  const {data,error}=await db.from("access_requests").select("id,email,status,created_at").order("created_at",{ascending:false});
-  if(error){console.error(error);$("requestsTable").innerHTML='<tr><td colspan="4">Unable to load requests.</td></tr>';return []}
-  const pending=data.filter(x=>x.status==="pending");
-  $("statRequests").textContent=pending.length;
-  renderRequests(data);
-  renderRecent(pending.slice(0,5));
-  return data;
+
+  const {
+    data,
+    error
+  } =
+    await db.rpc(
+      "admin_get_access_requests"
+    );
+
+
+  if(error){
+
+    console.error(
+      "Requests error:",
+      error
+    );
+
+
+    $("requestsTable").innerHTML =
+      `<tr>
+        <td colspan="4">
+          Unable to load access requests.
+          <br>
+          ${esc(error.message)}
+        </td>
+      </tr>`;
+
+
+    return [];
+
+  }
+
+
+  allRequests =
+    data || [];
+
+
+  const pending =
+    allRequests.filter(
+      r =>
+        String(r.status)
+          .toLowerCase()
+          === "pending"
+    );
+
+
+  $("statRequests").textContent =
+    pending.length;
+
+
+  $("statTotalRequests").textContent =
+    allRequests.length;
+
+
+  renderRequests(
+    allRequests
+  );
+
+
+  renderRecent(
+    allRequests.slice(0,5)
+  );
+
+
+  return allRequests;
+
 }
 
-function renderRequests(data){
-  const search=$("requestSearch").value.trim().toLowerCase();
-  const rows=data.filter(x=>String(x.email).toLowerCase().includes(search));
-  $("requestsTable").innerHTML=rows.length?rows.map(r=>`
-    <tr><td>${esc(r.email)}</td><td>${badge(r.status)}</td><td>${dateText(r.created_at)}</td><td>
-    <div class="actions">
-      ${r.status==="pending"?`<button class="btn-success" onclick="approveRequest('${esc(r.id)}')">Approve</button><button class="btn-danger" onclick="rejectRequest('${esc(r.id)}')">Reject</button>`:"—"}
-    </div></td></tr>`).join(""):'<tr><td colspan="4" class="empty">No requests found.</td></tr>';
+
+/* =====================================================
+   RENDER REQUESTS
+===================================================== */
+
+function renderRequests(
+  data
+){
+
+  const search =
+    $("requestSearch")
+      .value
+      .trim()
+      .toLowerCase();
+
+
+  let rows =
+    data.filter(
+      r =>
+        String(r.email)
+          .toLowerCase()
+          .includes(search)
+    );
+
+
+  if(
+    requestFilter ===
+    "pending"
+  ){
+
+    rows =
+      rows.filter(
+        r =>
+          String(r.status)
+            .toLowerCase()
+            === "pending"
+      );
+
+  }
+
+
+  $("requestsTable").innerHTML =
+    rows.length
+
+    ?
+
+    rows.map(
+      r => {
+
+        const status =
+          String(r.status)
+            .toLowerCase();
+
+
+        let actions =
+          "—";
+
+
+        if(
+          status === "pending"
+        ){
+
+          actions = `
+
+            <div class="actions">
+
+              <button
+                class="btn-success"
+                onclick="approveRequest('${esc(r.id)}')"
+              >
+                ✓ Approve
+              </button>
+
+              <button
+                class="btn-danger"
+                onclick="rejectRequest('${esc(r.id)}')"
+              >
+                ✕ Reject
+              </button>
+
+            </div>
+
+          `;
+
+        }
+
+
+        return `
+
+          <tr>
+
+            <td>
+              ${esc(r.email)}
+            </td>
+
+            <td>
+              ${badge(r.status)}
+            </td>
+
+            <td>
+              ${dateText(r.created_at)}
+            </td>
+
+            <td>
+              ${actions}
+            </td>
+
+          </tr>
+
+        `;
+
+      }
+    ).join("")
+
+    :
+
+    `<tr>
+      <td
+        colspan="4"
+        class="empty"
+      >
+        ${
+          requestFilter === "pending"
+          ? "No pending requests."
+          : "No access requests found."
+        }
+      </td>
+    </tr>`;
+
 }
 
-function renderRecent(data){
-  $("recentRequests").innerHTML=data.length?data.map(r=>`<div class="status-line" style="padding:10px 0;border-bottom:1px solid #eee"><span>${esc(r.email)}</span>${badge(r.status)}</div>`).join(""):'<div class="empty">No pending requests.</div>';
+
+/* =====================================================
+   RECENT REQUESTS
+===================================================== */
+
+function renderRecent(
+  data
+){
+
+  $("recentRequests").innerHTML =
+    data.length
+
+    ?
+
+    data.map(
+      r => `
+
+        <div
+          class="status-line"
+          style="
+            padding:10px 0;
+            border-bottom:
+              1px solid rgba(255,255,255,.10)
+          "
+        >
+
+          <span>
+            ${esc(r.email)}
+          </span>
+
+          ${badge(r.status)}
+
+        </div>
+
+      `
+    ).join("")
+
+    :
+
+    `<div class="empty">
+      No access requests.
+    </div>`;
+
 }
 
-async function approveRequest(id){
-  if(!confirm("Approve this email?"))return;
-  const {error}=await db.rpc("approve_access_request",{request_id:id});
-  if(error){console.error(error);alert("Unable to approve this request.");return}
-  await loadRequests();await loadUsers();
-}
 
-async function rejectRequest(id){
-  if(!confirm("Reject this request?"))return;
-  const {error}=await db.rpc("reject_access_request",{request_id:id});
-  if(error){console.error(error);alert("Unable to reject this request.");return}
+/* =====================================================
+   APPROVE REQUEST
+===================================================== */
+
+async function approveRequest(
+  id
+){
+
+  if(
+    !confirm(
+      "Approve this access request?"
+    )
+  )
+    return;
+
+
+  const {
+    data,
+    error
+  } =
+    await db.rpc(
+      "admin_approve_access_request",
+      {
+        request_id:id
+      }
+    );
+
+
+  if(error){
+
+    console.error(
+      "Approve error:",
+      error
+    );
+
+
+    alert(
+      "Unable to approve this request:\n\n"
+      + error.message
+    );
+
+    return;
+  }
+
+
+  if(data !== true){
+
+    alert(
+      "The request could not be approved."
+    );
+
+    return;
+  }
+
+
+  message(
+    $("requestMessage"),
+    "Access approved successfully."
+  );
+
+
   await loadRequests();
+
+  await loadUsers();
+
 }
+
+
+/* =====================================================
+   REJECT REQUEST
+===================================================== */
+
+async function rejectRequest(
+  id
+){
+
+  if(
+    !confirm(
+      "Reject this access request?"
+    )
+  )
+    return;
+
+
+  const {
+    data,
+    error
+  } =
+    await db.rpc(
+      "admin_reject_access_request",
+      {
+        request_id:id
+      }
+    );
+
+
+  if(error){
+
+    console.error(
+      "Reject error:",
+      error
+    );
+
+
+    alert(
+      "Unable to reject this request:\n\n"
+      + error.message
+    );
+
+    return;
+  }
+
+
+  message(
+    $("requestMessage"),
+    "Access request rejected."
+  );
+
+
+  await loadRequests();
+
+}
+
+
+/* =====================================================
+   USERS
+===================================================== */
 
 async function loadUsers(){
-  const {data,error}=await db.from("approved_users").select("id,email,status,created_at").order("email",{ascending:true});
-  if(error){console.error(error);$("usersTable").innerHTML='<tr><td colspan="4">Unable to load users.</td></tr>';return []}
-  $("statUsers").textContent=data.filter(x=>x.status==="approved").length;
-  renderUsers(data);
-  return data;
+
+  const {
+    data,
+    error
+  } =
+    await db
+      .from("approved_users")
+      .select(
+        "id,email,status,created_at"
+      )
+      .order(
+        "email",
+        {
+          ascending:true
+        }
+      );
+
+
+  if(error){
+
+    console.error(error);
+
+    $("usersTable").innerHTML =
+      `<tr>
+        <td colspan="4">
+          Unable to load users.
+        </td>
+      </tr>`;
+
+    return [];
+
+  }
+
+
+  const users =
+    data || [];
+
+
+  $("statUsers").textContent =
+    users.filter(
+      u =>
+        u.status === "approved"
+    ).length;
+
+
+  renderUsers(
+    users
+  );
+
+
+  return users;
+
 }
 
-function renderUsers(data){
-  const search=$("userSearch").value.trim().toLowerCase();
-  const rows=data.filter(x=>String(x.email).toLowerCase().includes(search));
-  $("usersTable").innerHTML=rows.length?rows.map(u=>`
-    <tr><td>${esc(u.email)}</td><td>${u.email.toLowerCase()===ADMIN_EMAIL?"<span class='badge approved'>Administrator</span>":badge(u.status)}</td><td>${dateText(u.created_at)}</td><td>
-    ${u.email.toLowerCase()===ADMIN_EMAIL?"—":`<button class="btn-danger" onclick="removeUser('${esc(u.id)}')">Remove Access</button>`}
-    </td></tr>`).join(""):'<tr><td colspan="4" class="empty">No users found.</td></tr>';
+
+/* =====================================================
+   RENDER USERS
+===================================================== */
+
+function renderUsers(
+  data
+){
+
+  const search =
+    $("userSearch")
+      .value
+      .trim()
+      .toLowerCase();
+
+
+  const rows =
+    data.filter(
+      u =>
+        String(u.email)
+          .toLowerCase()
+          .includes(search)
+    );
+
+
+  $("usersTable").innerHTML =
+    rows.length
+
+    ?
+
+    rows.map(
+      u => {
+
+        const isAdmin =
+          String(u.email)
+            .toLowerCase()
+            === ADMIN_EMAIL;
+
+
+        return `
+
+          <tr>
+
+            <td>
+              ${esc(u.email)}
+            </td>
+
+            <td>
+
+              ${
+                isAdmin
+
+                ?
+
+                `<span class="badge approved">
+                  Administrator
+                </span>`
+
+                :
+
+                badge(u.status)
+              }
+
+            </td>
+
+            <td>
+              ${dateText(u.created_at)}
+            </td>
+
+            <td>
+
+              ${
+                isAdmin
+
+                ?
+
+                "—"
+
+                :
+
+                `<button
+                  class="btn-danger"
+                  onclick="removeUser('${esc(u.id)}')"
+                >
+                  Remove Access
+                </button>`
+              }
+
+            </td>
+
+          </tr>
+
+        `;
+
+      }
+    ).join("")
+
+    :
+
+    `<tr>
+      <td
+        colspan="4"
+        class="empty"
+      >
+        No users found.
+      </td>
+    </tr>`;
+
 }
 
-async function removeUser(id){
-  if(!confirm("Remove access for this user?"))return;
-  const {error}=await db.from("approved_users").delete().eq("id",id);
-  if(error){console.error(error);alert("Unable to remove access.");return}
+
+/* =====================================================
+   REMOVE USER
+===================================================== */
+
+async function removeUser(
+  id
+){
+
+  if(
+    !confirm(
+      "Remove access for this user?"
+    )
+  )
+    return;
+
+
+  const {
+    error
+  } =
+    await db
+      .from("approved_users")
+      .delete()
+      .eq("id",id);
+
+
+  if(error){
+
+    console.error(error);
+
+    alert(
+      "Unable to remove access."
+    );
+
+    return;
+  }
+
+
   await loadUsers();
+
 }
 
-$("addUserBtn").onclick=async()=>{
-  const email=$("newUserEmail").value.trim().toLowerCase();
-  if(!email || !email.includes("@")){message($("userMessage"),"Please enter a valid email address.","error");return}
-  if(email===ADMIN_EMAIL){message($("userMessage"),"This email is already the administrator.","error");return}
-  const {error}=await db.from("approved_users").upsert({email,status:"approved"},{onConflict:"email"});
-  if(error){console.error(error);message($("userMessage"),"Unable to approve this user.","error");return}
-  $("newUserEmail").value="";message($("userMessage"),"User approved successfully.");await loadUsers();
-};
+
+/* =====================================================
+   ADD USER MANUALLY
+===================================================== */
+
+$("addUserBtn").onclick =
+  async () => {
+
+    const email =
+      $("newUserEmail")
+        .value
+        .trim()
+        .toLowerCase();
+
+
+    if(
+      !email ||
+      !email.includes("@")
+    ){
+
+      message(
+        $("userMessage"),
+        "Please enter a valid email address.",
+        "error"
+      );
+
+      return;
+    }
+
+
+    if(
+      email === ADMIN_EMAIL
+    ){
+
+      message(
+        $("userMessage"),
+        "This email is already the administrator.",
+        "error"
+      );
+
+      return;
+    }
+
+
+    const {
+      error
+    } =
+      await db
+        .from("approved_users")
+        .upsert(
+          {
+            email,
+            status:"approved"
+          },
+          {
+            onConflict:"email"
+          }
+        );
+
+
+    if(error){
+
+      console.error(error);
+
+      message(
+        $("userMessage"),
+        "Unable to approve this user.",
+        "error"
+      );
+
+      return;
+    }
+
+
+    $("newUserEmail")
+      .value = "";
+
+
+    message(
+      $("userMessage"),
+      "User approved successfully."
+    );
+
+
+    await loadUsers();
+
+  };
+
+
+/* =====================================================
+   VIDEOS
+===================================================== */
 
 async function loadVideos(){
-  const {data,error}=await db.from("videos").select("id,title,youtube_url,created_at").order("created_at",{ascending:false});
-  if(error){console.error(error);$("videosList").innerHTML='<div class="message error">Unable to load videos.</div>';return []}
-  $("statVideos").textContent=data.length;
-  renderVideos(data);return data;
-}
 
-function renderVideos(data){
-  const search=$("videoSearch").value.trim().toLowerCase();
-  const rows=data.filter(v=>(String(v.title)+" "+String(v.youtube_url)).toLowerCase().includes(search));
-  $("videosList").innerHTML=rows.length?rows.map(v=>`
-    <div class="video-card"><div class="video-title">🎬 ${esc(v.title)}</div>
-    <div class="url">${esc(v.youtube_url)}</div><div class="muted">${dateText(v.created_at)}</div>
-    <div class="actions" style="margin-top:10px"><button class="btn-primary" onclick="editVideo('${esc(v.id)}')">✏️ Edit</button><button class="btn-danger" onclick="deleteVideo('${esc(v.id)}')">🗑️ Delete</button></div></div>`).join(""):'<div class="empty">No videos found.</div>';
-}
+  const {
+    data,
+    error
+  } =
+    await db
+      .from("videos")
+      .select(
+        "id,title,youtube_url,created_at"
+      )
+      .order(
+        "created_at",
+        {
+          ascending:false
+        }
+      );
 
-$("addVideoBtn").onclick=async()=>{
-  const title=$("videoTitle").value.trim(), url=$("videoUrl").value.trim();
-  if(!title||!url){message($("videoMessage"),"Enter the video title and YouTube link.","error");return}
-  const {error}=await db.from("videos").insert({title,youtube_url:url});
-  if(error){console.error(error);message($("videoMessage"),"Unable to add video.","error");return}
-  $("videoTitle").value="";$("videoUrl").value="";message($("videoMessage"),"Video added successfully.");await loadVideos();
-};
 
-async function editVideo(id){
-  const {data,error}=await db.from("videos").select("title,youtube_url").eq("id",id).single();
-  if(error){alert("Unable to load video.");return}
-  const title=prompt("Video title:",data.title);if(title===null)return;
-  const url=prompt("YouTube link:",data.youtube_url);if(url===null)return;
-  if(!title.trim()||!url.trim()){alert("Title and URL cannot be empty.");return}
-  const {error:e}=await db.from("videos").update({title:title.trim(),youtube_url:url.trim()}).eq("id",id);
-  if(e){console.error(e);alert("Unable to update video.");return}
-  await loadVideos();
-}
+  if(error){
 
-async function deleteVideo(id){
-  if(!confirm("Delete this video?"))return;
-  const {error}=await db.from("videos").delete().eq("id",id);
-  if(error){console.error(error);alert("Unable to delete video.");return}
-  await loadVideos();
-}
+    console.error(error);
 
-async function loadDrive(){
-  $("driveStatus").innerHTML='<div class="message">Connecting to private Google Drive videos...</div>';
-  $("driveFiles").innerHTML="";
-  $("statDrive").textContent="…";
-  const {data:{session}}=await db.auth.getSession();
-  if(!session){$("driveStatus").innerHTML='<div class="message error">Admin session expired. Please login again.</div>';return}
-  try{
-    const response=await fetch(GET_VIDEO_FUNCTION,{method:"GET",headers:{Authorization:"Bearer "+session.access_token,apikey:SUPABASE_PUBLISHABLE_KEY,Accept:"application/json"}});
-    const result=await response.json().catch(()=>({}));
-    if(!response.ok || !result.success)throw new Error(result.error||("HTTP "+response.status));
-    const files=result.files||[];
-    $("statDrive").textContent=files.length;
-    $("driveStatus").innerHTML=`<div class="message success">Google Drive connected successfully. ${files.length} private file(s) found.</div>`;
-    $("driveFiles").innerHTML=files.length?files.map(f=>`<div class="video-card"><div class="video-title">🎬 ${esc(f.name)}</div><div class="muted">${esc(f.mimeType||"")} ${f.size?"• "+Math.round(Number(f.size)/1024/1024)+" MB":""}</div></div>`).join(""):'<div class="empty">No private files found.</div>';
-  }catch(e){
-    console.error(e);$("statDrive").textContent="Error";$("driveStatus").innerHTML=`<div class="message error">Google Drive connection failed: ${esc(e.message)}</div>`;
+    $("videosList").innerHTML =
+      `<div class="message error">
+        Unable to load videos.
+      </div>`;
+
+    return [];
+
   }
+
+
+  const videos =
+    data || [];
+
+
+  $("statVideos").textContent =
+    videos.length;
+
+
+  renderVideos(
+    videos
+  );
+
+
+  return videos;
+
 }
 
-async function refreshAll(){await Promise.all([loadRequests(),loadUsers(),loadVideos()]);await loadDrive();$("systemStatus").innerHTML='<div class="message success">✓ Supabase authentication is active.</div><div class="message success">✓ Admin authorization is active.</div><div class="message">Google Drive status is shown in the Google Drive section.</div>'}
 
-function showPage(page){
-  document.querySelectorAll(".page").forEach(x=>x.classList.add("hidden"));
-  $(page+"Page").classList.remove("hidden");
-  document.querySelectorAll(".nav-btn").forEach(x=>x.classList.toggle("active",x.dataset.page===page));
-  $("sidebar").classList.remove("open");
-  if(page==="drive")loadDrive();
+/* =====================================================
+   RENDER VIDEOS
+===================================================== */
+
+function renderVideos(
+  data
+){
+
+  const search =
+    $("videoSearch")
+      .value
+      .trim()
+      .toLowerCase();
+
+
+  const rows =
+    data.filter(
+      v =>
+        (
+          String(v.title)
+          + " "
+          + String(v.youtube_url)
+        )
+        .toLowerCase()
+        .includes(search)
+    );
+
+
+  $("videosList").innerHTML =
+    rows.length
+
+    ?
+
+    rows.map(
+      v => `
+
+        <div class="video-card">
+
+          <div class="video-title">
+            🎬 ${esc(v.title)}
+          </div>
+
+          <div class="url">
+            ${esc(v.youtube_url)}
+          </div>
+
+          <div class="muted">
+            ${dateText(v.created_at)}
+          </div>
+
+          <div
+            class="actions"
+            style="margin-top:10px"
+          >
+
+            <button
+              class="btn-primary"
+              onclick="editVideo('${esc(v.id)}')"
+            >
+              ✏️ Edit
+            </button>
+
+            <button
+              class="btn-danger"
+              onclick="deleteVideo('${esc(v.id)}')"
+            >
+              🗑️ Delete
+            </button>
+
+          </div>
+
+        </div>
+
+      `
+    ).join("")
+
+    :
+
+    `<div class="empty">
+      No videos found.
+    </div>`;
+
 }
 
-document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>showPage(b.dataset.page));
-$("mobileMenu").onclick=()=>$("sidebar").classList.toggle("open");
-$("dashboardRefresh").onclick=refreshAll;
-$("refreshRequests").onclick=loadRequests;
-$("refreshUsers").onclick=loadUsers;
-$("refreshVideos").onclick=loadVideos;
-$("refreshDrive").onclick=loadDrive;
-$("requestSearch").oninput=loadRequestsSearch;
-$("userSearch").oninput=loadUsersSearch;
-$("videoSearch").oninput=loadVideosSearch;
 
-async function loadRequestsSearch(){const {data}=await db.from("access_requests").select("id,email,status,created_at").order("created_at",{ascending:false});if(data)renderRequests(data)}
-async function loadUsersSearch(){const {data}=await db.from("approved_users").select("id,email,status,created_at").order("email",{ascending:true});if(data)renderUsers(data)}
-async function loadVideosSearch(){const {data}=await db.from("videos").select("id,title,youtube_url,created_at").order("created_at",{ascending:false});if(data)renderVideos(data)}
+/* =====================================================
+   ADD VIDEO
+===================================================== */
 
-$("logoutBtn").onclick=async()=>{await db.auth.signOut();location.reload()};
+$("addVideoBtn").onclick =
+  async () => {
 
-(async()=>{
-  const {data:{session}}=await db.auth.getSession();
-  if(session && session.user?.email?.toLowerCase()===ADMIN_EMAIL && await checkAdmin(ADMIN_EMAIL)){
-    $("adminName").textContent=ADMIN_EMAIL;$("loginScreen").classList.add("hidden");$("app").classList.remove("hidden");await refreshAll();
+    const title =
+      $("videoTitle")
+        .value
+        .trim();
+
+
+    const url =
+      $("videoUrl")
+        .value
+        .trim();
+
+
+    if(
+      !title ||
+      !url
+    ){
+
+      message(
+        $("videoMessage"),
+        "Enter the video title and YouTube link.",
+        "error"
+      );
+
+      return;
+    }
+
+
+    const {
+      error
+    } =
+      await db
+        .from("videos")
+        .insert({
+          title,
+          youtube_url:url
+        });
+
+
+    if(error){
+
+      console.error(error);
+
+      message(
+        $("videoMessage"),
+        "Unable to add video.",
+        "error"
+      );
+
+      return;
+    }
+
+
+    $("videoTitle").value = "";
+
+    $("videoUrl").value = "";
+
+
+    message(
+      $("videoMessage"),
+      "Video added successfully."
+    );
+
+
+    await loadVideos();
+
+  };
+
+
+/* =====================================================
+   EDIT VIDEO
+===================================================== */
+
+async function editVideo(
+  id
+){
+
+  const {
+    data,
+    error
+  } =
+    await db
+      .from("videos")
+      .select(
+        "title,youtube_url"
+      )
+      .eq("id",id)
+      .single();
+
+
+  if(error){
+
+    alert(
+      "Unable to load video."
+    );
+
+    return;
   }
+
+
+  const title =
+    prompt(
+      "Video title:",
+      data.title
+    );
+
+
+  if(title === null)
+    return;
+
+
+  const url =
+    prompt(
+      "YouTube link:",
+      data.youtube_url
+    );
+
+
+  if(url === null)
+    return;
+
+
+  if(
+    !title.trim() ||
+    !url.trim()
+  ){
+
+    alert(
+      "Title and URL cannot be empty."
+    );
+
+    return;
+  }
+
+
+  const {
+    error:e
+  } =
+    await db
+      .from("videos")
+      .update({
+        title:title.trim(),
+        youtube_url:url.trim()
+      })
+      .eq("id",id);
+
+
+  if(e){
+
+    console.error(e);
+
+    alert(
+      "Unable to update video."
+    );
+
+    return;
+  }
+
+
+  await loadVideos();
+
+}
+
+
+/* =====================================================
+   DELETE VIDEO
+===================================================== */
+
+async function deleteVideo(
+  id
+){
+
+  if(
+    !confirm(
+      "Delete this video?"
+    )
+  )
+    return;
+
+
+  const {
+    error
+  } =
+    await db
+      .from("videos")
+      .delete()
+      .eq("id",id);
+
+
+  if(error){
+
+    console.error(error);
+
+    alert(
+      "Unable to delete video."
+    );
+
+    return;
+  }
+
+
+  await loadVideos();
+
+}
+
+
+/* =====================================================
+   REFRESH ALL
+===================================================== */
+
+async function refreshAll(){
+
+  $("systemStatus").innerHTML =
+    `<div class="message">
+      Loading system...
+    </div>`;
+
+
+  await Promise.all([
+    loadRequests(),
+    loadUsers(),
+    loadVideos()
+  ]);
+
+
+  $("systemStatus").innerHTML = `
+
+    <div class="message success">
+      ✓ Supabase authentication is active.
+    </div>
+
+    <div class="message success">
+      ✓ Admin authorization is active.
+    </div>
+
+    <div class="message success">
+      ✓ Access request system is active.
+    </div>
+
+    <div class="message success">
+      ✓ YouTube video management is active.
+    </div>
+
+  `;
+
+}
+
+
+/* =====================================================
+   PAGE NAVIGATION
+===================================================== */
+
+function showPage(
+  page
+){
+
+  document
+    .querySelectorAll(".page")
+    .forEach(
+      x =>
+        x.classList.add("hidden")
+    );
+
+
+  $(page + "Page")
+    .classList
+    .remove("hidden");
+
+
+  document
+    .querySelectorAll(".nav-btn")
+    .forEach(
+      x =>
+        x.classList.toggle(
+          "active",
+          x.dataset.page === page
+        )
+    );
+
+
+  $("sidebar")
+    .classList
+    .remove("open");
+
+}
+
+
+/* =====================================================
+   NAVIGATION EVENTS
+===================================================== */
+
+document
+  .querySelectorAll(".nav-btn")
+  .forEach(
+    b =>
+      b.onclick =
+        () =>
+          showPage(
+            b.dataset.page
+          )
+  );
+
+
+$("mobileMenu").onclick =
+  () =>
+    $("sidebar")
+      .classList
+      .toggle("open");
+
+
+/* =====================================================
+   REFRESH BUTTONS
+===================================================== */
+
+$("dashboardRefresh").onclick =
+  refreshAll;
+
+
+$("refreshRequests").onclick =
+  loadRequests;
+
+
+$("refreshUsers").onclick =
+  loadUsers;
+
+
+$("refreshVideos").onclick =
+  loadVideos;
+
+
+/* =====================================================
+   REQUEST SEARCH
+===================================================== */
+
+$("requestSearch").oninput =
+  () =>
+    renderRequests(
+      allRequests
+    );
+
+
+$("showPendingBtn").onclick =
+  () => {
+
+    requestFilter =
+      "pending";
+
+    renderRequests(
+      allRequests
+    );
+
+  };
+
+
+$("showAllBtn").onclick =
+  () => {
+
+    requestFilter =
+      "all";
+
+    renderRequests(
+      allRequests
+    );
+
+  };
+
+
+/* =====================================================
+   USER SEARCH
+===================================================== */
+
+$("userSearch").oninput =
+  async () => {
+
+    const {
+      data
+    } =
+      await db
+        .from("approved_users")
+        .select(
+          "id,email,status,created_at"
+        )
+        .order(
+          "email",
+          {
+            ascending:true
+          }
+        );
+
+
+    if(data)
+      renderUsers(data);
+
+  };
+
+
+/* =====================================================
+   VIDEO SEARCH
+===================================================== */
+
+$("videoSearch").oninput =
+  async () => {
+
+    const {
+      data
+    } =
+      await db
+        .from("videos")
+        .select(
+          "id,title,youtube_url,created_at"
+        )
+        .order(
+          "created_at",
+          {
+            ascending:false
+          }
+        );
+
+
+    if(data)
+      renderVideos(data);
+
+  };
+
+
+/* =====================================================
+   LOGOUT
+===================================================== */
+
+$("logoutBtn").onclick =
+  async () => {
+
+    await db.auth.signOut();
+
+    location.reload();
+
+  };
+
+
+/* =====================================================
+   AUTO LOGIN
+===================================================== */
+
+(async () => {
+
+  const {
+    data
+  } =
+    await db.auth.getSession();
+
+
+  const session =
+    data?.session;
+
+
+  if(!session)
+    return;
+
+
+  const email =
+    session.user?.email
+      ?.trim()
+      .toLowerCase();
+
+
+  if(
+    email !== ADMIN_EMAIL
+  ){
+
+    await db.auth.signOut();
+
+    return;
+  }
+
+
+  const isAdmin =
+    await checkAdmin();
+
+
+  if(!isAdmin){
+
+    await db.auth.signOut();
+
+    return;
+  }
+
+
+  $("adminName").textContent =
+    email;
+
+
+  $("loginScreen")
+    .classList
+    .add("hidden");
+
+
+  $("app")
+    .classList
+    .remove("hidden");
+
+
+  await refreshAll();
+
 })();
+
 </script>
+
 </body>
 </html>
