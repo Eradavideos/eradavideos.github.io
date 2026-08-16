@@ -1,1329 +1,3 @@
-<!doctype html>
-<html lang="en">
-
-<head>
-
-<meta charset="utf-8">
-
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1"
->
-
-<title>ERADA Admin v3</title>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<style>
-
-*{
-  box-sizing:border-box;
-}
-
-body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:#071426;
-  color:#fff;
-}
-
-button,
-input{
-  font:inherit;
-}
-
-button{
-  border:1px solid rgba(255,255,255,.32);
-  border-radius:9px;
-  padding:10px 15px;
-  cursor:pointer;
-  background:rgba(255,255,255,.08);
-  color:#fff;
-  transition:.2s;
-}
-
-button:hover{
-  background:rgba(255,255,255,.16);
-  border-color:rgba(255,255,255,.58);
-}
-
-button:disabled{
-  opacity:.55;
-  cursor:not-allowed;
-}
-
-.hidden{
-  display:none!important;
-}
-
-
-/* =========================
-   LOGIN
-========================= */
-
-.login-wrap{
-  min-height:100vh;
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  padding:20px;
-
-  background:
-    radial-gradient(
-      circle at 50% 42%,
-      rgba(35,125,255,.20) 0,
-      rgba(20,85,180,.10) 25%,
-      transparent 52%
-    ),
-    #071426;
-}
-
-.login-card{
-
-  width:100%;
-  max-width:430px;
-
-  background:rgba(10,27,50,.90);
-
-  padding:32px;
-
-  border-radius:18px;
-
-  border:1px solid rgba(255,255,255,.22);
-
-  box-shadow:
-    0 0 45px rgba(31,111,235,.18),
-    0 15px 45px rgba(0,0,0,.35);
-
-  backdrop-filter:blur(12px);
-}
-
-.brand{
-  text-align:center;
-  margin-bottom:25px;
-}
-
-.brand h1{
-  margin:0;
-  font-size:30px;
-  color:#fff;
-}
-
-.brand p{
-  color:rgba(255,255,255,.70);
-}
-
-label{
-  color:rgba(255,255,255,.88);
-}
-
-input{
-
-  width:100%;
-
-  padding:12px 13px;
-
-  border:
-    1px solid rgba(255,255,255,.25);
-
-  border-radius:9px;
-
-  margin:7px 0 12px;
-
-  background:rgba(255,255,255,.07);
-
-  color:#fff;
-
-  outline:none;
-}
-
-input::placeholder{
-  color:rgba(255,255,255,.48);
-}
-
-input:focus{
-
-  border-color:
-    rgba(255,255,255,.70);
-
-  box-shadow:
-    0 0 0 3px
-    rgba(255,255,255,.08);
-}
-
-
-/* =========================
-   BUTTONS
-========================= */
-
-.btn-primary,
-.btn-success,
-.btn-danger,
-.btn-secondary,
-.btn-warning,
-.btn-light{
-
-  background:
-    rgba(255,255,255,.10);
-
-  color:#fff;
-
-  border:
-    1px solid rgba(255,255,255,.32);
-}
-
-.btn-primary:hover,
-.btn-success:hover,
-.btn-danger:hover,
-.btn-secondary:hover,
-.btn-warning:hover,
-.btn-light:hover{
-
-  background:
-    rgba(255,255,255,.18);
-
-  border-color:
-    rgba(255,255,255,.62);
-}
-
-
-/* =========================
-   APP
-========================= */
-
-.app{
-
-  min-height:100vh;
-
-  background:
-    radial-gradient(
-      circle at 70% 10%,
-      rgba(30,100,220,.08),
-      transparent 35%
-    ),
-    #071426;
-}
-
-
-/* =========================
-   TOP BAR
-========================= */
-
-.topbar{
-
-  height:68px;
-
-  background:
-    rgba(5,18,36,.94);
-
-  color:#fff;
-
-  display:flex;
-
-  align-items:center;
-
-  justify-content:space-between;
-
-  padding:0 24px;
-
-  position:sticky;
-
-  top:0;
-
-  z-index:20;
-
-  border-bottom:
-    1px solid rgba(255,255,255,.14);
-
-  backdrop-filter:blur(10px);
-}
-
-.topbar h1{
-  font-size:20px;
-  margin:0;
-}
-
-.top-actions{
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-
-
-/* =========================
-   SIDEBAR
-========================= */
-
-.sidebar{
-
-  position:fixed;
-
-  top:68px;
-  bottom:0;
-  left:0;
-
-  width:235px;
-
-  background:
-    rgba(5,18,36,.94);
-
-  border-right:
-    1px solid rgba(255,255,255,.14);
-
-  padding:18px 12px;
-}
-
-.nav-btn{
-
-  width:100%;
-
-  text-align:left;
-
-  background:transparent;
-
-  color:
-    rgba(255,255,255,.72);
-
-  margin:3px 0;
-
-  border:
-    1px solid transparent;
-}
-
-.nav-btn.active,
-.nav-btn:hover{
-
-  background:
-    rgba(255,255,255,.10);
-
-  color:#fff;
-
-  border-color:
-    rgba(255,255,255,.18);
-}
-
-
-/* =========================
-   MAIN
-========================= */
-
-.main{
-
-  margin-left:235px;
-
-  padding:28px;
-
-  max-width:1500px;
-}
-
-.page-title{
-
-  display:flex;
-
-  justify-content:space-between;
-
-  align-items:center;
-
-  margin-bottom:22px;
-}
-
-.page-title h2{
-  margin:0;
-}
-
-.muted{
-  color:
-    rgba(255,255,255,.58);
-}
-
-
-/* =========================
-   STATS
-========================= */
-
-.grid{
-
-  display:grid;
-
-  grid-template-columns:
-    repeat(4,1fr);
-
-  gap:16px;
-}
-
-.stat{
-
-  background:
-    rgba(255,255,255,.055);
-
-  border-radius:15px;
-
-  padding:20px;
-
-  border:
-    1px solid rgba(255,255,255,.13);
-
-  box-shadow:
-    0 8px 25px rgba(0,0,0,.16);
-}
-
-.stat .label{
-
-  color:
-    rgba(255,255,255,.58);
-
-  font-size:14px;
-}
-
-.stat .value{
-
-  font-size:30px;
-
-  font-weight:700;
-
-  margin-top:8px;
-}
-
-
-/* =========================
-   CARDS
-========================= */
-
-.card{
-
-  background:
-    rgba(255,255,255,.055);
-
-  border-radius:15px;
-
-  padding:20px;
-
-  margin-bottom:18px;
-
-  border:
-    1px solid rgba(255,255,255,.13);
-
-  box-shadow:
-    0 8px 25px rgba(0,0,0,.16);
-}
-
-.card h3{
-  margin-top:0;
-}
-
-.two{
-
-  display:grid;
-
-  grid-template-columns:
-    1fr 1fr;
-
-  gap:18px;
-}
-
-
-/* =========================
-   TOOLBAR
-========================= */
-
-.toolbar{
-
-  display:flex;
-
-  gap:10px;
-
-  flex-wrap:wrap;
-
-  margin-bottom:15px;
-}
-
-.toolbar input{
-
-  max-width:350px;
-
-  margin:0;
-}
-
-
-/* =========================
-   TABLE
-========================= */
-
-.table-wrap{
-  overflow:auto;
-}
-
-table{
-
-  width:100%;
-
-  border-collapse:
-    collapse;
-
-  min-width:700px;
-}
-
-th,
-td{
-
-  text-align:left;
-
-  padding:12px;
-
-  border-bottom:
-    1px solid rgba(255,255,255,.10);
-
-  vertical-align:middle;
-}
-
-th{
-
-  background:
-    rgba(255,255,255,.05);
-
-  color:
-    rgba(255,255,255,.68);
-
-  font-size:13px;
-}
-
-
-/* =========================
-   BADGES
-========================= */
-
-.badge{
-
-  display:inline-block;
-
-  padding:5px 9px;
-
-  border-radius:999px;
-
-  font-size:12px;
-
-  font-weight:bold;
-
-  border:
-    1px solid rgba(255,255,255,.22);
-
-  background:
-    rgba(255,255,255,.10);
-}
-
-.approved{
-  color:#fff;
-}
-
-.pending{
-  color:#fff;
-}
-
-.rejected{
-  color:#fff;
-}
-
-
-/* =========================
-   ACTIONS
-========================= */
-
-.actions{
-
-  display:flex;
-
-  gap:7px;
-
-  flex-wrap:wrap;
-}
-
-.actions button{
-
-  padding:7px 10px;
-
-  font-size:13px;
-}
-
-
-/* =========================
-   MESSAGES
-========================= */
-
-.message{
-
-  padding:11px 13px;
-
-  border-radius:9px;
-
-  margin-top:12px;
-
-  background:
-    rgba(255,255,255,.07);
-
-  color:
-    rgba(255,255,255,.88);
-
-  border:
-    1px solid rgba(255,255,255,.13);
-}
-
-.message.success,
-.message.error{
-
-  background:
-    rgba(255,255,255,.08);
-
-  color:#fff;
-
-  border-color:
-    rgba(255,255,255,.25);
-}
-
-
-/* =========================
-   VIDEO
-========================= */
-
-.video-card{
-
-  border:
-    1px solid rgba(255,255,255,.14);
-
-  background:
-    rgba(255,255,255,.035);
-
-  border-radius:12px;
-
-  padding:14px;
-
-  margin-bottom:10px;
-}
-
-.video-title{
-
-  font-weight:bold;
-
-  color:#fff;
-}
-
-.url{
-
-  font-size:13px;
-
-  color:
-    rgba(255,255,255,.55);
-
-  word-break:break-all;
-
-  margin:7px 0;
-}
-
-.empty{
-
-  padding:25px;
-
-  text-align:center;
-
-  color:
-    rgba(255,255,255,.55);
-}
-
-.status-line{
-
-  display:flex;
-
-  justify-content:space-between;
-
-  gap:10px;
-
-  align-items:center;
-}
-
-.mobile-menu{
-  display:none;
-}
-
-
-/* =========================
-   MOBILE
-========================= */
-
-@media(max-width:900px){
-
-  .grid{
-    grid-template-columns:
-      repeat(2,1fr);
-  }
-
-  .sidebar{
-
-    transform:
-      translateX(-100%);
-
-    transition:.2s;
-
-    z-index:30;
-  }
-
-  .sidebar.open{
-    transform:
-      translateX(0);
-  }
-
-  .main{
-    margin-left:0;
-  }
-
-  .mobile-menu{
-    display:block;
-  }
-
-  .two{
-    grid-template-columns:1fr;
-  }
-}
-
-@media(max-width:550px){
-
-  .grid{
-    grid-template-columns:1fr;
-  }
-
-  .main{
-    padding:16px;
-  }
-
-  .topbar{
-    padding:0 14px;
-  }
-
-  .top-actions .admin-name{
-    display:none;
-  }
-}
-
-</style>
-
-</head>
-
-<body>
-
-
-<!-- =====================================================
-     LOGIN
-===================================================== -->
-
-<div id="loginScreen" class="login-wrap">
-
-  <div class="login-card">
-
-    <div class="brand">
-
-      <h1>ERADA Admin</h1>
-
-      <p>
-        Video Library Management
-      </p>
-
-    </div>
-
-
-    <label>
-      Administrator Email
-    </label>
-
-    <input
-      id="adminEmail"
-      type="email"
-      placeholder="it@erada.ly"
-      autocomplete="email"
-    >
-
-
-    <label>
-      Password
-    </label>
-
-    <input
-      id="adminPassword"
-      type="password"
-      placeholder="Enter password"
-      autocomplete="current-password"
-    >
-
-
-    <button
-      id="loginBtn"
-      class="btn-success"
-      style="width:100%"
-    >
-      Login
-    </button>
-
-
-    <button
-      id="forgotBtn"
-      class="btn-light"
-      style="width:100%;margin-top:8px"
-    >
-      Forgot Password?
-    </button>
-
-
-    <div id="loginMessage"></div>
-
-  </div>
-
-</div>
-
-
-
-<!-- =====================================================
-     APPLICATION
-===================================================== -->
-
-<div id="app" class="app hidden">
-
-
-<header class="topbar">
-
-  <div class="top-actions">
-
-    <button
-      id="mobileMenu"
-      class="btn-light mobile-menu"
-    >
-      ☰
-    </button>
-
-    <h1>
-      ERADA Admin
-    </h1>
-
-  </div>
-
-
-  <div class="top-actions">
-
-    <span
-      id="adminName"
-      class="admin-name"
-    ></span>
-
-    <button
-      id="logoutBtn"
-      class="btn-secondary"
-    >
-      Logout
-    </button>
-
-  </div>
-
-</header>
-
-
-
-<!-- =====================================================
-     SIDEBAR
-===================================================== -->
-
-<aside
-  id="sidebar"
-  class="sidebar"
->
-
-  <button
-    class="nav-btn active"
-    data-page="dashboard"
-  >
-    📊 Dashboard
-  </button>
-
-
-  <button
-    class="nav-btn"
-    data-page="requests"
-  >
-    📩 Access Requests
-  </button>
-
-
-  <button
-    class="nav-btn"
-    data-page="users"
-  >
-    👥 Users
-  </button>
-
-
-  <button
-    class="nav-btn"
-    data-page="videos"
-  >
-    🎬 Videos
-  </button>
-
-</aside>
-
-
-
-<!-- =====================================================
-     MAIN
-===================================================== -->
-
-<main class="main">
-
-
-<!-- =====================================================
-     DASHBOARD
-===================================================== -->
-
-<section
-  id="dashboardPage"
-  class="page"
->
-
-  <div class="page-title">
-
-    <div>
-
-      <h2>
-        Dashboard
-      </h2>
-
-      <div class="muted">
-        ERADA Video Library overview
-      </div>
-
-    </div>
-
-
-    <button
-      id="dashboardRefresh"
-      class="btn-primary"
-    >
-      🔄 Refresh
-    </button>
-
-  </div>
-
-
-  <div class="grid">
-
-    <div class="stat">
-
-      <div class="label">
-        Approved Users
-      </div>
-
-      <div
-        id="statUsers"
-        class="value"
-      >
-        0
-      </div>
-
-    </div>
-
-
-    <div class="stat">
-
-      <div class="label">
-        Pending Requests
-      </div>
-
-      <div
-        id="statRequests"
-        class="value"
-      >
-        0
-      </div>
-
-    </div>
-
-
-    <div class="stat">
-
-      <div class="label">
-        Total Requests
-      </div>
-
-      <div
-        id="statTotalRequests"
-        class="value"
-      >
-        0
-      </div>
-
-    </div>
-
-
-    <div class="stat">
-
-      <div class="label">
-        YouTube Videos
-      </div>
-
-      <div
-        id="statVideos"
-        class="value"
-      >
-        0
-      </div>
-
-    </div>
-
-  </div>
-
-
-  <div
-    class="two"
-    style="margin-top:18px"
-  >
-
-    <div class="card">
-
-      <h3>
-        Recent Access Requests
-      </h3>
-
-      <div id="recentRequests"></div>
-
-    </div>
-
-
-    <div class="card">
-
-      <h3>
-        System Status
-      </h3>
-
-      <div id="systemStatus"></div>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-
-<!-- =====================================================
-     REQUESTS
-===================================================== -->
-
-<section
-  id="requestsPage"
-  class="page hidden"
->
-
-  <div class="page-title">
-
-    <div>
-
-      <h2>
-        Access Requests
-      </h2>
-
-      <div class="muted">
-        Approve or reject library access
-      </div>
-
-    </div>
-
-
-    <button
-      id="refreshRequests"
-      class="btn-primary"
-    >
-      🔄 Refresh
-    </button>
-
-  </div>
-
-
-  <div class="card">
-
-    <div class="toolbar">
-
-      <input
-        id="requestSearch"
-        placeholder="Search email..."
-      >
-
-      <button
-        id="showPendingBtn"
-        class="btn-warning"
-      >
-        Pending Only
-      </button>
-
-      <button
-        id="showAllBtn"
-        class="btn-light"
-      >
-        Show All
-      </button>
-
-    </div>
-
-
-    <div
-      id="requestMessage"
-    ></div>
-
-
-    <div class="table-wrap">
-
-      <table>
-
-        <thead>
-
-          <tr>
-
-            <th>
-              Email
-            </th>
-
-            <th>
-              Status
-            </th>
-
-            <th>
-              Created
-            </th>
-
-            <th>
-              Actions
-            </th>
-
-          </tr>
-
-        </thead>
-
-        <tbody
-          id="requestsTable"
-        ></tbody>
-
-      </table>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-
-<!-- =====================================================
-     USERS
-===================================================== -->
-
-<section
-  id="usersPage"
-  class="page hidden"
->
-
-  <div class="page-title">
-
-    <div>
-
-      <h2>
-        Users
-      </h2>
-
-      <div class="muted">
-        Manage approved users
-      </div>
-
-    </div>
-
-
-    <button
-      id="refreshUsers"
-      class="btn-primary"
-    >
-      🔄 Refresh
-    </button>
-
-  </div>
-
-
-  <div class="card">
-
-    <div class="toolbar">
-
-      <input
-        id="newUserEmail"
-        type="email"
-        placeholder="Enter user email"
-      >
-
-      <button
-        id="addUserBtn"
-        class="btn-success"
-      >
-        + Approve User
-      </button>
-
-    </div>
-
-
-    <div id="userMessage"></div>
-
-  </div>
-
-
-  <div class="card">
-
-    <div class="toolbar">
-
-      <input
-        id="userSearch"
-        placeholder="Search users..."
-      >
-
-    </div>
-
-
-    <div class="table-wrap">
-
-      <table>
-
-        <thead>
-
-          <tr>
-
-            <th>
-              Email
-            </th>
-
-            <th>
-              Status
-            </th>
-
-            <th>
-              Created
-            </th>
-
-            <th>
-              Actions
-            </th>
-
-          </tr>
-
-        </thead>
-
-        <tbody
-          id="usersTable"
-        ></tbody>
-
-      </table>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-
-<!-- =====================================================
-     VIDEOS
-===================================================== -->
-
-<section
-  id="videosPage"
-  class="page hidden"
->
-
-  <div class="page-title">
-
-    <div>
-
-      <h2>
-        YouTube Videos
-      </h2>
-
-      <div class="muted">
-        Manage ERADA library videos
-      </div>
-
-    </div>
-
-
-    <button
-      id="refreshVideos"
-      class="btn-primary"
-    >
-      🔄 Refresh
-    </button>
-
-  </div>
-
-
-  <div class="card">
-
-    <h3>
-      Add New Video
-    </h3>
-
-
-    <input
-      id="videoTitle"
-      placeholder="Video title"
-    >
-
-
-    <input
-      id="videoUrl"
-      type="url"
-      placeholder="YouTube video link"
-    >
-
-
-    <button
-      id="addVideoBtn"
-      class="btn-success"
-    >
-      + Add Video
-    </button>
-
-
-    <div
-      id="videoMessage"
-    ></div>
-
-  </div>
-
-
-  <div class="card">
-
-    <div class="toolbar">
-
-      <input
-        id="videoSearch"
-        placeholder="Search videos..."
-      >
-
-    </div>
-
-
-    <div id="videosList"></div>
-
-  </div>
-
-</section>
-
-
-</main>
-
-</div>
-
-
-
 <script>
 
 /* =====================================================
@@ -1351,51 +25,53 @@ const db =
    HELPERS
 ===================================================== */
 
-const $ =
-  id =>
-    document.getElementById(id);
+const $ = id =>
+  document.getElementById(id);
 
 
-const esc =
-  value =>
-    String(value ?? "")
-      .replace(
-        /[&<>"']/g,
-        c =>
-          ({
-            "&":"&amp;",
-            "<":"&lt;",
-            ">":"&gt;",
-            '"':"&quot;",
-            "'":"&#039;"
-          }[c])
-      );
+const esc = value =>
+  String(value ?? "")
+    .replace(
+      /[&<>"']/g,
+      c =>
+        ({
+          "&":"&amp;",
+          "<":"&lt;",
+          ">":"&gt;",
+          '"':"&quot;",
+          "'":"&#039;"
+        }[c])
+    );
 
 
-const dateText =
-  value =>
-    value
-      ? new Date(value).toLocaleString()
-      : "—";
+const dateText = value =>
+  value
+    ? new Date(value).toLocaleString()
+    : "—";
 
 
-const badge =
-  status =>
-    `<span class="badge ${esc(status)}">
-      ${esc(status)}
-    </span>`;
+function badge(status){
+
+  const clean =
+    String(status || "")
+      .toLowerCase();
+
+  return `
+    <span class="badge ${esc(clean)}">
+      ${esc(status || "unknown")}
+    </span>
+  `;
+}
 
 
-function message(
-  el,
-  text,
-  type="success"
-){
+function message(el,text,type="success"){
 
   el.innerHTML =
-    `<div class="message ${type}">
+    `
+    <div class="message ${type}">
       ${esc(text)}
-    </div>`;
+    </div>
+    `;
 
 }
 
@@ -1449,9 +125,7 @@ async function login(){
       .value;
 
 
-  if(
-    email !== ADMIN_EMAIL
-  ){
+  if(email !== ADMIN_EMAIL){
 
     message(
       $("loginMessage"),
@@ -1578,9 +252,7 @@ $("forgotBtn").onclick =
         .toLowerCase();
 
 
-    if(
-      email !== ADMIN_EMAIL
-    ){
+    if(email !== ADMIN_EMAIL){
 
       message(
         $("loginMessage"),
@@ -1633,8 +305,7 @@ $("forgotBtn").onclick =
 
 let allRequests = [];
 
-let requestFilter =
-  "all";
+let requestFilter = "all";
 
 
 async function loadRequests(){
@@ -1657,13 +328,15 @@ async function loadRequests(){
 
 
     $("requestsTable").innerHTML =
-      `<tr>
+      `
+      <tr>
         <td colspan="4">
           Unable to load access requests.
           <br>
           ${esc(error.message)}
         </td>
-      </tr>`;
+      </tr>
+      `;
 
 
     return [];
@@ -1679,8 +352,7 @@ async function loadRequests(){
     allRequests.filter(
       r =>
         String(r.status)
-          .toLowerCase()
-          === "pending"
+          .toLowerCase() === "pending"
     );
 
 
@@ -1692,10 +364,7 @@ async function loadRequests(){
     allRequests.length;
 
 
-  renderRequests(
-    allRequests
-  );
-
+  renderRequests(allRequests);
 
   renderRecent(
     allRequests.slice(0,5)
@@ -1711,9 +380,7 @@ async function loadRequests(){
    RENDER REQUESTS
 ===================================================== */
 
-function renderRequests(
-  data
-){
+function renderRequests(data){
 
   const search =
     $("requestSearch")
@@ -1731,17 +398,13 @@ function renderRequests(
     );
 
 
-  if(
-    requestFilter ===
-    "pending"
-  ){
+  if(requestFilter === "pending"){
 
     rows =
       rows.filter(
         r =>
           String(r.status)
-            .toLowerCase()
-            === "pending"
+            .toLowerCase() === "pending"
       );
 
   }
@@ -1760,16 +423,12 @@ function renderRequests(
             .toLowerCase();
 
 
-        let actions =
-          "—";
+        let actions = "—";
 
 
-        if(
-          status === "pending"
-        ){
+        if(status === "pending"){
 
           actions = `
-
             <div class="actions">
 
               <button
@@ -1787,14 +446,12 @@ function renderRequests(
               </button>
 
             </div>
-
           `;
 
         }
 
 
         return `
-
           <tr>
 
             <td>
@@ -1814,7 +471,6 @@ function renderRequests(
             </td>
 
           </tr>
-
         `;
 
       }
@@ -1822,18 +478,17 @@ function renderRequests(
 
     :
 
-    `<tr>
-      <td
-        colspan="4"
-        class="empty"
-      >
+    `
+    <tr>
+      <td colspan="4" class="empty">
         ${
           requestFilter === "pending"
           ? "No pending requests."
           : "No access requests found."
         }
       </td>
-    </tr>`;
+    </tr>
+    `;
 
 }
 
@@ -1842,9 +497,7 @@ function renderRequests(
    RECENT REQUESTS
 ===================================================== */
 
-function renderRecent(
-  data
-){
+function renderRecent(data){
 
   $("recentRequests").innerHTML =
     data.length
@@ -1853,7 +506,6 @@ function renderRecent(
 
     data.map(
       r => `
-
         <div
           class="status-line"
           style="
@@ -1870,15 +522,16 @@ function renderRecent(
           ${badge(r.status)}
 
         </div>
-
       `
     ).join("")
 
     :
 
-    `<div class="empty">
+    `
+    <div class="empty">
       No access requests.
-    </div>`;
+    </div>
+    `;
 
 }
 
@@ -1887,9 +540,7 @@ function renderRecent(
    APPROVE REQUEST
 ===================================================== */
 
-async function approveRequest(
-  id
-){
+async function approveRequest(id){
 
   if(
     !confirm(
@@ -1944,9 +595,10 @@ async function approveRequest(
   );
 
 
-  await loadRequests();
-
-  await loadUsers();
+  await Promise.all([
+    loadRequests(),
+    loadUsers()
+  ]);
 
 }
 
@@ -1955,9 +607,7 @@ async function approveRequest(
    REJECT REQUEST
 ===================================================== */
 
-async function rejectRequest(
-  id
-){
+async function rejectRequest(id){
 
   if(
     !confirm(
@@ -1996,6 +646,16 @@ async function rejectRequest(
   }
 
 
+  if(data !== true){
+
+    alert(
+      "The request could not be rejected."
+    );
+
+    return;
+  }
+
+
   message(
     $("requestMessage"),
     "Access request rejected."
@@ -2011,58 +671,61 @@ async function rejectRequest(
    USERS
 ===================================================== */
 
+let allUsers = [];
+
+
 async function loadUsers(){
 
   const {
     data,
     error
   } =
-    await db
-      .from("approved_users")
-      .select(
-        "id,email,status,created_at"
-      )
-      .order(
-        "email",
-        {
-          ascending:true
-        }
-      );
+    await db.rpc(
+      "admin_get_approved_users"
+    );
 
 
   if(error){
 
-    console.error(error);
+    console.error(
+      "Users error:",
+      error
+    );
+
 
     $("usersTable").innerHTML =
-      `<tr>
+      `
+      <tr>
         <td colspan="4">
           Unable to load users.
+          <br>
+          ${esc(error.message)}
         </td>
-      </tr>`;
+      </tr>
+      `;
+
 
     return [];
 
   }
 
 
-  const users =
+  allUsers =
     data || [];
 
 
   $("statUsers").textContent =
-    users.filter(
+    allUsers.filter(
       u =>
-        u.status === "approved"
+        String(u.status)
+          .toLowerCase() === "approved"
     ).length;
 
 
-  renderUsers(
-    users
-  );
+  renderUsers(allUsers);
 
 
-  return users;
+  return allUsers;
 
 }
 
@@ -2071,9 +734,7 @@ async function loadUsers(){
    RENDER USERS
 ===================================================== */
 
-function renderUsers(
-  data
-){
+function renderUsers(data){
 
   const search =
     $("userSearch")
@@ -2106,7 +767,6 @@ function renderUsers(
 
 
         return `
-
           <tr>
 
             <td>
@@ -2120,9 +780,11 @@ function renderUsers(
 
                 ?
 
-                `<span class="badge approved">
+                `
+                <span class="badge approved">
                   Administrator
-                </span>`
+                </span>
+                `
 
                 :
 
@@ -2146,18 +808,19 @@ function renderUsers(
 
                 :
 
-                `<button
+                `
+                <button
                   class="btn-danger"
                   onclick="removeUser('${esc(u.id)}')"
                 >
                   Remove Access
-                </button>`
+                </button>
+                `
               }
 
             </td>
 
           </tr>
-
         `;
 
       }
@@ -2165,14 +828,13 @@ function renderUsers(
 
     :
 
-    `<tr>
-      <td
-        colspan="4"
-        class="empty"
-      >
+    `
+    <tr>
+      <td colspan="4" class="empty">
         No users found.
       </td>
-    </tr>`;
+    </tr>
+    `;
 
 }
 
@@ -2181,9 +843,7 @@ function renderUsers(
    REMOVE USER
 ===================================================== */
 
-async function removeUser(
-  id
-){
+async function removeUser(id){
 
   if(
     !confirm(
@@ -2194,24 +854,48 @@ async function removeUser(
 
 
   const {
+    data,
     error
   } =
-    await db
-      .from("approved_users")
-      .delete()
-      .eq("id",id);
+    await db.rpc(
+      "admin_remove_approved_user",
+      {
+        user_id:id
+      }
+    );
 
 
   if(error){
 
-    console.error(error);
+    console.error(
+      "Remove user error:",
+      error
+    );
+
 
     alert(
-      "Unable to remove access."
+      "Unable to remove access:\n\n"
+      + error.message
     );
 
     return;
   }
+
+
+  if(data !== true){
+
+    alert(
+      "User access could not be removed."
+    );
+
+    return;
+  }
+
+
+  message(
+    $("userMessage"),
+    "User access removed."
+  );
 
 
   await loadUsers();
@@ -2220,7 +904,7 @@ async function removeUser(
 
 
 /* =====================================================
-   ADD USER MANUALLY
+   ADD USER
 ===================================================== */
 
 $("addUserBtn").onclick =
@@ -2248,9 +932,7 @@ $("addUserBtn").onclick =
     }
 
 
-    if(
-      email === ADMIN_EMAIL
-    ){
+    if(email === ADMIN_EMAIL){
 
       message(
         $("userMessage"),
@@ -2263,28 +945,29 @@ $("addUserBtn").onclick =
 
 
     const {
+      data,
       error
     } =
-      await db
-        .from("approved_users")
-        .upsert(
-          {
-            email,
-            status:"approved"
-          },
-          {
-            onConflict:"email"
-          }
-        );
+      await db.rpc(
+        "admin_add_approved_user",
+        {
+          user_email:email
+        }
+      );
 
 
     if(error){
 
-      console.error(error);
+      console.error(
+        "Add user error:",
+        error
+      );
+
 
       message(
         $("userMessage"),
-        "Unable to approve this user.",
+        "Unable to approve this user: "
+        + error.message,
         "error"
       );
 
@@ -2292,8 +975,19 @@ $("addUserBtn").onclick =
     }
 
 
-    $("newUserEmail")
-      .value = "";
+    if(data !== true){
+
+      message(
+        $("userMessage"),
+        "User could not be approved.",
+        "error"
+      );
+
+      return;
+    }
+
+
+    $("newUserEmail").value = "";
 
 
     message(
@@ -2310,6 +1004,9 @@ $("addUserBtn").onclick =
 /* =====================================================
    VIDEOS
 ===================================================== */
+
+let allVideos = [];
+
 
 async function loadVideos(){
 
@@ -2332,32 +1029,39 @@ async function loadVideos(){
 
   if(error){
 
-    console.error(error);
+    console.error(
+      "Videos error:",
+      error
+    );
+
 
     $("videosList").innerHTML =
-      `<div class="message error">
+      `
+      <div class="message error">
         Unable to load videos.
-      </div>`;
+        <br>
+        ${esc(error.message)}
+      </div>
+      `;
+
 
     return [];
 
   }
 
 
-  const videos =
+  allVideos =
     data || [];
 
 
   $("statVideos").textContent =
-    videos.length;
+    allVideos.length;
 
 
-  renderVideos(
-    videos
-  );
+  renderVideos(allVideos);
 
 
-  return videos;
+  return allVideos;
 
 }
 
@@ -2366,9 +1070,7 @@ async function loadVideos(){
    RENDER VIDEOS
 ===================================================== */
 
-function renderVideos(
-  data
-){
+function renderVideos(data){
 
   const search =
     $("videoSearch")
@@ -2397,7 +1099,6 @@ function renderVideos(
 
     rows.map(
       v => `
-
         <div class="video-card">
 
           <div class="video-title">
@@ -2434,15 +1135,16 @@ function renderVideos(
           </div>
 
         </div>
-
       `
     ).join("")
 
     :
 
-    `<div class="empty">
+    `
+    <div class="empty">
       No videos found.
-    </div>`;
+    </div>
+    `;
 
 }
 
@@ -2466,10 +1168,7 @@ $("addVideoBtn").onclick =
         .trim();
 
 
-    if(
-      !title ||
-      !url
-    ){
+    if(!title || !url){
 
       message(
         $("videoMessage"),
@@ -2494,11 +1193,16 @@ $("addVideoBtn").onclick =
 
     if(error){
 
-      console.error(error);
+      console.error(
+        "Add video error:",
+        error
+      );
+
 
       message(
         $("videoMessage"),
-        "Unable to add video.",
+        "Unable to add video: "
+        + error.message,
         "error"
       );
 
@@ -2526,9 +1230,7 @@ $("addVideoBtn").onclick =
    EDIT VIDEO
 ===================================================== */
 
-async function editVideo(
-  id
-){
+async function editVideo(id){
 
   const {
     data,
@@ -2621,9 +1323,7 @@ async function editVideo(
    DELETE VIDEO
 ===================================================== */
 
-async function deleteVideo(
-  id
-){
+async function deleteVideo(id){
 
   if(
     !confirm(
@@ -2647,7 +1347,8 @@ async function deleteVideo(
     console.error(error);
 
     alert(
-      "Unable to delete video."
+      "Unable to delete video:\n\n"
+      + error.message
     );
 
     return;
@@ -2666,9 +1367,11 @@ async function deleteVideo(
 async function refreshAll(){
 
   $("systemStatus").innerHTML =
-    `<div class="message">
+    `
+    <div class="message">
       Loading system...
-    </div>`;
+    </div>
+    `;
 
 
   await Promise.all([
@@ -2693,6 +1396,10 @@ async function refreshAll(){
     </div>
 
     <div class="message success">
+      ✓ Approved users management is active.
+    </div>
+
+    <div class="message success">
       ✓ YouTube video management is active.
     </div>
 
@@ -2705,9 +1412,7 @@ async function refreshAll(){
    PAGE NAVIGATION
 ===================================================== */
 
-function showPage(
-  page
-){
+function showPage(page){
 
   document
     .querySelectorAll(".page")
@@ -2736,6 +1441,18 @@ function showPage(
   $("sidebar")
     .classList
     .remove("open");
+
+
+  if(page === "requests")
+    loadRequests();
+
+
+  if(page === "users")
+    loadUsers();
+
+
+  if(page === "videos")
+    loadVideos();
 
 }
 
@@ -2825,28 +1542,10 @@ $("showAllBtn").onclick =
 ===================================================== */
 
 $("userSearch").oninput =
-  async () => {
-
-    const {
-      data
-    } =
-      await db
-        .from("approved_users")
-        .select(
-          "id,email,status,created_at"
-        )
-        .order(
-          "email",
-          {
-            ascending:true
-          }
-        );
-
-
-    if(data)
-      renderUsers(data);
-
-  };
+  () =>
+    renderUsers(
+      allUsers
+    );
 
 
 /* =====================================================
@@ -2854,28 +1553,10 @@ $("userSearch").oninput =
 ===================================================== */
 
 $("videoSearch").oninput =
-  async () => {
-
-    const {
-      data
-    } =
-      await db
-        .from("videos")
-        .select(
-          "id,title,youtube_url,created_at"
-        )
-        .order(
-          "created_at",
-          {
-            ascending:false
-          }
-        );
-
-
-    if(data)
-      renderVideos(data);
-
-  };
+  () =>
+    renderVideos(
+      allVideos
+    );
 
 
 /* =====================================================
@@ -2918,9 +1599,7 @@ $("logoutBtn").onclick =
       .toLowerCase();
 
 
-  if(
-    email !== ADMIN_EMAIL
-  ){
+  if(email !== ADMIN_EMAIL){
 
     await db.auth.signOut();
 
@@ -2959,6 +1638,3 @@ $("logoutBtn").onclick =
 })();
 
 </script>
-
-</body>
-</html>
