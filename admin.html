@@ -1,4 +1,48 @@
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<head>
+
+<meta charset="utf-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>ERADA Admin v3</title>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+<style>
 <script>
+
+/* =====================================================
+   ERADA ADMIN
+   SUPABASE + ADMIN + ACCESS REQUESTS + USERS + VIDEOS
+===================================================== */
+
+(function(){
+
+"use strict";
+
+
+/* =====================================================
+   CHECK SUPABASE LIBRARY
+===================================================== */
+
+if(
+  typeof window.supabase === "undefined"
+){
+
+  console.error(
+    "Supabase library was not loaded."
+  );
+
+  alert(
+    "Supabase library could not be loaded.\n\n" +
+    "Please check your internet connection and refresh the page."
+  );
+
+  return;
+
+}
+
 
 /* =====================================================
    SUPABASE
@@ -15,7 +59,7 @@ const ADMIN_EMAIL =
 
 
 const db =
-  supabase.createClient(
+  window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_PUBLISHABLE_KEY
   );
@@ -25,29 +69,32 @@ const db =
    HELPERS
 ===================================================== */
 
-const $ = id =>
-  document.getElementById(id);
+const $ =
+  id =>
+    document.getElementById(id);
 
 
-const esc = value =>
-  String(value ?? "")
-    .replace(
-      /[&<>"']/g,
-      c =>
-        ({
-          "&":"&amp;",
-          "<":"&lt;",
-          ">":"&gt;",
-          '"':"&quot;",
-          "'":"&#039;"
-        }[c])
-    );
+const esc =
+  value =>
+    String(value ?? "")
+      .replace(
+        /[&<>"']/g,
+        c =>
+          ({
+            "&":"&amp;",
+            "<":"&lt;",
+            ">":"&gt;",
+            '"':"&quot;",
+            "'":"&#039;"
+          }[c])
+      );
 
 
-const dateText = value =>
-  value
-    ? new Date(value).toLocaleString()
-    : "—";
+const dateText =
+  value =>
+    value
+      ? new Date(value).toLocaleString()
+      : "—";
 
 
 function badge(status){
@@ -61,10 +108,18 @@ function badge(status){
       ${esc(status || "unknown")}
     </span>
   `;
+
 }
 
 
-function message(el,text,type="success"){
+function message(
+  el,
+  text,
+  type="success"
+){
+
+  if(!el)
+    return;
 
   el.innerHTML =
     `
@@ -82,27 +137,41 @@ function message(el,text,type="success"){
 
 async function checkAdmin(){
 
-  const {
-    data,
-    error
-  } =
-    await db.rpc(
-      "is_admin"
-    );
+  try{
+
+    const {
+      data,
+      error
+    } =
+      await db.rpc(
+        "is_admin"
+      );
 
 
-  if(error){
+    if(error){
+
+      console.error(
+        "Admin check error:",
+        error
+      );
+
+      return false;
+
+    }
+
+
+    return data === true;
+
+  }catch(error){
 
     console.error(
-      "Admin check error:",
+      "Admin check exception:",
       error
     );
 
     return false;
+
   }
-
-
-  return data === true;
 
 }
 
@@ -134,6 +203,7 @@ async function login(){
     );
 
     return;
+
   }
 
 
@@ -146,6 +216,7 @@ async function login(){
     );
 
     return;
+
   }
 
 
@@ -160,14 +231,19 @@ async function login(){
     error
   } =
     await db.auth.signInWithPassword({
+
       email,
       password
+
     });
 
 
   if(error){
 
-    console.error(error);
+    console.error(
+      "Login error:",
+      error
+    );
 
     message(
       $("loginMessage"),
@@ -176,6 +252,7 @@ async function login(){
     );
 
     return;
+
   }
 
 
@@ -194,13 +271,16 @@ async function login(){
     );
 
     return;
+
   }
 
 
   $("loginMessage").innerHTML = "";
 
+
   $("adminName").textContent =
-    data.user?.email || ADMIN_EMAIL;
+    data.user?.email ||
+    ADMIN_EMAIL;
 
 
   $("loginScreen")
@@ -261,6 +341,7 @@ $("forgotBtn").onclick =
       );
 
       return;
+
     }
 
 
@@ -279,7 +360,10 @@ $("forgotBtn").onclick =
 
     if(error){
 
-      console.error(error);
+      console.error(
+        "Password reset error:",
+        error
+      );
 
       message(
         $("loginMessage"),
@@ -288,6 +372,7 @@ $("forgotBtn").onclick =
       );
 
       return;
+
     }
 
 
@@ -305,7 +390,8 @@ $("forgotBtn").onclick =
 
 let allRequests = [];
 
-let requestFilter = "all";
+let requestFilter =
+  "all";
 
 
 async function loadRequests(){
@@ -330,11 +416,17 @@ async function loadRequests(){
     $("requestsTable").innerHTML =
       `
       <tr>
+
         <td colspan="4">
+
           Unable to load access requests.
-          <br>
+
+          <br><br>
+
           ${esc(error.message)}
+
         </td>
+
       </tr>
       `;
 
@@ -352,7 +444,8 @@ async function loadRequests(){
     allRequests.filter(
       r =>
         String(r.status)
-          .toLowerCase() === "pending"
+          .toLowerCase()
+          === "pending"
     );
 
 
@@ -364,7 +457,10 @@ async function loadRequests(){
     allRequests.length;
 
 
-  renderRequests(allRequests);
+  renderRequests(
+    allRequests
+  );
+
 
   renderRecent(
     allRequests.slice(0,5)
@@ -380,7 +476,9 @@ async function loadRequests(){
    RENDER REQUESTS
 ===================================================== */
 
-function renderRequests(data){
+function renderRequests(
+  data
+){
 
   const search =
     $("requestSearch")
@@ -398,13 +496,17 @@ function renderRequests(data){
     );
 
 
-  if(requestFilter === "pending"){
+  if(
+    requestFilter ===
+    "pending"
+  ){
 
     rows =
       rows.filter(
         r =>
           String(r.status)
-            .toLowerCase() === "pending"
+            .toLowerCase()
+            === "pending"
       );
 
   }
@@ -423,12 +525,16 @@ function renderRequests(data){
             .toLowerCase();
 
 
-        let actions = "—";
+        let actions =
+          "—";
 
 
-        if(status === "pending"){
+        if(
+          status === "pending"
+        ){
 
           actions = `
+
             <div class="actions">
 
               <button
@@ -438,6 +544,7 @@ function renderRequests(data){
                 ✓ Approve
               </button>
 
+
               <button
                 class="btn-danger"
                 onclick="rejectRequest('${esc(r.id)}')"
@@ -446,12 +553,14 @@ function renderRequests(data){
               </button>
 
             </div>
+
           `;
 
         }
 
 
         return `
+
           <tr>
 
             <td>
@@ -471,6 +580,7 @@ function renderRequests(data){
             </td>
 
           </tr>
+
         `;
 
       }
@@ -479,15 +589,24 @@ function renderRequests(data){
     :
 
     `
-    <tr>
-      <td colspan="4" class="empty">
-        ${
-          requestFilter === "pending"
-          ? "No pending requests."
-          : "No access requests found."
-        }
-      </td>
-    </tr>
+
+      <tr>
+
+        <td
+          colspan="4"
+          class="empty"
+        >
+
+          ${
+            requestFilter === "pending"
+            ? "No pending requests."
+            : "No access requests found."
+          }
+
+        </td>
+
+      </tr>
+
     `;
 
 }
@@ -497,7 +616,9 @@ function renderRequests(data){
    RECENT REQUESTS
 ===================================================== */
 
-function renderRecent(data){
+function renderRecent(
+  data
+){
 
   $("recentRequests").innerHTML =
     data.length
@@ -506,6 +627,7 @@ function renderRecent(data){
 
     data.map(
       r => `
+
         <div
           class="status-line"
           style="
@@ -522,15 +644,18 @@ function renderRecent(data){
           ${badge(r.status)}
 
         </div>
+
       `
     ).join("")
 
     :
 
     `
-    <div class="empty">
-      No access requests.
-    </div>
+
+      <div class="empty">
+        No access requests.
+      </div>
+
     `;
 
 }
@@ -540,7 +665,9 @@ function renderRecent(data){
    APPROVE REQUEST
 ===================================================== */
 
-async function approveRequest(id){
+async function approveRequest(
+  id
+){
 
   if(
     !confirm(
@@ -557,7 +684,8 @@ async function approveRequest(id){
     await db.rpc(
       "admin_approve_access_request",
       {
-        request_id:id
+        request_id:
+          id
       }
     );
 
@@ -576,6 +704,7 @@ async function approveRequest(id){
     );
 
     return;
+
   }
 
 
@@ -586,6 +715,7 @@ async function approveRequest(id){
     );
 
     return;
+
   }
 
 
@@ -595,10 +725,9 @@ async function approveRequest(id){
   );
 
 
-  await Promise.all([
-    loadRequests(),
-    loadUsers()
-  ]);
+  await loadRequests();
+
+  await loadUsers();
 
 }
 
@@ -607,7 +736,9 @@ async function approveRequest(id){
    REJECT REQUEST
 ===================================================== */
 
-async function rejectRequest(id){
+async function rejectRequest(
+  id
+){
 
   if(
     !confirm(
@@ -624,7 +755,8 @@ async function rejectRequest(id){
     await db.rpc(
       "admin_reject_access_request",
       {
-        request_id:id
+        request_id:
+          id
       }
     );
 
@@ -643,6 +775,7 @@ async function rejectRequest(id){
     );
 
     return;
+
   }
 
 
@@ -653,6 +786,7 @@ async function rejectRequest(id){
     );
 
     return;
+
   }
 
 
@@ -680,9 +814,18 @@ async function loadUsers(){
     data,
     error
   } =
-    await db.rpc(
-      "admin_get_approved_users"
-    );
+    await db
+      .from("approved_users")
+      .select(
+        "id,email,status,created_at"
+      )
+      .order(
+        "email",
+        {
+          ascending:
+            true
+        }
+      );
 
 
   if(error){
@@ -695,13 +838,21 @@ async function loadUsers(){
 
     $("usersTable").innerHTML =
       `
+
       <tr>
+
         <td colspan="4">
+
           Unable to load users.
-          <br>
+
+          <br><br>
+
           ${esc(error.message)}
+
         </td>
+
       </tr>
+
       `;
 
 
@@ -718,11 +869,14 @@ async function loadUsers(){
     allUsers.filter(
       u =>
         String(u.status)
-          .toLowerCase() === "approved"
+          .toLowerCase()
+          === "approved"
     ).length;
 
 
-  renderUsers(allUsers);
+  renderUsers(
+    allUsers
+  );
 
 
   return allUsers;
@@ -734,7 +888,9 @@ async function loadUsers(){
    RENDER USERS
 ===================================================== */
 
-function renderUsers(data){
+function renderUsers(
+  data
+){
 
   const search =
     $("userSearch")
@@ -767,6 +923,7 @@ function renderUsers(data){
 
 
         return `
+
           <tr>
 
             <td>
@@ -809,18 +966,21 @@ function renderUsers(data){
                 :
 
                 `
+
                 <button
                   class="btn-danger"
                   onclick="removeUser('${esc(u.id)}')"
                 >
                   Remove Access
                 </button>
+
                 `
               }
 
             </td>
 
           </tr>
+
         `;
 
       }
@@ -829,11 +989,18 @@ function renderUsers(data){
     :
 
     `
-    <tr>
-      <td colspan="4" class="empty">
-        No users found.
-      </td>
-    </tr>
+
+      <tr>
+
+        <td
+          colspan="4"
+          class="empty"
+        >
+          No users found.
+        </td>
+
+      </tr>
+
     `;
 
 }
@@ -843,7 +1010,9 @@ function renderUsers(data){
    REMOVE USER
 ===================================================== */
 
-async function removeUser(id){
+async function removeUser(
+  id
+){
 
   if(
     !confirm(
@@ -854,15 +1023,15 @@ async function removeUser(id){
 
 
   const {
-    data,
     error
   } =
-    await db.rpc(
-      "admin_remove_approved_user",
-      {
-        user_id:id
-      }
-    );
+    await db
+      .from("approved_users")
+      .delete()
+      .eq(
+        "id",
+        id
+      );
 
 
   if(error){
@@ -879,16 +1048,7 @@ async function removeUser(id){
     );
 
     return;
-  }
 
-
-  if(data !== true){
-
-    alert(
-      "User access could not be removed."
-    );
-
-    return;
   }
 
 
@@ -904,7 +1064,7 @@ async function removeUser(id){
 
 
 /* =====================================================
-   ADD USER
+   ADD USER MANUALLY
 ===================================================== */
 
 $("addUserBtn").onclick =
@@ -929,10 +1089,13 @@ $("addUserBtn").onclick =
       );
 
       return;
+
     }
 
 
-    if(email === ADMIN_EMAIL){
+    if(
+      email === ADMIN_EMAIL
+    ){
 
       message(
         $("userMessage"),
@@ -941,19 +1104,26 @@ $("addUserBtn").onclick =
       );
 
       return;
+
     }
 
 
     const {
-      data,
       error
     } =
-      await db.rpc(
-        "admin_add_approved_user",
-        {
-          user_email:email
-        }
-      );
+      await db
+        .from("approved_users")
+        .upsert(
+          {
+            email,
+            status:
+              "approved"
+          },
+          {
+            onConflict:
+              "email"
+          }
+        );
 
 
     if(error){
@@ -972,22 +1142,12 @@ $("addUserBtn").onclick =
       );
 
       return;
+
     }
 
 
-    if(data !== true){
-
-      message(
-        $("userMessage"),
-        "User could not be approved.",
-        "error"
-      );
-
-      return;
-    }
-
-
-    $("newUserEmail").value = "";
+    $("newUserEmail")
+      .value = "";
 
 
     message(
@@ -1022,7 +1182,8 @@ async function loadVideos(){
       .order(
         "created_at",
         {
-          ascending:false
+          ascending:
+            false
         }
       );
 
@@ -1037,11 +1198,17 @@ async function loadVideos(){
 
     $("videosList").innerHTML =
       `
+
       <div class="message error">
+
         Unable to load videos.
-        <br>
+
+        <br><br>
+
         ${esc(error.message)}
+
       </div>
+
       `;
 
 
@@ -1058,7 +1225,9 @@ async function loadVideos(){
     allVideos.length;
 
 
-  renderVideos(allVideos);
+  renderVideos(
+    allVideos
+  );
 
 
   return allVideos;
@@ -1070,7 +1239,9 @@ async function loadVideos(){
    RENDER VIDEOS
 ===================================================== */
 
-function renderVideos(data){
+function renderVideos(
+  data
+){
 
   const search =
     $("videoSearch")
@@ -1099,19 +1270,23 @@ function renderVideos(data){
 
     rows.map(
       v => `
+
         <div class="video-card">
 
           <div class="video-title">
             🎬 ${esc(v.title)}
           </div>
 
+
           <div class="url">
             ${esc(v.youtube_url)}
           </div>
 
+
           <div class="muted">
             ${dateText(v.created_at)}
           </div>
+
 
           <div
             class="actions"
@@ -1125,6 +1300,7 @@ function renderVideos(data){
               ✏️ Edit
             </button>
 
+
             <button
               class="btn-danger"
               onclick="deleteVideo('${esc(v.id)}')"
@@ -1135,15 +1311,18 @@ function renderVideos(data){
           </div>
 
         </div>
+
       `
     ).join("")
 
     :
 
     `
-    <div class="empty">
-      No videos found.
-    </div>
+
+      <div class="empty">
+        No videos found.
+      </div>
+
     `;
 
 }
@@ -1168,7 +1347,10 @@ $("addVideoBtn").onclick =
         .trim();
 
 
-    if(!title || !url){
+    if(
+      !title ||
+      !url
+    ){
 
       message(
         $("videoMessage"),
@@ -1177,6 +1359,7 @@ $("addVideoBtn").onclick =
       );
 
       return;
+
     }
 
 
@@ -1187,7 +1370,8 @@ $("addVideoBtn").onclick =
         .from("videos")
         .insert({
           title,
-          youtube_url:url
+          youtube_url:
+            url
         });
 
 
@@ -1207,12 +1391,16 @@ $("addVideoBtn").onclick =
       );
 
       return;
+
     }
 
 
-    $("videoTitle").value = "";
+    $("videoTitle")
+      .value = "";
 
-    $("videoUrl").value = "";
+
+    $("videoUrl")
+      .value = "";
 
 
     message(
@@ -1230,7 +1418,9 @@ $("addVideoBtn").onclick =
    EDIT VIDEO
 ===================================================== */
 
-async function editVideo(id){
+async function editVideo(
+  id
+){
 
   const {
     data,
@@ -1241,17 +1431,27 @@ async function editVideo(id){
       .select(
         "title,youtube_url"
       )
-      .eq("id",id)
+      .eq(
+        "id",
+        id
+      )
       .single();
 
 
   if(error){
+
+    console.error(
+      "Edit load error:",
+      error
+    );
+
 
     alert(
       "Unable to load video."
     );
 
     return;
+
   }
 
 
@@ -1262,7 +1462,9 @@ async function editVideo(id){
     );
 
 
-  if(title === null)
+  if(
+    title === null
+  )
     return;
 
 
@@ -1273,7 +1475,9 @@ async function editVideo(id){
     );
 
 
-  if(url === null)
+  if(
+    url === null
+  )
     return;
 
 
@@ -1287,6 +1491,7 @@ async function editVideo(id){
     );
 
     return;
+
   }
 
 
@@ -1296,21 +1501,33 @@ async function editVideo(id){
     await db
       .from("videos")
       .update({
-        title:title.trim(),
-        youtube_url:url.trim()
+        title:
+          title.trim(),
+
+        youtube_url:
+          url.trim()
       })
-      .eq("id",id);
+      .eq(
+        "id",
+        id
+      );
 
 
   if(e){
 
-    console.error(e);
+    console.error(
+      "Edit video error:",
+      e
+    );
+
 
     alert(
-      "Unable to update video."
+      "Unable to update video:\n\n"
+      + e.message
     );
 
     return;
+
   }
 
 
@@ -1323,7 +1540,9 @@ async function editVideo(id){
    DELETE VIDEO
 ===================================================== */
 
-async function deleteVideo(id){
+async function deleteVideo(
+  id
+){
 
   if(
     !confirm(
@@ -1339,12 +1558,19 @@ async function deleteVideo(id){
     await db
       .from("videos")
       .delete()
-      .eq("id",id);
+      .eq(
+        "id",
+        id
+      );
 
 
   if(error){
 
-    console.error(error);
+    console.error(
+      "Delete video error:",
+      error
+    );
+
 
     alert(
       "Unable to delete video:\n\n"
@@ -1352,12 +1578,33 @@ async function deleteVideo(id){
     );
 
     return;
+
   }
 
 
   await loadVideos();
 
 }
+
+
+/* =====================================================
+   MAKE FUNCTIONS AVAILABLE TO HTML BUTTONS
+===================================================== */
+
+window.approveRequest =
+  approveRequest;
+
+window.rejectRequest =
+  rejectRequest;
+
+window.removeUser =
+  removeUser;
+
+window.editVideo =
+  editVideo;
+
+window.deleteVideo =
+  deleteVideo;
 
 
 /* =====================================================
@@ -1368,9 +1615,11 @@ async function refreshAll(){
 
   $("systemStatus").innerHTML =
     `
+
     <div class="message">
       Loading system...
     </div>
+
     `;
 
 
@@ -1381,29 +1630,34 @@ async function refreshAll(){
   ]);
 
 
-  $("systemStatus").innerHTML = `
+  $("systemStatus").innerHTML =
+    `
 
     <div class="message success">
       ✓ Supabase authentication is active.
     </div>
 
+
     <div class="message success">
       ✓ Admin authorization is active.
     </div>
+
 
     <div class="message success">
       ✓ Access request system is active.
     </div>
 
+
     <div class="message success">
       ✓ Approved users management is active.
     </div>
+
 
     <div class="message success">
       ✓ YouTube video management is active.
     </div>
 
-  `;
+    `;
 
 }
 
@@ -1412,19 +1666,31 @@ async function refreshAll(){
    PAGE NAVIGATION
 ===================================================== */
 
-function showPage(page){
+function showPage(
+  page
+){
 
   document
     .querySelectorAll(".page")
     .forEach(
       x =>
-        x.classList.add("hidden")
+        x.classList.add(
+          "hidden"
+        )
     );
 
 
-  $(page + "Page")
-    .classList
-    .remove("hidden");
+  const target =
+    $(page + "Page");
+
+
+  if(target){
+
+    target
+      .classList
+      .remove("hidden");
+
+  }
 
 
   document
@@ -1443,15 +1709,21 @@ function showPage(page){
     .remove("open");
 
 
-  if(page === "requests")
+  if(
+    page === "requests"
+  )
     loadRequests();
 
 
-  if(page === "users")
+  if(
+    page === "users"
+  )
     loadUsers();
 
 
-  if(page === "videos")
+  if(
+    page === "videos"
+  )
     loadVideos();
 
 }
@@ -1579,62 +1851,94 @@ $("logoutBtn").onclick =
 
 (async () => {
 
-  const {
-    data
-  } =
-    await db.auth.getSession();
+  try{
+
+    const {
+      data,
+      error
+    } =
+      await db.auth.getSession();
 
 
-  const session =
-    data?.session;
+    if(error){
+
+      console.error(
+        "Session error:",
+        error
+      );
+
+      return;
+
+    }
 
 
-  if(!session)
-    return;
+    const session =
+      data?.session;
 
 
-  const email =
-    session.user?.email
-      ?.trim()
-      .toLowerCase();
+    if(!session)
+      return;
 
 
-  if(email !== ADMIN_EMAIL){
+    const email =
+      session.user?.email
+        ?.trim()
+        .toLowerCase();
 
-    await db.auth.signOut();
 
-    return;
+    if(
+      email !==
+      ADMIN_EMAIL
+    ){
+
+      await db.auth.signOut();
+
+      return;
+
+    }
+
+
+    const isAdmin =
+      await checkAdmin();
+
+
+    if(!isAdmin){
+
+      await db.auth.signOut();
+
+      return;
+
+    }
+
+
+    $("adminName")
+      .textContent =
+        email;
+
+
+    $("loginScreen")
+      .classList
+      .add("hidden");
+
+
+    $("app")
+      .classList
+      .remove("hidden");
+
+
+    await refreshAll();
+
+  }catch(error){
+
+    console.error(
+      "Auto login error:",
+      error
+    );
+
   }
-
-
-  const isAdmin =
-    await checkAdmin();
-
-
-  if(!isAdmin){
-
-    await db.auth.signOut();
-
-    return;
-  }
-
-
-  $("adminName").textContent =
-    email;
-
-
-  $("loginScreen")
-    .classList
-    .add("hidden");
-
-
-  $("app")
-    .classList
-    .remove("hidden");
-
-
-  await refreshAll();
 
 })();
 
+
+})();
 </script>
