@@ -1,4 +1,3 @@
-```html
 <!doctype html>
 <html lang="en">
 
@@ -130,16 +129,18 @@
     .video {
       position: relative;
       width: 100%;
+      padding-top: 56.25%; /* نسبة 16:9 */
       background: #000;
       border-radius: 10px;
       overflow: hidden;
     }
 
-    video {
-      display: block;
+    .video iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
-      max-height: 600px;
-      background: #000;
+      height: 100%;
       border: 0;
     }
 
@@ -311,17 +312,6 @@ const supabaseClient =
       }
     }
   );
-
-
-/* =========================================
-   EDGE FUNCTION URL
-   IMPORTANT:
-   Function name is get-video
-========================================= */
-
-const VIDEO_FUNCTION_URL =
-  SUPABASE_URL +
-  "/functions/v1/get-video";
 
 
 /* =========================================
@@ -551,9 +541,7 @@ document
       );
 
 
-      await loadPrivateVideos(
-        email
-      );
+      await loadPrivateVideos();
 
     }
   );
@@ -561,11 +549,10 @@ document
 
 /* =========================================
    LOAD PRIVATE VIDEOS
+   (from the "videos" table, YouTube-based)
 ========================================= */
 
-async function loadPrivateVideos(
-  email
-) {
+async function loadPrivateVideos() {
 
   videosList.innerHTML =
     `
@@ -575,112 +562,24 @@ async function loadPrivateVideos(
     `;
 
 
-  /*
-    Get current Supabase session.
-  */
-
   const {
-    data: {
-      session
-    }
+    data: rows,
+    error
   } =
     await supabaseClient
-      .auth
-      .getSession();
+      .from("videos")
+      .select("id,title,youtube_url")
+      .order("created_at", { ascending: true });
 
 
-  /*
-    The current get-video Edge Function
-    requires a valid Supabase session.
-  */
-
-  if (!session) {
-
-    showMessage(
-      "A secure Supabase session is required. Please log in first.",
-      "error"
-    );
-
-    videosList.innerHTML =
-      "";
-
-    return;
-  }
-
-
-  console.log(
-    "Calling Edge Function:",
-    VIDEO_FUNCTION_URL
-  );
-
-
-  const response =
-    await fetch(
-      VIDEO_FUNCTION_URL,
-      {
-        method: "GET",
-
-        headers: {
-
-          "Authorization":
-            "Bearer " +
-            session.access_token,
-
-          "apikey":
-            SUPABASE_PUBLISHABLE_KEY,
-
-          "Content-Type":
-            "application/json"
-
-        }
-      }
-    );
-
-
-  let result;
-
-
-  try {
-
-    result =
-      await response.json();
-
-  } catch (error) {
+  if (error) {
 
     console.error(
-      "Invalid Edge Function response:",
+      "Video load error:",
       error
     );
 
     showMessage(
-      "The server returned an invalid response.",
-      "error"
-    );
-
-    return;
-
-  }
-
-
-  console.log(
-    "get-video response:",
-    result
-  );
-
-
-  if (
-    !response.ok ||
-    !result.success
-  ) {
-
-    console.error(
-      "Private video error:",
-      result
-    );
-
-
-    showMessage(
-      result.error ||
       "Unable to load private videos.",
       "error"
     );
@@ -703,14 +602,37 @@ async function loadPrivateVideos(
     "block";
 
 
-  /*
-    Render files returned
-    from Google Drive.
-  */
-
   renderPrivateVideos(
-    result.files || []
+    rows || []
   );
+
+}
+
+
+/* =========================================
+   EXTRACT YOUTUBE ID FROM ANY URL FORMAT
+========================================= */
+
+function extractYoutubeId(url) {
+
+  if (!url) return null;
+
+  const patterns = [
+    /youtu\.be\/([a-zA-Z0-9_-]{6,})/,
+    /[?&]v=([a-zA-Z0-9_-]{6,})/,
+    /embed\/([a-zA-Z0-9_-]{6,})/
+  ];
+
+  for (const pattern of patterns) {
+
+    const match =
+      url.match(pattern);
+
+    if (match) return match[1];
+
+  }
+
+  return null;
 
 }
 
@@ -720,7 +642,7 @@ async function loadPrivateVideos(
 ========================================= */
 
 function renderPrivateVideos(
-  files
+  rows
 ) {
 
   videosList.innerHTML =
@@ -728,8 +650,8 @@ function renderPrivateVideos(
 
 
   if (
-    !files ||
-    files.length === 0
+    !rows ||
+    rows.length === 0
   ) {
 
     videosList.innerHTML =
@@ -752,29 +674,16 @@ function renderPrivateVideos(
   }
 
 
-  let videoCount =
-    0;
+  rows.forEach(
+    function(row) {
+
+      const youtubeId =
+        extractYoutubeId(
+          row.youtube_url
+        );
 
 
-  files.forEach(
-    function(file) {
-
-      /*
-        Only display actual video files.
-      */
-
-      if (
-        !file.mimeType ||
-        !file.mimeType.startsWith(
-          "video/"
-        )
-      ) {
-
-        return;
-      }
-
-
-      videoCount++;
+      if (!youtubeId) return;
 
 
       const card =
@@ -798,7 +707,7 @@ function renderPrivateVideos(
 
 
       title.textContent =
-        file.name;
+        row.title || "Untitled";
 
 
       const videoContainer =
@@ -811,51 +720,32 @@ function renderPrivateVideos(
         "video";
 
 
-      const videoElement =
+      const iframe =
         document.createElement(
-          "video"
+          "iframe"
         );
 
 
-      videoElement.controls =
+      iframe.src =
+        "https://www.youtube-nocookie.com/embed/" +
+        youtubeId +
+        "?modestbranding=1&rel=0&controls=1&disablekb=1";
+
+
+      iframe.title =
+        row.title || "video";
+
+
+      iframe.allow =
+        "autoplay; encrypted-media";
+
+
+      iframe.allowFullscreen =
         true;
 
-
-      videoElement.controlsList =
-        "nodownload";
-
-
-      videoElement.disablePictureInPicture =
-        true;
-
-
-      videoElement.setAttribute(
-        "playsinline",
-        ""
-      );
-
-
-      videoElement.setAttribute(
-        "preload",
-        "metadata"
-      );
-
-
-      /*
-        IMPORTANT:
-
-        The current get-video Edge Function
-        only returns file information.
-
-        It does NOT yet return a protected
-        streaming URL.
-
-        Therefore we intentionally do NOT
-        put a Google Drive public URL here.
-      */
 
       videoContainer.appendChild(
-        videoElement
+        iframe
       );
 
 
@@ -894,34 +784,6 @@ function renderPrivateVideos(
 
     }
   );
-
-
-  /*
-    If Google Drive contains files but
-    none are videos.
-  */
-
-  if (
-    videoCount === 0
-  ) {
-
-    videosList.innerHTML =
-      `
-        <div class="card empty">
-
-          <h2>
-            No video files found
-          </h2>
-
-          <p>
-            The Google Drive folder was accessed,
-            but no video files were found.
-          </p>
-
-        </div>
-      `;
-
-  }
 
 }
 
@@ -1077,4 +939,4 @@ document.addEventListener(
 </body>
 
 </html>
-```
+ "switch to youtube videos"
