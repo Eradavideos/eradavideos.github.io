@@ -1,37 +1,18 @@
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-
-/* =====================================================
-   ERADA ADMIN
-   SUPABASE + ADMIN + ACCESS REQUESTS + USERS + VIDEOS
-===================================================== */
-
-(function(){
+document.addEventListener("DOMContentLoaded", function () {
 
 "use strict";
 
-
 /* =====================================================
-   CHECK SUPABASE LIBRARY
+   ERADA ADMIN
 ===================================================== */
 
-if(
-  typeof window.supabase === "undefined"
-){
-
-  console.error(
-    "Supabase library was not loaded."
-  );
-
-  alert(
-    "Supabase library could not be loaded.\n\n" +
-    "Please check your internet connection and refresh the page."
-  );
-
-  return;
-
+if (typeof window.supabase === "undefined") {
+    console.error("Supabase library not loaded.");
+    alert("Supabase library could not be loaded.");
+    return;
 }
 
 
@@ -40,85 +21,80 @@ if(
 ===================================================== */
 
 const SUPABASE_URL =
-  "https://laqwnqnnqtfhqfadjyvo.supabase.co";
+    "https://laqwnqnnqtfhqfadjyvo.supabase.co";
 
 const SUPABASE_PUBLISHABLE_KEY =
-  "sb_publishable_ropVS738K5BJiOoaZ-TeWA_WmkineZh";
+    "sb_publishable_ropVS738K5BJiOoaZ-TeWA_WmkineZh";
 
 const ADMIN_EMAIL =
-  "it@erada.ly";
+    "it@erada.ly";
 
 
-const db =
-  window.supabase.createClient(
+const db = window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_PUBLISHABLE_KEY
-  );
+);
 
 
 /* =====================================================
    HELPERS
 ===================================================== */
 
-const $ =
-  id =>
-    document.getElementById(id);
+const $ = id => document.getElementById(id);
 
 
-const esc =
-  value =>
+const esc = value =>
     String(value ?? "")
-      .replace(
-        /[&<>"']/g,
-        c =>
-          ({
-            "&":"&amp;",
-            "<":"&lt;",
-            ">":"&gt;",
-            '"':"&quot;",
-            "'":"&#039;"
-          }[c])
-      );
+        .replace(/[&<>"']/g, c => ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#039;"
+        }[c]));
 
 
-const dateText =
-  value =>
+const dateText = value =>
     value
-      ? new Date(value).toLocaleString()
-      : "—";
+        ? new Date(value).toLocaleString()
+        : "—";
 
 
-function badge(status){
-
-  const clean =
-    String(status || "")
-      .toLowerCase();
-
-  return `
-    <span class="badge ${esc(clean)}">
-      ${esc(status || "unknown")}
-    </span>
-  `;
-
+function setText(id, value) {
+    const el = $(id);
+    if (el) el.textContent = value;
 }
 
 
-function message(
-  el,
-  text,
-  type="success"
-){
+function setHTML(id, value) {
+    const el = $(id);
+    if (el) el.innerHTML = value;
+}
 
-  if(!el)
-    return;
 
-  el.innerHTML =
-    `
-    <div class="message ${type}">
-      ${esc(text)}
-    </div>
+function message(el, text, type = "success") {
+
+    if (!el) return;
+
+    el.innerHTML = `
+        <div class="message ${type}">
+            ${esc(text)}
+        </div>
     `;
+}
 
+
+function badge(status) {
+
+    const clean =
+        String(status || "")
+            .toLowerCase();
+
+    return `
+        <span class="badge ${esc(clean)}">
+            ${esc(status || "unknown")}
+        </span>
+    `;
 }
 
 
@@ -126,44 +102,25 @@ function message(
    ADMIN CHECK
 ===================================================== */
 
-async function checkAdmin(){
+async function checkAdmin() {
 
-  try{
+    try {
 
-    const {
-      data,
-      error
-    } =
-      await db.rpc(
-        "is_admin"
-      );
+        const { data, error } =
+            await db.rpc("is_admin");
 
+        if (error) {
+            console.error("Admin check:", error);
+            return false;
+        }
 
-    if(error){
+        return data === true;
 
-      console.error(
-        "Admin check error:",
-        error
-      );
+    } catch (err) {
 
-      return false;
-
+        console.error("Admin check exception:", err);
+        return false;
     }
-
-
-    return data === true;
-
-  }catch(error){
-
-    console.error(
-      "Admin check exception:",
-      error
-    );
-
-    return false;
-
-  }
-
 }
 
 
@@ -171,208 +128,197 @@ async function checkAdmin(){
    LOGIN
 ===================================================== */
 
-async function login(){
+async function login() {
 
-  const email =
-    $("adminEmail")
-      .value
-      .trim()
-      .toLowerCase();
+    const emailEl = $("adminEmail");
+    const passwordEl = $("adminPassword");
 
-
-  const password =
-    $("adminPassword")
-      .value;
-
-
-  if(email !== ADMIN_EMAIL){
-
-    message(
-      $("loginMessage"),
-      "Only IT@erada.ly can access the admin panel.",
-      "error"
-    );
-
-    return;
-
-  }
-
-
-  if(!password){
-
-    message(
-      $("loginMessage"),
-      "Please enter your password.",
-      "error"
-    );
-
-    return;
-
-  }
-
-
-  message(
-    $("loginMessage"),
-    "Signing in..."
-  );
-
-
-  const {
-    data,
-    error
-  } =
-    await db.auth.signInWithPassword({
-
-      email,
-      password
-
-    });
-
-
-  if(error){
-
-    console.error(
-      "Login error:",
-      error
-    );
-
-    message(
-      $("loginMessage"),
-      "Invalid email or password.",
-      "error"
-    );
-
-    return;
-
-  }
-
-
-  const isAdmin =
-    await checkAdmin();
-
-
-  if(!isAdmin){
-
-    await db.auth.signOut();
-
-    message(
-      $("loginMessage"),
-      "You are not authorized to access the admin panel.",
-      "error"
-    );
-
-    return;
-
-  }
-
-
-  $("loginMessage").innerHTML = "";
-
-
-  $("adminName").textContent =
-    data.user?.email ||
-    ADMIN_EMAIL;
-
-
-  $("loginScreen")
-    .classList
-    .add("hidden");
-
-
-  $("app")
-    .classList
-    .remove("hidden");
-
-
-  await refreshAll();
-
-}
-
-
-/* =====================================================
-   LOGIN EVENTS
-===================================================== */
-
-$("loginBtn").onclick =
-  login;
-
-
-$("adminPassword")
-  .addEventListener(
-    "keydown",
-    e => {
-
-      if(e.key === "Enter")
-        login();
-
+    if (!emailEl || !passwordEl) {
+        console.error("Login elements not found.");
+        return;
     }
-  );
+
+    const email =
+        emailEl.value
+            .trim()
+            .toLowerCase();
+
+    const password =
+        passwordEl.value;
+
+
+    if (email !== ADMIN_EMAIL) {
+
+        message(
+            $("loginMessage"),
+            "Only IT@erada.ly can access the admin panel.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    if (!password) {
+
+        message(
+            $("loginMessage"),
+            "Please enter your password.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    message(
+        $("loginMessage"),
+        "Signing in..."
+    );
+
+
+    try {
+
+        const { data, error } =
+            await db.auth.signInWithPassword({
+                email,
+                password
+            });
+
+
+        if (error) {
+
+            console.error("Login error:", error);
+
+            message(
+                $("loginMessage"),
+                error.message || "Invalid email or password.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        const isAdmin =
+            await checkAdmin();
+
+
+        if (!isAdmin) {
+
+            await db.auth.signOut();
+
+            message(
+                $("loginMessage"),
+                "You are not authorized to access the admin panel.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        setText(
+            "adminName",
+            data.user?.email || ADMIN_EMAIL
+        );
+
+
+        const loginScreen = $("loginScreen");
+        const app = $("app");
+
+        if (loginScreen)
+            loginScreen.classList.add("hidden");
+
+        if (app)
+            app.classList.remove("hidden");
+
+
+        await refreshAll();
+
+    } catch (err) {
+
+        console.error("Login exception:", err);
+
+        message(
+            $("loginMessage"),
+            "Login failed. Please try again.",
+            "error"
+        );
+    }
+}
 
 
 /* =====================================================
    FORGOT PASSWORD
 ===================================================== */
 
-$("forgotBtn").onclick =
-  async () => {
+async function forgotPassword() {
+
+    const emailEl = $("adminEmail");
+
+    if (!emailEl) return;
 
     const email =
-      $("adminEmail")
-        .value
-        .trim()
-        .toLowerCase();
+        emailEl.value
+            .trim()
+            .toLowerCase();
 
 
-    if(email !== ADMIN_EMAIL){
+    if (email !== ADMIN_EMAIL) {
 
-      message(
-        $("loginMessage"),
-        "Enter IT@erada.ly first.",
-        "error"
-      );
-
-      return;
-
-    }
-
-
-    const {
-      error
-    } =
-      await db.auth
-        .resetPasswordForEmail(
-          email,
-          {
-            redirectTo:
-              "https://eradavideos.github.io/reset-password.html"
-          }
+        message(
+            $("loginMessage"),
+            "Enter IT@erada.ly first.",
+            "error"
         );
 
-
-    if(error){
-
-      console.error(
-        "Password reset error:",
-        error
-      );
-
-      message(
-        $("loginMessage"),
-        "Unable to send recovery email.",
-        "error"
-      );
-
-      return;
-
+        return;
     }
 
 
-    message(
-      $("loginMessage"),
-      "Password recovery link has been sent."
-    );
+    try {
 
-  };
+        const { error } =
+            await db.auth.resetPasswordForEmail(
+                email,
+                {
+                    redirectTo:
+                        "https://eradavideos.github.io/reset-password.html"
+                }
+            );
+
+
+        if (error) {
+
+            console.error(error);
+
+            message(
+                $("loginMessage"),
+                error.message || "Unable to send recovery email.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        message(
+            $("loginMessage"),
+            "Password recovery link has been sent."
+        );
+
+    } catch (err) {
+
+        console.error(err);
+
+        message(
+            $("loginMessage"),
+            "Unable to send recovery email.",
+            "error"
+        );
+    }
+}
 
 
 /* =====================================================
@@ -380,86 +326,72 @@ $("forgotBtn").onclick =
 ===================================================== */
 
 let allRequests = [];
-
-let requestFilter =
-  "all";
+let requestFilter = "all";
 
 
-async function loadRequests(){
+async function loadRequests() {
 
-  const {
-    data,
-    error
-  } =
-    await db.rpc(
-      "admin_get_access_requests"
-    );
+    try {
 
-
-  if(error){
-
-    console.error(
-      "Requests error:",
-      error
-    );
+        const { data, error } =
+            await db.rpc(
+                "admin_get_access_requests"
+            );
 
 
-    $("requestsTable").innerHTML =
-      `
-      <tr>
+        if (error) {
 
-        <td colspan="4">
+            console.error("Requests error:", error);
 
-          Unable to load access requests.
+            setHTML(
+                "requestsTable",
+                `
+                <tr>
+                    <td colspan="4">
+                        Unable to load access requests.
+                        <br><br>
+                        ${esc(error.message)}
+                    </td>
+                </tr>
+                `
+            );
 
-          <br><br>
-
-          ${esc(error.message)}
-
-        </td>
-
-      </tr>
-      `;
-
-
-    return [];
-
-  }
+            return [];
+        }
 
 
-  allRequests =
-    data || [];
+        allRequests = data || [];
 
 
-  const pending =
-    allRequests.filter(
-      r =>
-        String(r.status)
-          .toLowerCase()
-          === "pending"
-    );
+        const pending =
+            allRequests.filter(
+                r =>
+                    String(r.status || "")
+                        .toLowerCase() === "pending"
+            );
 
 
-  $("statRequests").textContent =
-    pending.length;
+        setText(
+            "statRequests",
+            pending.length
+        );
+
+        setText(
+            "statTotalRequests",
+            allRequests.length
+        );
 
 
-  $("statTotalRequests").textContent =
-    allRequests.length;
+        renderRequests(allRequests);
+        renderRecent(allRequests.slice(0, 5));
 
+        return allRequests;
 
-  renderRequests(
-    allRequests
-  );
+    } catch (err) {
 
-
-  renderRecent(
-    allRequests.slice(0,5)
-  );
-
-
-  return allRequests;
-
+        console.error("Load requests exception:", err);
+        return [];
+    }
 }
 
 
@@ -467,188 +399,152 @@ async function loadRequests(){
    RENDER REQUESTS
 ===================================================== */
 
-function renderRequests(
-  data
-){
+function renderRequests(data) {
 
-  const search =
-    $("requestSearch")
-      .value
-      .trim()
-      .toLowerCase();
+    const searchEl = $("requestSearch");
 
-
-  let rows =
-    data.filter(
-      r =>
-        String(r.email)
-          .toLowerCase()
-          .includes(search)
-    );
+    const search =
+        searchEl
+            ? searchEl.value.trim().toLowerCase()
+            : "";
 
 
-  if(
-    requestFilter ===
-    "pending"
-  ){
-
-    rows =
-      rows.filter(
-        r =>
-          String(r.status)
-            .toLowerCase()
-            === "pending"
-      );
-
-  }
+    let rows =
+        (data || []).filter(
+            r =>
+                String(r.email || "")
+                    .toLowerCase()
+                    .includes(search)
+        );
 
 
-  $("requestsTable").innerHTML =
-    rows.length
+    if (requestFilter === "pending") {
 
-    ?
-
-    rows.map(
-      r => {
-
-        const status =
-          String(r.status)
-            .toLowerCase();
+        rows =
+            rows.filter(
+                r =>
+                    String(r.status || "")
+                        .toLowerCase() === "pending"
+            );
+    }
 
 
-        let actions =
-          "—";
+    if (!$("requestsTable")) return;
 
 
-        if(
-          status === "pending"
-        ){
+    $("requestsTable").innerHTML =
+        rows.length
+            ? rows.map(r => {
 
-          actions = `
+                const status =
+                    String(r.status || "")
+                        .toLowerCase();
 
-            <div class="actions">
-
-              <button
-                class="btn-success"
-                onclick="approveRequest('${esc(r.id)}')"
-              >
-                ✓ Approve
-              </button>
+                let actions = "—";
 
 
-              <button
-                class="btn-danger"
-                onclick="rejectRequest('${esc(r.id)}')"
-              >
-                ✕ Reject
-              </button>
+                if (status === "pending") {
 
-            </div>
+                    actions = `
+                        <div class="actions">
 
-          `;
+                            <button
+                                class="btn-success"
+                                onclick="approveRequest('${esc(r.id)}')"
+                            >
+                                ✓ Approve
+                            </button>
 
-        }
+                            <button
+                                class="btn-danger"
+                                onclick="rejectRequest('${esc(r.id)}')"
+                            >
+                                ✕ Reject
+                            </button>
+
+                        </div>
+                    `;
+                }
 
 
-        return `
+                return `
+                    <tr>
 
-          <tr>
+                        <td>
+                            ${esc(r.email)}
+                        </td>
 
-            <td>
-              ${esc(r.email)}
-            </td>
+                        <td>
+                            ${badge(r.status)}
+                        </td>
 
-            <td>
-              ${badge(r.status)}
-            </td>
+                        <td>
+                            ${dateText(r.created_at)}
+                        </td>
 
-            <td>
-              ${dateText(r.created_at)}
-            </td>
+                        <td>
+                            ${actions}
+                        </td>
 
-            <td>
-              ${actions}
-            </td>
+                    </tr>
+                `;
 
-          </tr>
+            }).join("")
 
-        `;
+            :
 
-      }
-    ).join("")
-
-    :
-
-    `
-
-      <tr>
-
-        <td
-          colspan="4"
-          class="empty"
-        >
-
-          ${
-            requestFilter === "pending"
-            ? "No pending requests."
-            : "No access requests found."
-          }
-
-        </td>
-
-      </tr>
-
-    `;
-
+            `
+                <tr>
+                    <td colspan="4" class="empty">
+                        ${
+                            requestFilter === "pending"
+                                ? "No pending requests."
+                                : "No access requests found."
+                        }
+                    </td>
+                </tr>
+            `;
 }
 
 
 /* =====================================================
-   RECENT REQUESTS
+   RECENT
 ===================================================== */
 
-function renderRecent(
-  data
-){
+function renderRecent(data) {
 
-  $("recentRequests").innerHTML =
-    data.length
+    if (!$("recentRequests")) return;
 
-    ?
 
-    data.map(
-      r => `
+    $("recentRequests").innerHTML =
+        data.length
 
-        <div
-          class="status-line"
-          style="
-            padding:10px 0;
-            border-bottom:
-              1px solid rgba(255,255,255,.10)
-          "
-        >
+            ? data.map(r => `
+                <div
+                    class="status-line"
+                    style="
+                        padding:10px 0;
+                        border-bottom:
+                        1px solid rgba(255,255,255,.10)
+                    "
+                >
 
-          <span>
-            ${esc(r.email)}
-          </span>
+                    <span>
+                        ${esc(r.email)}
+                    </span>
 
-          ${badge(r.status)}
+                    ${badge(r.status)}
 
-        </div>
+                </div>
+            `).join("")
 
-      `
-    ).join("")
+            :
 
-    :
-
-    `
-
-      <div class="empty">
-        No access requests.
-      </div>
-
-    `;
-
+            `
+                <div class="empty">
+                    No access requests.
+                </div>
+            `;
 }
 
 
@@ -656,70 +552,59 @@ function renderRecent(
    APPROVE REQUEST
 ===================================================== */
 
-async function approveRequest(
-  id
-){
+async function approveRequest(id) {
 
-  if(
-    !confirm(
-      "Approve this access request?"
-    )
-  )
-    return;
+    if (!confirm("Approve this access request?"))
+        return;
 
 
-  const {
-    data,
-    error
-  } =
-    await db.rpc(
-      "admin_approve_access_request",
-      {
-        request_id:
-          id
-      }
-    );
+    try {
+
+        const { data, error } =
+            await db.rpc(
+                "admin_approve_access_request",
+                {
+                    request_id: id
+                }
+            );
 
 
-  if(error){
+        if (error) {
 
-    console.error(
-      "Approve error:",
-      error
-    );
+            console.error(error);
 
+            alert(
+                "Unable to approve this request:\n\n" +
+                error.message
+            );
 
-    alert(
-      "Unable to approve this request:\n\n"
-      + error.message
-    );
-
-    return;
-
-  }
+            return;
+        }
 
 
-  if(data !== true){
+        if (data !== true) {
 
-    alert(
-      "The request could not be approved."
-    );
+            alert("The request could not be approved.");
 
-    return;
-
-  }
+            return;
+        }
 
 
-  message(
-    $("requestMessage"),
-    "Access approved successfully."
-  );
+        message(
+            $("requestMessage"),
+            "Access approved successfully."
+        );
 
 
-  await loadRequests();
+        await loadRequests();
+        await loadUsers();
 
-  await loadUsers();
+    } catch (err) {
 
+        console.error(err);
+
+        alert("Unable to approve this request.");
+    }
 }
 
 
@@ -727,68 +612,56 @@ async function approveRequest(
    REJECT REQUEST
 ===================================================== */
 
-async function rejectRequest(
-  id
-){
+async function rejectRequest(id) {
 
-  if(
-    !confirm(
-      "Reject this access request?"
-    )
-  )
-    return;
+    if (!confirm("Reject this access request?"))
+        return;
 
 
-  const {
-    data,
-    error
-  } =
-    await db.rpc(
-      "admin_reject_access_request",
-      {
-        request_id:
-          id
-      }
-    );
+    try {
+
+        const { data, error } =
+            await db.rpc(
+                "admin_reject_access_request",
+                {
+                    request_id: id
+                }
+            );
 
 
-  if(error){
+        if (error) {
 
-    console.error(
-      "Reject error:",
-      error
-    );
+            console.error(error);
 
+            alert(
+                "Unable to reject this request:\n\n" +
+                error.message
+            );
 
-    alert(
-      "Unable to reject this request:\n\n"
-      + error.message
-    );
-
-    return;
-
-  }
+            return;
+        }
 
 
-  if(data !== true){
+        if (data !== true) {
 
-    alert(
-      "The request could not be rejected."
-    );
+            alert("The request could not be rejected.");
 
-    return;
-
-  }
+            return;
+        }
 
 
-  message(
-    $("requestMessage"),
-    "Access request rejected."
-  );
+        message(
+            $("requestMessage"),
+            "Access request rejected."
+        );
 
 
-  await loadRequests();
+        await loadRequests();
 
+    } catch (err) {
+
+        console.error(err);
+    }
 }
 
 
@@ -799,79 +672,72 @@ async function rejectRequest(
 let allUsers = [];
 
 
-async function loadUsers(){
+async function loadUsers() {
 
-  const {
-    data,
-    error
-  } =
-    await db
-      .from("approved_users")
-      .select(
-        "id,email,status,created_at"
-      )
-      .order(
-        "email",
-        {
-          ascending:
-            true
+    try {
+
+        const { data, error } =
+            await db
+                .from("approved_users")
+                .select(
+                    "id,email,status,created_at"
+                )
+                .order(
+                    "email",
+                    {
+                        ascending: true
+                    }
+                );
+
+
+        if (error) {
+
+            console.error("Users error:", error);
+
+            setHTML(
+                "usersTable",
+                `
+                <tr>
+                    <td colspan="4">
+                        Unable to load users.
+                        <br><br>
+                        ${esc(error.message)}
+                    </td>
+                </tr>
+                `
+            );
+
+            return [];
         }
-      );
 
 
-  if(error){
-
-    console.error(
-      "Users error:",
-      error
-    );
+        allUsers = data || [];
 
 
-    $("usersTable").innerHTML =
-      `
-
-      <tr>
-
-        <td colspan="4">
-
-          Unable to load users.
-
-          <br><br>
-
-          ${esc(error.message)}
-
-        </td>
-
-      </tr>
-
-      `;
+        const approved =
+            allUsers.filter(
+                u =>
+                    String(u.status || "")
+                        .toLowerCase() === "approved"
+            );
 
 
-    return [];
-
-  }
-
-
-  allUsers =
-    data || [];
+        setText(
+            "statUsers",
+            approved.length
+        );
 
 
-  $("statUsers").textContent =
-    allUsers.filter(
-      u =>
-        String(u.status)
-          .toLowerCase()
-          === "approved"
-    ).length;
+        renderUsers(allUsers);
 
+        return allUsers;
 
-  renderUsers(
-    allUsers
-  );
+    } catch (err) {
 
+        console.error("Load users exception:", err);
 
-  return allUsers;
-
+        return [];
+    }
 }
 
 
@@ -879,121 +745,104 @@ async function loadUsers(){
    RENDER USERS
 ===================================================== */
 
-function renderUsers(
-  data
-){
+function renderUsers(data) {
 
-  const search =
-    $("userSearch")
-      .value
-      .trim()
-      .toLowerCase();
+    const searchEl = $("userSearch");
 
-
-  const rows =
-    data.filter(
-      u =>
-        String(u.email)
-          .toLowerCase()
-          .includes(search)
-    );
+    const search =
+        searchEl
+            ? searchEl.value.trim().toLowerCase()
+            : "";
 
 
-  $("usersTable").innerHTML =
-    rows.length
-
-    ?
-
-    rows.map(
-      u => {
-
-        const isAdmin =
-          String(u.email)
-            .toLowerCase()
-            === ADMIN_EMAIL;
+    const rows =
+        (data || []).filter(
+            u =>
+                String(u.email || "")
+                    .toLowerCase()
+                    .includes(search)
+        );
 
 
-        return `
+    if (!$("usersTable")) return;
 
-          <tr>
 
-            <td>
-              ${esc(u.email)}
-            </td>
+    $("usersTable").innerHTML =
+        rows.length
 
-            <td>
+            ? rows.map(u => {
 
-              ${
-                isAdmin
+                const isAdmin =
+                    String(u.email || "")
+                        .toLowerCase() === ADMIN_EMAIL;
 
-                ?
 
-                `
-                <span class="badge approved">
-                  Administrator
-                </span>
-                `
+                return `
+                    <tr>
 
-                :
+                        <td>
+                            ${esc(u.email)}
+                        </td>
 
-                badge(u.status)
-              }
+                        <td>
 
-            </td>
+                            ${
+                                isAdmin
+                                    ?
 
-            <td>
-              ${dateText(u.created_at)}
-            </td>
+                                    `
+                                    <span class="badge approved">
+                                        Administrator
+                                    </span>
+                                    `
 
-            <td>
+                                    :
 
-              ${
-                isAdmin
+                                    badge(u.status)
+                            }
 
-                ?
+                        </td>
 
-                "—"
+                        <td>
+                            ${dateText(u.created_at)}
+                        </td>
 
-                :
+                        <td>
 
-                `
+                            ${
+                                isAdmin
+                                    ?
 
-                <button
-                  class="btn-danger"
-                  onclick="removeUser('${esc(u.id)}')"
-                >
-                  Remove Access
-                </button>
+                                    "—"
 
-                `
-              }
+                                    :
 
-            </td>
+                                    `
+                                    <button
+                                        class="btn-danger"
+                                        onclick="removeUser('${esc(u.id)}')"
+                                    >
+                                        Remove Access
+                                    </button>
+                                    `
+                            }
 
-          </tr>
+                        </td>
 
-        `;
+                    </tr>
+                `;
 
-      }
-    ).join("")
+            }).join("")
 
-    :
+            :
 
-    `
-
-      <tr>
-
-        <td
-          colspan="4"
-          class="empty"
-        >
-          No users found.
-        </td>
-
-      </tr>
-
-    `;
-
+            `
+                <tr>
+                    <td colspan="4" class="empty">
+                        No users found.
+                    </td>
+                </tr>
+            `;
 }
 
 
@@ -1001,155 +850,143 @@ function renderUsers(
    REMOVE USER
 ===================================================== */
 
-async function removeUser(
-  id
-){
+async function removeUser(id) {
 
-  if(
-    !confirm(
-      "Remove access for this user?"
-    )
-  )
-    return;
+    if (!confirm("Remove access for this user?"))
+        return;
 
 
-  const {
-    error
-  } =
-    await db
-      .from("approved_users")
-      .delete()
-      .eq(
-        "id",
-        id
-      );
+    try {
+
+        const { error } =
+            await db
+                .from("approved_users")
+                .delete()
+                .eq("id", id);
 
 
-  if(error){
+        if (error) {
 
-    console.error(
-      "Remove user error:",
-      error
-    );
+            console.error(error);
 
+            alert(
+                "Unable to remove access:\n\n" +
+                error.message
+            );
 
-    alert(
-      "Unable to remove access:\n\n"
-      + error.message
-    );
-
-    return;
-
-  }
+            return;
+        }
 
 
-  message(
-    $("userMessage"),
-    "User access removed."
-  );
+        message(
+            $("userMessage"),
+            "User access removed."
+        );
 
 
-  await loadUsers();
+        await loadUsers();
 
+    } catch (err) {
+
+        console.error(err);
+    }
 }
 
 
 /* =====================================================
-   ADD USER MANUALLY
+   ADD USER
 ===================================================== */
 
-$("addUserBtn").onclick =
-  async () => {
+async function addUser() {
+
+    const input = $("newUserEmail");
+
+    if (!input) return;
+
 
     const email =
-      $("newUserEmail")
-        .value
-        .trim()
-        .toLowerCase();
+        input.value
+            .trim()
+            .toLowerCase();
 
 
-    if(
-      !email ||
-      !email.includes("@")
-    ){
+    if (!email || !email.includes("@")) {
 
-      message(
-        $("userMessage"),
-        "Please enter a valid email address.",
-        "error"
-      );
+        message(
+            $("userMessage"),
+            "Please enter a valid email address.",
+            "error"
+        );
 
-      return;
-
+        return;
     }
 
 
-    if(
-      email === ADMIN_EMAIL
-    ){
+    if (email === ADMIN_EMAIL) {
 
-      message(
-        $("userMessage"),
-        "This email is already the administrator.",
-        "error"
-      );
+        message(
+            $("userMessage"),
+            "This email is already the administrator.",
+            "error"
+        );
 
-      return;
-
+        return;
     }
 
 
-    const {
-      error
-    } =
-      await db
-        .from("approved_users")
-        .upsert(
-          {
-            email,
-            status:
-              "approved"
-          },
-          {
-            onConflict:
-              "email"
-          }
+    try {
+
+        const { error } =
+            await db
+                .from("approved_users")
+                .upsert(
+                    {
+                        email: email,
+                        status: "approved"
+                    },
+                    {
+                        onConflict: "email"
+                    }
+                );
+
+
+        if (error) {
+
+            console.error(error);
+
+            message(
+                $("userMessage"),
+                "Unable to approve this user: " +
+                error.message,
+                "error"
+            );
+
+            return;
+        }
+
+
+        input.value = "";
+
+
+        message(
+            $("userMessage"),
+            "User approved successfully."
         );
 
 
-    if(error){
+        await loadUsers();
 
-      console.error(
-        "Add user error:",
-        error
-      );
+    } catch (err) {
 
+        console.error(err);
 
-      message(
-        $("userMessage"),
-        "Unable to approve this user: "
-        + error.message,
-        "error"
-      );
-
-      return;
-
+        message(
+            $("userMessage"),
+            "Unable to approve this user.",
+            "error"
+        );
     }
-
-
-    $("newUserEmail")
-      .value = "";
-
-
-    message(
-      $("userMessage"),
-      "User approved successfully."
-    );
-
-
-    await loadUsers();
-
-  };
+}
 
 
 /* =====================================================
@@ -1159,70 +996,62 @@ $("addUserBtn").onclick =
 let allVideos = [];
 
 
-async function loadVideos(){
+async function loadVideos() {
 
-  const {
-    data,
-    error
-  } =
-    await db
-      .from("videos")
-      .select(
-        "id,title,youtube_url,created_at"
-      )
-      .order(
-        "created_at",
-        {
-          ascending:
-            false
+    try {
+
+        const { data, error } =
+            await db
+                .from("videos")
+                .select(
+                    "id,title,youtube_url,created_at"
+                )
+                .order(
+                    "created_at",
+                    {
+                        ascending: false
+                    }
+                );
+
+
+        if (error) {
+
+            console.error("Videos error:", error);
+
+            setHTML(
+                "videosList",
+                `
+                <div class="message error">
+                    Unable to load videos.
+                    <br><br>
+                    ${esc(error.message)}
+                </div>
+                `
+            );
+
+            return [];
         }
-      );
 
 
-  if(error){
-
-    console.error(
-      "Videos error:",
-      error
-    );
+        allVideos = data || [];
 
 
-    $("videosList").innerHTML =
-      `
-
-      <div class="message error">
-
-        Unable to load videos.
-
-        <br><br>
-
-        ${esc(error.message)}
-
-      </div>
-
-      `;
+        setText(
+            "statVideos",
+            allVideos.length
+        );
 
 
-    return [];
+        renderVideos(allVideos);
 
-  }
+        return allVideos;
 
+    } catch (err) {
 
-  allVideos =
-    data || [];
+        console.error(err);
 
-
-  $("statVideos").textContent =
-    allVideos.length;
-
-
-  renderVideos(
-    allVideos
-  );
-
-
-  return allVideos;
-
+        return [];
+    }
 }
 
 
@@ -1230,92 +1059,81 @@ async function loadVideos(){
    RENDER VIDEOS
 ===================================================== */
 
-function renderVideos(
-  data
-){
+function renderVideos(data) {
 
-  const search =
-    $("videoSearch")
-      .value
-      .trim()
-      .toLowerCase();
+    const searchEl = $("videoSearch");
 
-
-  const rows =
-    data.filter(
-      v =>
-        (
-          String(v.title)
-          + " "
-          + String(v.youtube_url)
-        )
-        .toLowerCase()
-        .includes(search)
-    );
+    const search =
+        searchEl
+            ? searchEl.value.trim().toLowerCase()
+            : "";
 
 
-  $("videosList").innerHTML =
-    rows.length
-
-    ?
-
-    rows.map(
-      v => `
-
-        <div class="video-card">
-
-          <div class="video-title">
-            🎬 ${esc(v.title)}
-          </div>
+    const rows =
+        (data || []).filter(
+            v =>
+                (
+                    String(v.title || "") +
+                    " " +
+                    String(v.youtube_url || "")
+                )
+                .toLowerCase()
+                .includes(search)
+        );
 
 
-          <div class="url">
-            ${esc(v.youtube_url)}
-          </div>
+    if (!$("videosList")) return;
 
 
-          <div class="muted">
-            ${dateText(v.created_at)}
-          </div>
+    $("videosList").innerHTML =
+        rows.length
 
+            ? rows.map(v => `
+                <div class="video-card">
 
-          <div
-            class="actions"
-            style="margin-top:10px"
-          >
+                    <div class="video-title">
+                        🎬 ${esc(v.title)}
+                    </div>
 
-            <button
-              class="btn-primary"
-              onclick="editVideo('${esc(v.id)}')"
-            >
-              ✏️ Edit
-            </button>
+                    <div class="url">
+                        ${esc(v.youtube_url)}
+                    </div>
 
+                    <div class="muted">
+                        ${dateText(v.created_at)}
+                    </div>
 
-            <button
-              class="btn-danger"
-              onclick="deleteVideo('${esc(v.id)}')"
-            >
-              🗑️ Delete
-            </button>
+                    <div
+                        class="actions"
+                        style="margin-top:10px"
+                    >
 
-          </div>
+                        <button
+                            class="btn-primary"
+                            onclick="editVideo('${esc(v.id)}')"
+                        >
+                            ✏️ Edit
+                        </button>
 
-        </div>
+                        <button
+                            class="btn-danger"
+                            onclick="deleteVideo('${esc(v.id)}')"
+                        >
+                            🗑️ Delete
+                        </button>
 
-      `
-    ).join("")
+                    </div>
 
-    :
+                </div>
+            `).join("")
 
-    `
+            :
 
-      <div class="empty">
-        No videos found.
-      </div>
-
-    `;
-
+            `
+                <div class="empty">
+                    No videos found.
+                </div>
+            `;
 }
 
 
@@ -1323,207 +1141,167 @@ function renderVideos(
    ADD VIDEO
 ===================================================== */
 
-$("addVideoBtn").onclick =
-  async () => {
+async function addVideo() {
+
+    const titleEl = $("videoTitle");
+    const urlEl = $("videoUrl");
+
+    if (!titleEl || !urlEl)
+        return;
+
 
     const title =
-      $("videoTitle")
-        .value
-        .trim();
-
+        titleEl.value.trim();
 
     const url =
-      $("videoUrl")
-        .value
-        .trim();
+        urlEl.value.trim();
 
 
-    if(
-      !title ||
-      !url
-    ){
+    if (!title || !url) {
 
-      message(
-        $("videoMessage"),
-        "Enter the video title and YouTube link.",
-        "error"
-      );
+        message(
+            $("videoMessage"),
+            "Enter the video title and YouTube link.",
+            "error"
+        );
 
-      return;
-
+        return;
     }
 
 
-    const {
-      error
-    } =
-      await db
-        .from("videos")
-        .insert({
-          title,
-          youtube_url:
-            url
-        });
+    try {
+
+        const { error } =
+            await db
+                .from("videos")
+                .insert({
+                    title: title,
+                    youtube_url: url
+                });
 
 
-    if(error){
+        if (error) {
 
-      console.error(
-        "Add video error:",
-        error
-      );
+            console.error(error);
+
+            message(
+                $("videoMessage"),
+                "Unable to add video: " +
+                error.message,
+                "error"
+            );
+
+            return;
+        }
 
 
-      message(
-        $("videoMessage"),
-        "Unable to add video: "
-        + error.message,
-        "error"
-      );
+        titleEl.value = "";
+        urlEl.value = "";
 
-      return;
 
+        message(
+            $("videoMessage"),
+            "Video added successfully."
+        );
+
+
+        await loadVideos();
+
+    } catch (err) {
+
+        console.error(err);
     }
-
-
-    $("videoTitle")
-      .value = "";
-
-
-    $("videoUrl")
-      .value = "";
-
-
-    message(
-      $("videoMessage"),
-      "Video added successfully."
-    );
-
-
-    await loadVideos();
-
-  };
+}
 
 
 /* =====================================================
    EDIT VIDEO
 ===================================================== */
 
-async function editVideo(
-  id
-){
+async function editVideo(id) {
 
-  const {
-    data,
-    error
-  } =
-    await db
-      .from("videos")
-      .select(
-        "title,youtube_url"
-      )
-      .eq(
-        "id",
-        id
-      )
-      .single();
+    try {
+
+        const { data, error } =
+            await db
+                .from("videos")
+                .select(
+                    "title,youtube_url"
+                )
+                .eq("id", id)
+                .single();
 
 
-  if(error){
+        if (error) {
 
-    console.error(
-      "Edit load error:",
-      error
-    );
+            alert(
+                "Unable to load video:\n\n" +
+                error.message
+            );
 
-
-    alert(
-      "Unable to load video."
-    );
-
-    return;
-
-  }
+            return;
+        }
 
 
-  const title =
-    prompt(
-      "Video title:",
-      data.title
-    );
+        const title =
+            prompt(
+                "Video title:",
+                data.title
+            );
 
 
-  if(
-    title === null
-  )
-    return;
+        if (title === null)
+            return;
 
 
-  const url =
-    prompt(
-      "YouTube link:",
-      data.youtube_url
-    );
+        const url =
+            prompt(
+                "YouTube link:",
+                data.youtube_url
+            );
 
 
-  if(
-    url === null
-  )
-    return;
+        if (url === null)
+            return;
 
 
-  if(
-    !title.trim() ||
-    !url.trim()
-  ){
+        if (!title.trim() || !url.trim()) {
 
-    alert(
-      "Title and URL cannot be empty."
-    );
+            alert(
+                "Title and URL cannot be empty."
+            );
 
-    return;
-
-  }
+            return;
+        }
 
 
-  const {
-    error:e
-  } =
-    await db
-      .from("videos")
-      .update({
-        title:
-          title.trim(),
-
-        youtube_url:
-          url.trim()
-      })
-      .eq(
-        "id",
-        id
-      );
+        const { error: updateError } =
+            await db
+                .from("videos")
+                .update({
+                    title: title.trim(),
+                    youtube_url: url.trim()
+                })
+                .eq("id", id);
 
 
-  if(e){
+        if (updateError) {
 
-    console.error(
-      "Edit video error:",
-      e
-    );
+            alert(
+                "Unable to update video:\n\n" +
+                updateError.message
+            );
 
-
-    alert(
-      "Unable to update video:\n\n"
-      + e.message
-    );
-
-    return;
-
-  }
+            return;
+        }
 
 
-  await loadVideos();
+        await loadVideos();
 
+    } catch (err) {
+
+        console.error(err);
+    }
 }
 
 
@@ -1531,405 +1309,422 @@ async function editVideo(
    DELETE VIDEO
 ===================================================== */
 
-async function deleteVideo(
-  id
-){
+async function deleteVideo(id) {
 
-  if(
-    !confirm(
-      "Delete this video?"
-    )
-  )
-    return;
+    if (!confirm("Delete this video?"))
+        return;
 
 
-  const {
-    error
-  } =
-    await db
-      .from("videos")
-      .delete()
-      .eq(
-        "id",
-        id
-      );
+    try {
+
+        const { error } =
+            await db
+                .from("videos")
+                .delete()
+                .eq("id", id);
 
 
-  if(error){
+        if (error) {
 
-    console.error(
-      "Delete video error:",
-      error
-    );
+            alert(
+                "Unable to delete video:\n\n" +
+                error.message
+            );
 
-
-    alert(
-      "Unable to delete video:\n\n"
-      + error.message
-    );
-
-    return;
-
-  }
+            return;
+        }
 
 
-  await loadVideos();
+        await loadVideos();
 
+    } catch (err) {
+
+        console.error(err);
+    }
 }
 
 
 /* =====================================================
-   MAKE FUNCTIONS AVAILABLE TO HTML BUTTONS
+   REFRESH
 ===================================================== */
 
-window.approveRequest =
-  approveRequest;
+async function refreshAll() {
 
-window.rejectRequest =
-  rejectRequest;
-
-window.removeUser =
-  removeUser;
-
-window.editVideo =
-  editVideo;
-
-window.deleteVideo =
-  deleteVideo;
+    setHTML(
+        "systemStatus",
+        `
+        <div class="message">
+            Loading system...
+        </div>
+        `
+    );
 
 
-/* =====================================================
-   REFRESH ALL
-===================================================== */
-
-async function refreshAll(){
-
-  $("systemStatus").innerHTML =
-    `
-
-    <div class="message">
-      Loading system...
-    </div>
-
-    `;
+    await Promise.all([
+        loadRequests(),
+        loadUsers(),
+        loadVideos()
+    ]);
 
 
-  await Promise.all([
-    loadRequests(),
-    loadUsers(),
-    loadVideos()
-  ]);
+    setHTML(
+        "systemStatus",
+        `
+        <div class="message success">
+            ✓ Supabase authentication is active.
+        </div>
 
+        <div class="message success">
+            ✓ Admin authorization is active.
+        </div>
 
-  $("systemStatus").innerHTML =
-    `
+        <div class="message success">
+            ✓ Access request system is active.
+        </div>
 
-    <div class="message success">
-      ✓ Supabase authentication is active.
-    </div>
+        <div class="message success">
+            ✓ Approved users management is active.
+        </div>
 
-
-    <div class="message success">
-      ✓ Admin authorization is active.
-    </div>
-
-
-    <div class="message success">
-      ✓ Access request system is active.
-    </div>
-
-
-    <div class="message success">
-      ✓ Approved users management is active.
-    </div>
-
-
-    <div class="message success">
-      ✓ YouTube video management is active.
-    </div>
-
-    `;
-
+        <div class="message success">
+            ✓ YouTube video management is active.
+        </div>
+        `
+    );
 }
 
 
 /* =====================================================
-   PAGE NAVIGATION
+   NAVIGATION
 ===================================================== */
 
-function showPage(
-  page
-){
+function showPage(page) {
 
-  document
-    .querySelectorAll(".page")
-    .forEach(
-      x =>
-        x.classList.add(
-          "hidden"
-        )
-    );
+    document
+        .querySelectorAll(".page")
+        .forEach(
+            x =>
+                x.classList.add("hidden")
+        );
 
 
-  const target =
-    $(page + "Page");
+    const target =
+        $(page + "Page");
 
 
-  if(target){
-
-    target
-      .classList
-      .remove("hidden");
-
-  }
+    if (target)
+        target.classList.remove("hidden");
 
 
-  document
-    .querySelectorAll(".nav-btn")
-    .forEach(
-      x =>
-        x.classList.toggle(
-          "active",
-          x.dataset.page === page
-        )
-    );
+    document
+        .querySelectorAll(".nav-btn")
+        .forEach(
+            x =>
+                x.classList.toggle(
+                    "active",
+                    x.dataset.page === page
+                )
+        );
 
 
-  $("sidebar")
-    .classList
-    .remove("open");
+    const sidebar = $("sidebar");
+
+    if (sidebar)
+        sidebar.classList.remove("open");
 
 
-  if(
-    page === "requests"
-  )
-    loadRequests();
+    if (page === "requests")
+        loadRequests();
 
+    if (page === "users")
+        loadUsers();
 
-  if(
-    page === "users"
-  )
-    loadUsers();
-
-
-  if(
-    page === "videos"
-  )
-    loadVideos();
-
+    if (page === "videos")
+        loadVideos();
 }
 
 
 /* =====================================================
-   NAVIGATION EVENTS
+   EVENTS
 ===================================================== */
+
+const loginBtn = $("loginBtn");
+
+if (loginBtn)
+    loginBtn.onclick = login;
+
+
+const adminPassword = $("adminPassword");
+
+if (adminPassword) {
+
+    adminPassword.addEventListener(
+        "keydown",
+        e => {
+
+            if (e.key === "Enter")
+                login();
+        }
+    );
+}
+
+
+const forgotBtn = $("forgotBtn");
+
+if (forgotBtn)
+    forgotBtn.onclick = forgotPassword;
+
 
 document
-  .querySelectorAll(".nav-btn")
-  .forEach(
-    b =>
-      b.onclick =
-        () =>
-          showPage(
-            b.dataset.page
-          )
-  );
+    .querySelectorAll(".nav-btn")
+    .forEach(
+        button => {
+
+            button.onclick =
+                () =>
+                    showPage(
+                        button.dataset.page
+                    );
+        }
+    );
 
 
-$("mobileMenu").onclick =
-  () =>
-    $("sidebar")
-      .classList
-      .toggle("open");
+const mobileMenu = $("mobileMenu");
+
+if (mobileMenu) {
+
+    mobileMenu.onclick =
+        () => {
+
+            const sidebar =
+                $("sidebar");
+
+            if (sidebar)
+                sidebar.classList.toggle("open");
+        };
+}
 
 
 /* =====================================================
    REFRESH BUTTONS
 ===================================================== */
 
-$("dashboardRefresh").onclick =
-  refreshAll;
+if ($("dashboardRefresh"))
+    $("dashboardRefresh").onclick = refreshAll;
 
+if ($("refreshRequests"))
+    $("refreshRequests").onclick = loadRequests;
 
-$("refreshRequests").onclick =
-  loadRequests;
+if ($("refreshUsers"))
+    $("refreshUsers").onclick = loadUsers;
 
-
-$("refreshUsers").onclick =
-  loadUsers;
-
-
-$("refreshVideos").onclick =
-  loadVideos;
+if ($("refreshVideos"))
+    $("refreshVideos").onclick = loadVideos;
 
 
 /* =====================================================
-   REQUEST SEARCH
+   SEARCH
 ===================================================== */
 
-$("requestSearch").oninput =
-  () =>
-    renderRequests(
-      allRequests
-    );
+if ($("requestSearch")) {
+
+    $("requestSearch").oninput =
+        () =>
+            renderRequests(
+                allRequests
+            );
+}
 
 
-$("showPendingBtn").onclick =
-  () => {
+if ($("showPendingBtn")) {
 
-    requestFilter =
-      "pending";
+    $("showPendingBtn").onclick =
+        () => {
 
-    renderRequests(
-      allRequests
-    );
+            requestFilter = "pending";
 
-  };
+            renderRequests(
+                allRequests
+            );
+        };
+}
 
 
-$("showAllBtn").onclick =
-  () => {
+if ($("showAllBtn")) {
 
-    requestFilter =
-      "all";
+    $("showAllBtn").onclick =
+        () => {
 
-    renderRequests(
-      allRequests
-    );
+            requestFilter = "all";
 
-  };
+            renderRequests(
+                allRequests
+            );
+        };
+}
+
+
+if ($("userSearch")) {
+
+    $("userSearch").oninput =
+        () =>
+            renderUsers(
+                allUsers
+            );
+}
+
+
+if ($("videoSearch")) {
+
+    $("videoSearch").oninput =
+        () =>
+            renderVideos(
+                allVideos
+            );
+}
 
 
 /* =====================================================
-   USER SEARCH
+   ADD USER
 ===================================================== */
 
-$("userSearch").oninput =
-  () =>
-    renderUsers(
-      allUsers
-    );
+if ($("addUserBtn"))
+    $("addUserBtn").onclick = addUser;
 
 
 /* =====================================================
-   VIDEO SEARCH
+   ADD VIDEO
 ===================================================== */
 
-$("videoSearch").oninput =
-  () =>
-    renderVideos(
-      allVideos
-    );
+if ($("addVideoBtn"))
+    $("addVideoBtn").onclick = addVideo;
 
 
 /* =====================================================
    LOGOUT
 ===================================================== */
 
-$("logoutBtn").onclick =
-  async () => {
+if ($("logoutBtn")) {
 
-    await db.auth.signOut();
+    $("logoutBtn").onclick =
+        async () => {
 
-    location.reload();
+            await db.auth.signOut();
 
-  };
+            window.location.reload();
+        };
+}
+
+
+/* =====================================================
+   GLOBAL FUNCTIONS
+===================================================== */
+
+window.approveRequest =
+    approveRequest;
+
+window.rejectRequest =
+    rejectRequest;
+
+window.removeUser =
+    removeUser;
+
+window.editVideo =
+    editVideo;
+
+window.deleteVideo =
+    deleteVideo;
 
 
 /* =====================================================
    AUTO LOGIN
 ===================================================== */
 
-(async () => {
+(async function () {
 
-  try{
+    try {
 
-    const {
-      data,
-      error
-    } =
-      await db.auth.getSession();
+        const { data, error } =
+            await db.auth.getSession();
 
 
-    if(error){
+        if (error) {
 
-      console.error(
-        "Session error:",
-        error
-      );
+            console.error(
+                "Session error:",
+                error
+            );
 
-      return;
+            return;
+        }
 
+
+        const session =
+            data?.session;
+
+
+        if (!session)
+            return;
+
+
+        const email =
+            session.user?.email
+                ?.trim()
+                .toLowerCase();
+
+
+        if (email !== ADMIN_EMAIL) {
+
+            await db.auth.signOut();
+
+            return;
+        }
+
+
+        const isAdmin =
+            await checkAdmin();
+
+
+        if (!isAdmin) {
+
+            await db.auth.signOut();
+
+            return;
+        }
+
+
+        setText(
+            "adminName",
+            email
+        );
+
+
+        const loginScreen =
+            $("loginScreen");
+
+        const app =
+            $("app");
+
+
+        if (loginScreen)
+            loginScreen.classList.add("hidden");
+
+
+        if (app)
+            app.classList.remove("hidden");
+
+
+        await refreshAll();
+
+    } catch (err) {
+
+        console.error(
+            "Auto login error:",
+            err
+        );
     }
-
-
-    const session =
-      data?.session;
-
-
-    if(!session)
-      return;
-
-
-    const email =
-      session.user?.email
-        ?.trim()
-        .toLowerCase();
-
-
-    if(
-      email !==
-      ADMIN_EMAIL
-    ){
-
-      await db.auth.signOut();
-
-      return;
-
-    }
-
-
-    const isAdmin =
-      await checkAdmin();
-
-
-    if(!isAdmin){
-
-      await db.auth.signOut();
-
-      return;
-
-    }
-
-
-    $("adminName")
-      .textContent =
-        email;
-
-
-    $("loginScreen")
-      .classList
-      .add("hidden");
-
-
-    $("app")
-      .classList
-      .remove("hidden");
-
-
-    await refreshAll();
-
-  }catch(error){
-
-    console.error(
-      "Auto login error:",
-      error
-    );
-
-  }
 
 })();
 
-
-})();
+});
 </script>
