@@ -346,6 +346,19 @@
       opacity: 0.92;
     }
 
+    .email-hint {
+      margin: -4px 0 14px;
+      padding: 10px 12px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--text-muted);
+      text-align: right;
+      direction: rtl;
+    }
+
     .message {
       margin-top: 16px;
       padding: 12px 14px;
@@ -780,7 +793,18 @@
         type="email"
         placeholder="Enter your email"
         autocomplete="email"
+        autocapitalize="off"
+        autocorrect="off"
+        spellcheck="false"
+        inputmode="email"
       >
+
+      <p class="email-hint">
+        📱 مستخدم آيفون؟ إذا ظهر اقتراح
+        "Hide My Email" فوق لوحة المفاتيح،
+        لا تختاره — اكتب بريدك الحقيقي يدوياً،
+        وإلا راح يتسجل بريد عشوائي مختلف كل مرة.
+      </p>
 
 
       <button id="checkAccess" type="button">
@@ -1015,7 +1039,7 @@ document
         ) {
 
           showMessage(
-            "An access request already exists for this email.",
+            "A request already exists for: " + email + " — if this doesn't look like your real email, it may be an iPhone Hide My Email address. Enter your real email instead.",
             "error"
           );
 
@@ -1036,7 +1060,7 @@ document
 
 
       showMessage(
-        "Your access request has been sent. Please wait for approval.",
+        "Your access request has been sent for: " + email + " — Please wait for approval.",
         "success"
       );
 
@@ -1131,7 +1155,7 @@ document
       if (!approved) {
 
         showMessage(
-          "Your email has not been approved yet.",
+          "Not approved yet: " + email + " — if this doesn't look like your real email, check for a Hide My Email / Private Relay address and enter your real one instead.",
           "error"
         );
 
