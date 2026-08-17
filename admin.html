@@ -1,8 +1,15 @@
 <!doctype html>
 <html lang="en">
+
 <head>
+
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
   <title>ERADA Admin</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,562 +19,1940 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
+
     :root {
-      --bg:#060a17; --surface:#0b1226; --surface-2:#101a35; --border:#22315a; --border-soft:#16213f;
-      --accent:#ffffff; --accent-soft:rgba(255,255,255,0.10); --accent-dim:rgba(255,255,255,0.35);
-      --text:#ffffff; --text-muted:#aab4d4; --text-faint:#6b76a0;
-      --success-bg:#0f2a1e; --success-text:#86e0aa; --error-bg:#341318; --error-text:#f2a3a3;
-      --approve:#3fbd6f; --reject:#e05a5a; --radius:14px;
+      --bg: #060a17;
+      --surface: #0b1226;
+      --surface-2: #101a35;
+      --border: #22315a;
+      --border-soft: #16213f;
+      --accent: #ffffff;
+      --accent-soft: rgba(255, 255, 255, 0.10);
+      --accent-dim: rgba(255, 255, 255, 0.35);
+      --text: #ffffff;
+      --text-muted: #aab4d4;
+      --text-faint: #6b76a0;
+      --success-bg: #0f2a1e;
+      --success-text: #86e0aa;
+      --error-bg: #341318;
+      --error-text: #f2a3a3;
+      --approve: #3fbd6f;
+      --reject: #e05a5a;
+      --radius: 14px;
     }
-    *{box-sizing:border-box}
-    @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:0.001ms!important;transition-duration:0.001ms!important}}
-    body{margin:0;font-family:"IBM Plex Sans",Arial,sans-serif;background:radial-gradient(60% 40% at 50% 0%,rgba(60,90,180,0.22),transparent 65%),var(--bg);background-attachment:fixed;color:var(--text);min-height:100vh}
-    header{text-align:center;padding:46px 20px 34px}
-    header h1{margin:0;font-family:"El Messiri",serif;font-weight:700;font-size:28px}
-    header p{margin:8px 0 0;color:var(--text-muted);font-size:13px;letter-spacing:2px;text-transform:uppercase}
-    .container{max-width:900px;margin:0 auto;padding:0 20px 60px}
-    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:22px;box-shadow:0 20px 44px -28px rgba(0,0,0,0.7)}
-    .card h2{margin:0 0 16px;font-family:"El Messiri",serif;font-weight:600;font-size:18px}
-    .card>p{color:var(--text-muted);font-size:13.5px;margin:-6px 0 16px}
-    .request{border:1px solid var(--border-soft);background:var(--surface-2);border-radius:10px;padding:15px 16px;margin-top:12px;animation:rise .3s ease both}
-    @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-    .email{font-weight:600;margin-bottom:8px;word-break:break-word;color:var(--text)}
-    .status{margin-bottom:10px;color:var(--text-muted);font-size:13.5px}
-    .video-url{word-break:break-all;margin:4px 0 12px;color:var(--text-faint);font-size:12.5px}
-    input{width:100%;padding:12px 14px;margin:0 0 12px;border:1px solid var(--border);border-radius:9px;font-size:15px;background:var(--surface-2);color:var(--text);font-family:"IBM Plex Sans",Arial,sans-serif}
-    input::placeholder{color:var(--text-faint)}
-    input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
-    button{border:1px solid transparent;border-radius:8px;padding:10px 16px;cursor:pointer;margin-right:8px;margin-top:5px;font-family:"IBM Plex Sans",Arial,sans-serif;font-weight:600;font-size:13.5px;transition:transform .12s ease,opacity .12s ease}
-    button:active{transform:scale(.97)}
-    button:hover{opacity:.9}
-    button:disabled{opacity:.55;cursor:not-allowed}
-    .approve{background:var(--approve);color:#06210f}
-    .reject{background:var(--reject);color:#2c0a0a}
-    .logout{background:transparent;color:var(--text-muted);border-color:var(--border)}
-    .refresh{background:transparent;color:var(--text);border-color:var(--border)}
-    .forgot{background:transparent;color:var(--text-muted);padding:6px 0;margin-top:6px;text-decoration:underline;font-weight:400}
-    #loginBox{max-width:420px;margin:40px auto 0;padding:34px 32px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 24px 60px -20px rgba(0,0,0,.6)}
-    #loginBox h2{margin:0 0 18px;font-family:"El Messiri",serif;font-weight:600;font-size:20px;text-align:center}
-    .hidden{display:none}
-    .message{margin-top:12px;padding:10px 12px;border-radius:8px;background:var(--surface-2);font-size:13.5px}
-    .success{background:var(--success-bg);color:var(--success-text)}
-    .error{background:var(--error-bg);color:var(--error-text)}
-    .admin-user{background:var(--surface-2);border:1px solid var(--border-soft);color:var(--text-muted);padding:7px 12px;border-radius:7px;display:inline-block;font-size:12.5px}
-    .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.25);border-top-color:currentColor;border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px;margin-left:6px}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    .loading-line{display:flex;align-items:center;gap:6px;color:var(--text-muted);padding:14px 0;font-size:13.5px}
-    .empty-note{color:var(--text-faint);font-size:13.5px;padding:6px 0}
-    .row-actions{margin-top:10px}
+
+    * {
+      box-sizing: border-box;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        transition-duration: 0.001ms !important;
+      }
+    }
+
+    body {
+      margin: 0;
+      font-family: "IBM Plex Sans", Arial, sans-serif;
+      background:
+        radial-gradient(60% 40% at 50% 0%, rgba(60,90,180,0.22), transparent 65%),
+        var(--bg);
+      background-attachment: fixed;
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      text-align: center;
+      padding: 46px 20px 34px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-family: "El Messiri", serif;
+      font-weight: 700;
+      font-size: 28px;
+    }
+
+    header p {
+      margin: 8px 0 0;
+      color: var(--text-muted);
+      font-size: 13px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 20px 60px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 22px;
+      box-shadow: 0 20px 44px -28px rgba(0,0,0,0.7);
+    }
+
+    .card h2 {
+      margin: 0 0 16px;
+      font-family: "El Messiri", serif;
+      font-weight: 600;
+      font-size: 18px;
+    }
+
+    .card > p {
+      color: var(--text-muted);
+      font-size: 13.5px;
+      margin: -6px 0 16px;
+    }
+
+    .request {
+      border: 1px solid var(--border-soft);
+      background: var(--surface-2);
+      border-radius: 10px;
+      padding: 15px 16px;
+      margin-top: 12px;
+      animation: rise 0.3s ease both;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .email {
+      font-weight: 600;
+      margin-bottom: 8px;
+      word-break: break-word;
+      color: var(--text);
+    }
+
+    .status {
+      margin-bottom: 10px;
+      color: var(--text-muted);
+      font-size: 13.5px;
+    }
+
+    .video-url {
+      word-break: break-all;
+      margin: 4px 0 12px;
+      color: var(--text-faint);
+      font-size: 12.5px;
+    }
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px 14px;
+      margin: 0 0 12px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      font-size: 15px;
+      background: var(--surface-2);
+      color: var(--text);
+      font-family: "IBM Plex Sans", Arial, sans-serif;
+      transition: border-color 0.15s ease;
+    }
+
+    input::placeholder {
+      color: var(--text-faint);
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    button {
+      border: 1px solid transparent;
+      border-radius: 8px;
+      padding: 10px 16px;
+      cursor: pointer;
+      margin-right: 8px;
+      margin-top: 5px;
+      font-family: "IBM Plex Sans", Arial, sans-serif;
+      font-weight: 600;
+      font-size: 13.5px;
+      transition: transform 0.12s ease, opacity 0.12s ease;
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .approve {
+      background: var(--approve);
+      color: #06210f;
+    }
+
+    .reject {
+      background: var(--reject);
+      color: #2c0a0a;
+    }
+
+    .logout {
+      background: transparent;
+      color: var(--text-muted);
+      border-color: var(--border);
+    }
+
+    .logout:hover {
+      color: var(--error-text);
+      border-color: rgba(240,163,163,0.3);
+    }
+
+    .refresh {
+      background: transparent;
+      color: var(--text);
+      border-color: var(--border);
+    }
+
+    .refresh:hover {
+      border-color: var(--accent-dim);
+    }
+
+    .forgot {
+      background: transparent;
+      color: var(--text-muted);
+      padding: 6px 0;
+      margin-top: 6px;
+      text-decoration: underline;
+      font-weight: 400;
+    }
+
+    .forgot:hover {
+      color: var(--text);
+      opacity: 1;
+    }
+
+    #loginBox {
+      max-width: 420px;
+      margin: 40px auto 0;
+      padding: 34px 32px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 24px 60px -20px rgba(0,0,0,0.6);
+    }
+
+    #loginBox h2 {
+      margin: 0 0 18px;
+      font-family: "El Messiri", serif;
+      font-weight: 600;
+      font-size: 20px;
+      text-align: center;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .message {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: var(--surface-2);
+      font-size: 13.5px;
+    }
+
+    .success {
+      background: var(--success-bg);
+      color: var(--success-text);
+    }
+
+    .error {
+      background: var(--error-bg);
+      color: var(--error-text);
+    }
+
+    .user-actions {
+      margin-top: 10px;
+    }
+
+    .admin-user {
+      background: var(--surface-2);
+      border: 1px solid var(--border-soft);
+      color: var(--text-muted);
+      padding: 7px 12px;
+      border-radius: 7px;
+      display: inline-block;
+      font-size: 12.5px;
+    }
+
+    /* =========================================
+       LOADING SPINNER
+    ========================================= */
+
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,255,255,0.25);
+      border-top-color: currentColor;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: -2px;
+      margin-left: 6px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-line {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+      padding: 14px 0;
+      font-size: 13.5px;
+    }
+
+    .empty-note {
+      color: var(--text-faint);
+      font-size: 13.5px;
+      padding: 6px 0;
+    }
+
   </style>
+
 </head>
+
+
 <body>
-  <header>
-    <h1>ERADA Admin</h1>
-    <p>Access Management</p>
-  </header>
 
-  <div id="loginBox">
-    <h2>Administrator Login</h2>
-    <input type="email" id="adminEmail" placeholder="Enter admin email" autocomplete="email">
-    <input type="password" id="adminPassword" placeholder="Enter admin password" autocomplete="current-password">
-    <button id="adminLogin" class="approve" style="width:100%">Login</button>
-    <br>
-    <button id="forgotPassword" class="forgot" type="button">Forgot Password?</button>
-    <div id="loginMessage"></div>
+
+<header>
+
+  <h1>ERADA Admin</h1>
+
+  <p>Access Management</p>
+
+</header>
+
+
+<!-- =========================================
+     ADMIN LOGIN
+========================================= -->
+
+<div id="loginBox">
+
+  <h2>Administrator Login</h2>
+
+  <input
+    type="email"
+    id="adminEmail"
+    placeholder="Enter admin email"
+    autocomplete="email"
+  >
+
+  <input
+    type="password"
+    id="adminPassword"
+    placeholder="Enter admin password"
+    autocomplete="current-password"
+  >
+
+  <button
+    id="adminLogin"
+    class="approve"
+    style="width:100%"
+  >
+    Login
+  </button>
+
+  <br>
+
+  <button
+    id="forgotPassword"
+    class="forgot"
+    type="button"
+  >
+    Forgot Password?
+  </button>
+
+  <div id="loginMessage"></div>
+
+</div>
+
+
+<!-- =========================================
+     ADMIN PANEL
+========================================= -->
+
+<div
+  id="adminPanel"
+  class="container hidden"
+>
+
+
+  <!-- =======================================
+       ADD VIDEO
+  ======================================== -->
+
+  <div class="card">
+
+    <h2>🎬 Add New Video</h2>
+
+    <input
+      type="text"
+      id="videoTitle"
+      placeholder="Enter video title"
+    >
+
+    <input
+      type="url"
+      id="videoUrl"
+      placeholder="Paste YouTube video link"
+    >
+
+    <button
+      id="addVideo"
+      class="approve"
+    >
+      + Add Video
+    </button>
+
+    <div id="videoMessage"></div>
+
   </div>
 
-  <div id="adminPanel" class="container hidden">
-    <div class="card">
-      <h2>🎬 Add New Video</h2>
-      <input type="text" id="videoTitle" placeholder="Enter video title">
-      <input type="url" id="videoUrl" placeholder="Paste YouTube video link">
-      <button id="addVideo" class="approve">+ Add Video</button>
-      <div id="videoMessage"></div>
+
+  <!-- =======================================
+       VIDEOS
+  ======================================== -->
+
+  <div class="card">
+
+    <h2>🎬 Videos</h2>
+
+    <div id="videosList">
+      <div class="loading-line">Loading<span class="spinner"></span></div>
     </div>
 
-    <div class="card">
-      <h2>🎬 Videos</h2>
-      <div id="videosList"><div class="loading-line">Loading<span class="spinner"></span></div></div>
-    </div>
-
-    <div class="card">
-      <h2>👥 Approved Users</h2>
-      <p>Add an email address to give access to the ERADA Video Library.</p>
-      <input type="email" id="approvedEmail" placeholder="Enter user email">
-      <button id="approveUser" class="approve">+ Approve User</button>
-      <button id="refreshUsers" class="refresh" type="button">🔄 Refresh Users</button>
-      <div id="approvedUserMessage"></div>
-      <div id="approvedUsersList" style="margin-top:15px;"><div class="loading-line">Loading<span class="spinner"></span></div></div>
-    </div>
-
-    <div class="card">
-      <h2>📩 Access Requests</h2>
-      <button id="refreshRequests" class="refresh" type="button">🔄 Refresh</button>
-      <button id="logout" class="logout" type="button">Logout</button>
-      <div id="requestsList"><div class="loading-line">Loading<span class="spinner"></span></div></div>
-    </div>
   </div>
 
-  <script>
-    "use strict";
 
-    const SUPABASE_URL = "https://laqwnqnnqtfhqfadjyvo.supabase.co";
-    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_ropVS738K5BJiOoaZ-TeWA_WmkineZh";
-    const ADMIN_EMAIL = "it@erada.ly";
+  <!-- =======================================
+       APPROVED USERS
+  ======================================== -->
 
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: "pkce" }
-    });
+  <div class="card">
 
-    const el = {
-      adminEmail: document.getElementById("adminEmail"),
-      adminPassword: document.getElementById("adminPassword"),
-      loginMessage: document.getElementById("loginMessage"),
-      loginBox: document.getElementById("loginBox"),
-      adminPanel: document.getElementById("adminPanel"),
-      requestsList: document.getElementById("requestsList"),
-      videoTitle: document.getElementById("videoTitle"),
-      videoUrl: document.getElementById("videoUrl"),
-      videoMessage: document.getElementById("videoMessage"),
-      videosList: document.getElementById("videosList"),
-      approvedEmailInput: document.getElementById("approvedEmail"),
-      approveUserButton: document.getElementById("approveUser"),
-      approvedUserMessage: document.getElementById("approvedUserMessage"),
-      approvedUsersList: document.getElementById("approvedUsersList"),
-      refreshUsersButton: document.getElementById("refreshUsers"),
-      adminLoginButton: document.getElementById("adminLogin"),
-      logoutButton: document.getElementById("logout"),
-      refreshRequestsButton: document.getElementById("refreshRequests"),
-      addVideoButton: document.getElementById("addVideo"),
-      forgotPasswordButton: document.getElementById("forgotPassword")
-    };
+    <h2>👥 Approved Users</h2>
 
-    function normalizeEmail(value) {
-      return String(value || "").trim().toLowerCase();
-    }
+    <p>
+      Add an email address to give access to the ERADA Video Library.
+    </p>
 
-    function validEmail(email) {
-      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    }
+    <input
+      type="email"
+      id="approvedEmail"
+      placeholder="Enter user email"
+    >
 
-    function escapeHtml(text) {
-      return String(text ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
+    <button
+      id="approveUser"
+      class="approve"
+    >
+      + Approve User
+    </button>
 
-    function showMessage(target, text, type = "") {
-      target.innerHTML = `<div class="message ${type}">${escapeHtml(text)}</div>`;
-    }
+    <button
+      id="refreshUsers"
+      class="refresh"
+      type="button"
+    >
+      🔄 Refresh Users
+    </button>
 
-    function setLoading(button, text) {
-      button.disabled = true;
-      button.innerHTML = `${escapeHtml(text)}<span class="spinner"></span>`;
-    }
+    <div id="approvedUserMessage"></div>
 
-    function clearLoading(button, text) {
-      button.disabled = false;
-      button.textContent = text;
-    }
+    <div
+      id="approvedUsersList"
+      style="margin-top: 15px;"
+    >
+      <div class="loading-line">Loading<span class="spinner"></span></div>
+    </div>
 
-    async function getSession() {
-      const { data } = await supabaseClient.auth.getSession();
-      return data.session || null;
-    }
+  </div>
 
-    async function isAllowedAdmin(email) {
-      const normalized = normalizeEmail(email);
-      if (normalized !== ADMIN_EMAIL) return false;
 
-      const { data, error } = await supabaseClient
-        .from("admin_users")
-        .select("email")
-        .eq("email", normalized)
-        .maybeSingle();
+  <!-- =======================================
+       ACCESS REQUESTS
+  ======================================== -->
 
-      if (error) {
-        console.error("Admin check error:", error);
-        return false;
-      }
+  <div class="card">
 
-      return !!data;
-    }
+    <h2>📩 Access Requests</h2>
 
-    async function renderAdminPanel() {
-      el.loginBox.classList.add("hidden");
-      el.adminPanel.classList.remove("hidden");
-      await Promise.all([loadRequests(), loadVideos(), loadApprovedUsers()]);
-    }
+    <button
+      id="refreshRequests"
+      class="refresh"
+      type="button"
+    >
+      🔄 Refresh
+    </button>
 
-    async function requireAdminSession() {
-      const session = await getSession();
-      if (!session?.user?.email) return null;
-      const allowed = await isAllowedAdmin(session.user.email);
-      if (!allowed) {
-        await supabaseClient.auth.signOut();
-        return null;
-      }
-      return session;
-    }
+    <button
+      id="logout"
+      class="logout"
+      type="button"
+    >
+      Logout
+    </button>
 
-    el.adminLoginButton.addEventListener("click", async () => {
-      const email = normalizeEmail(el.adminEmail.value);
-      const password = String(el.adminPassword.value || "");
+    <div id="requestsList">
+      <div class="loading-line">Loading<span class="spinner"></span></div>
+    </div>
+
+  </div>
+
+
+</div>
+
+
+<script>
+
+
+/* =========================================
+   SUPABASE SETTINGS
+========================================= */
+
+const SUPABASE_URL =
+  "https://laqwnqnnqtfhqfadjyvo.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_ropVS738K5BJiOoaZ-TeWA_WmkineZh";
+
+
+const supabaseClient =
+  supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
+
+
+/* =========================================
+   ADMIN EMAIL
+========================================= */
+
+const ADMIN_EMAIL =
+  "it@erada.ly";
+
+
+/* =========================================
+   ELEMENTS
+========================================= */
+
+const adminEmail =
+  document.getElementById("adminEmail");
+
+const adminPassword =
+  document.getElementById("adminPassword");
+
+const loginMessage =
+  document.getElementById("loginMessage");
+
+const loginBox =
+  document.getElementById("loginBox");
+
+const adminPanel =
+  document.getElementById("adminPanel");
+
+const requestsList =
+  document.getElementById("requestsList");
+
+const videoTitle =
+  document.getElementById("videoTitle");
+
+const videoUrl =
+  document.getElementById("videoUrl");
+
+const videoMessage =
+  document.getElementById("videoMessage");
+
+const videosList =
+  document.getElementById("videosList");
+
+const approvedEmailInput =
+  document.getElementById("approvedEmail");
+
+const approveUserButton =
+  document.getElementById("approveUser");
+
+const approvedUserMessage =
+  document.getElementById("approvedUserMessage");
+
+const approvedUsersList =
+  document.getElementById("approvedUsersList");
+
+const refreshUsersButton =
+  document.getElementById("refreshUsers");
+
+
+/* =========================================
+   ESCAPE HTML
+========================================= */
+
+function escapeHtml(text) {
+
+  return String(text ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+}
+
+
+/* =========================================
+   LOGIN MESSAGE
+========================================= */
+
+function showLoginMessage(
+  text,
+  type = ""
+) {
+
+  loginMessage.innerHTML =
+    `<div class="message ${type}">
+      ${escapeHtml(text)}
+    </div>`;
+
+}
+
+
+/* =========================================
+   APPROVED USER MESSAGE
+========================================= */
+
+function showApprovedUserMessage(
+  text,
+  type = "success"
+) {
+
+  approvedUserMessage.innerHTML =
+    `<div class="message ${type}">
+      ${escapeHtml(text)}
+    </div>`;
+
+}
+
+
+/* =========================================
+   CHECK ADMIN USER
+========================================= */
+
+async function checkAdminUser(email) {
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("admin_users")
+      .select("id,email")
+      .ilike("email", email)
+      .maybeSingle();
+
+
+  if (error) {
+
+    console.error(
+      "Admin check error:",
+      error
+    );
+
+    return false;
+  }
+
+
+  return !!data;
+
+}
+
+
+/* =========================================
+   SHOW ADMIN PANEL
+========================================= */
+
+async function showAdminPanel() {
+
+  loginBox.classList.add("hidden");
+
+  adminPanel.classList.remove("hidden");
+
+
+  await loadRequests();
+
+  await loadVideos();
+
+  await loadApprovedUsers();
+
+}
+
+
+/* =========================================
+   ADMIN LOGIN
+========================================= */
+
+document
+  .getElementById("adminLogin")
+  .addEventListener(
+    "click",
+    async function() {
+
+      const email =
+        adminEmail.value
+          .trim()
+          .toLowerCase();
+
+      const password =
+        adminPassword.value;
+
 
       if (email !== ADMIN_EMAIL) {
-        showMessage(el.loginMessage, "Only IT@erada.ly can access the admin panel.", "error");
+
+        showLoginMessage(
+          "Only IT@erada.ly can access the admin panel.",
+          "error"
+        );
+
         return;
       }
+
+
       if (!password) {
-        showMessage(el.loginMessage, "Please enter your password.", "error");
+
+        showLoginMessage(
+          "Please enter your password.",
+          "error"
+        );
+
         return;
       }
 
-      setLoading(el.adminLoginButton, "Signing in");
 
-      try {
-        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-        if (error) {
-          showMessage(el.loginMessage, "Invalid email or password.", "error");
-          return;
-        }
+      const loginButton =
+        document.getElementById("adminLogin");
 
-        const allowed = await isAllowedAdmin(data.user?.email);
-        if (!allowed) {
-          await supabaseClient.auth.signOut();
-          showMessage(el.loginMessage, "You are not authorized to access the admin panel.", "error");
-          return;
-        }
+      loginButton.disabled = true;
+      loginButton.innerHTML =
+        'Signing in<span class="spinner"></span>';
 
-        el.adminPassword.value = "";
-        showMessage(el.loginMessage, "Login successful.", "success");
-        await renderAdminPanel();
-      } catch (error) {
-        console.error("Login error:", error);
-        showMessage(el.loginMessage, "Unable to sign in.", "error");
-      } finally {
-        clearLoading(el.adminLoginButton, "Login");
+
+      const {
+        data,
+        error
+      } =
+        await supabaseClient
+          .auth
+          .signInWithPassword({
+
+            email: email,
+
+            password: password
+
+          });
+
+
+      if (error) {
+
+        console.error(
+          "Login error:",
+          error
+        );
+
+        showLoginMessage(
+          "Invalid email or password.",
+          "error"
+        );
+
+        loginButton.disabled = false;
+        loginButton.textContent = "Login";
+
+        return;
       }
-    });
 
-    el.forgotPasswordButton.addEventListener("click", async () => {
-      const email = normalizeEmail(el.adminEmail.value);
+
+      const authenticatedEmail =
+        data.user?.email
+          ?.trim()
+          .toLowerCase();
+
+
+      if (
+        authenticatedEmail !==
+        ADMIN_EMAIL
+      ) {
+
+        await supabaseClient
+          .auth
+          .signOut();
+
+        showLoginMessage(
+          "Only IT@erada.ly can access the admin panel.",
+          "error"
+        );
+
+        loginButton.disabled = false;
+        loginButton.textContent = "Login";
+
+        return;
+      }
+
+
+      const isAdmin =
+        await checkAdminUser(
+          authenticatedEmail
+        );
+
+
+      if (!isAdmin) {
+
+        await supabaseClient
+          .auth
+          .signOut();
+
+        showLoginMessage(
+          "You are not authorized to access the admin panel.",
+          "error"
+        );
+
+        loginButton.disabled = false;
+        loginButton.textContent = "Login";
+
+        return;
+      }
+
+
+      adminPassword.value = "";
+
+
+      showLoginMessage(
+        "Login successful.",
+        "success"
+      );
+
+
+      await showAdminPanel();
+
+
+      loginButton.disabled = false;
+      loginButton.textContent = "Login";
+
+    }
+  );
+
+
+/* =========================================
+   FORGOT PASSWORD
+========================================= */
+
+document
+  .getElementById("forgotPassword")
+  .addEventListener(
+    "click",
+    async function() {
+
+      const email =
+        adminEmail.value
+          .trim()
+          .toLowerCase();
+
+
       if (email !== ADMIN_EMAIL) {
-        showMessage(el.loginMessage, "Enter IT@erada.ly first.", "error");
+
+        showLoginMessage(
+          "Enter IT@erada.ly first.",
+          "error"
+        );
+
         return;
       }
 
-      showMessage(el.loginMessage, "Sending password recovery email...", "");
 
-      const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-        redirectTo: "https://eradavideos.github.io/reset-password.html"
-      });
+      showLoginMessage(
+        "Sending password recovery email...",
+        ""
+      );
+
+
+      const {
+        error
+      } =
+        await supabaseClient
+          .auth
+          .resetPasswordForEmail(
+            email,
+            {
+              redirectTo:
+                "https://eradavideos.github.io/reset-password.html"
+            }
+          );
+
 
       if (error) {
-        console.error("Password reset error:", error);
-        showMessage(el.loginMessage, "Unable to send password recovery email.", "error");
+
+        console.error(
+          "Password reset error:",
+          error
+        );
+
+        showLoginMessage(
+          "Unable to send password recovery email.",
+          "error"
+        );
+
         return;
       }
 
-      showMessage(el.loginMessage, "Password recovery link has been sent.", "success");
-    });
 
-    async function loadRequests() {
-      el.requestsList.innerHTML = '<div class="loading-line">Loading<span class="spinner"></span></div>';
+      showLoginMessage(
+        "Password recovery link has been sent to IT@erada.ly.",
+        "success"
+      );
 
-      const { data, error } = await supabaseClient
-        .from("access_requests")
-        .select("id,email,status,created_at")
-        .eq("status", "pending")
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        console.error("Requests error:", error);
-        el.requestsList.innerHTML = `<div class="message error">Unable to load requests.</div>`;
-        return;
-      }
-
-      if (!data?.length) {
-        el.requestsList.innerHTML = '<p class="empty-note">No pending requests.</p>';
-        return;
-      }
-
-      el.requestsList.innerHTML = "";
-      data.forEach((request) => {
-        const div = document.createElement("div");
-        div.className = "request";
-        div.innerHTML = `
-          <div class="email">${escapeHtml(request.email)}</div>
-          <div class="status">Status: <strong>${escapeHtml(request.status)}</strong></div>
-          <button class="approve" data-approve-request="${escapeHtml(request.id)}">Approve</button>
-          <button class="reject" data-reject-request="${escapeHtml(request.id)}">Reject</button>
-        `;
-        el.requestsList.appendChild(div);
-      });
-
-      el.requestsList.querySelectorAll("[data-approve-request]").forEach((button) => {
-        button.addEventListener("click", () => approveRequest(button.dataset.approveRequest, button));
-      });
-
-      el.requestsList.querySelectorAll("[data-reject-request]").forEach((button) => {
-        button.addEventListener("click", () => rejectRequest(button.dataset.rejectRequest, button));
-      });
     }
+  );
 
-    async function approveRequest(id, button) {
-      if (!confirm("Approve this email?")) return;
-      if (button) setLoading(button, "Approving");
 
-      const { error } = await supabaseClient.rpc("approve_access_request", { request_id: id });
+/* =========================================
+   LOAD ACCESS REQUESTS
+========================================= */
 
-      if (error) {
-        console.error("Approve error:", error);
-        alert("Unable to approve this request.");
-        if (button) clearLoading(button, "Approve");
-        return;
-      }
+async function loadRequests() {
 
-      await Promise.all([loadRequests(), loadApprovedUsers()]);
-    }
+  requestsList.innerHTML =
+    '<div class="loading-line">Loading<span class="spinner"></span></div>';
 
-    async function rejectRequest(id, button) {
-      if (!confirm("Reject this email?")) return;
-      if (button) setLoading(button, "Rejecting");
 
-      const { error } = await supabaseClient.rpc("reject_access_request", { request_id: id });
-
-      if (error) {
-        console.error("Reject error:", error);
-        alert("Unable to reject this request.");
-        if (button) clearLoading(button, "Reject");
-        return;
-      }
-
-      await loadRequests();
-    }
-
-    el.refreshRequestsButton.addEventListener("click", loadRequests);
-
-    async function loadVideos() {
-      el.videosList.innerHTML = '<div class="loading-line">Loading<span class="spinner"></span></div>';
-
-      const { data, error } = await supabaseClient
-        .from("videos")
-        .select("id,title,youtube_url,created_at")
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        console.error("Videos error:", error);
-        el.videosList.innerHTML = `<div class="message error">Unable to load videos.</div>`;
-        return;
-      }
-
-      if (!data?.length) {
-        el.videosList.innerHTML = '<p class="empty-note">No videos added yet.</p>';
-        return;
-      }
-
-      el.videosList.innerHTML = "";
-      data.forEach((video) => {
-        const div = document.createElement("div");
-        div.className = "request";
-        div.innerHTML = `
-          <div class="email">${escapeHtml(video.title)}</div>
-          <div class="video-url">${escapeHtml(video.youtube_url)}</div>
-          <button class="approve" data-edit-video="${escapeHtml(video.id)}">✏️ Edit</button>
-          <button class="reject" data-delete-video="${escapeHtml(video.id)}">🗑️ Delete</button>
-        `;
-        el.videosList.appendChild(div);
-      });
-
-      el.videosList.querySelectorAll("[data-edit-video]").forEach((button) => {
-        button.addEventListener("click", () => editVideo(button.dataset.editVideo));
-      });
-
-      el.videosList.querySelectorAll("[data-delete-video]").forEach((button) => {
-        button.addEventListener("click", () => deleteVideo(button.dataset.deleteVideo));
-      });
-    }
-
-    async function addVideo() {
-      const title = String(el.videoTitle.value || "").trim();
-      const youtube_url = String(el.videoUrl.value || "").trim();
-
-      if (!title || !youtube_url) {
-        showMessage(el.videoMessage, "Please enter the video title and YouTube link.", "error");
-        return;
-      }
-
-      setLoading(el.addVideoButton, "Adding");
-
-      const { error } = await supabaseClient.from("videos").insert({ title, youtube_url });
-
-      if (error) {
-        console.error("Add video error:", error);
-        showMessage(el.videoMessage, "Unable to add video.", "error");
-        clearLoading(el.addVideoButton, "+ Add Video");
-        return;
-      }
-
-      el.videoTitle.value = "";
-      el.videoUrl.value = "";
-      showMessage(el.videoMessage, "Video added successfully.", "success");
-      clearLoading(el.addVideoButton, "+ Add Video");
-      await loadVideos();
-    }
-
-    async function editVideo(id) {
-      const newTitle = prompt("Enter the new video title:");
-      if (newTitle === null) return;
-      const title = newTitle.trim();
-      if (!title) return alert("Video title cannot be empty.");
-
-      const newUrl = prompt("Enter the new YouTube link:");
-      if (newUrl === null) return;
-      const youtube_url = newUrl.trim();
-      if (!youtube_url) return alert("YouTube link cannot be empty.");
-
-      const { error } = await supabaseClient.from("videos").update({ title, youtube_url }).eq("id", id);
-      if (error) {
-        console.error("Edit video error:", error);
-        alert("Unable to update video.");
-        return;
-      }
-
-      await loadVideos();
-    }
-
-    async function deleteVideo(id) {
-      if (!confirm("Are you sure you want to delete this video?")) return;
-      const { error } = await supabaseClient.from("videos").delete().eq("id", id);
-      if (error) {
-        console.error("Delete video error:", error);
-        alert("Unable to delete video.");
-        return;
-      }
-      await loadVideos();
-    }
-
-    el.addVideoButton.addEventListener("click", addVideo);
-
-    async function loadApprovedUsers() {
-      el.approvedUsersList.innerHTML = '<div class="loading-line">Loading<span class="spinner"></span></div>';
-
-      const { data, error } = await supabaseClient
-        .from("approved_users")
-        .select("id,email,status")
-        .order("email", { ascending: true });
-
-      if (error) {
-        console.error("Approved users error:", error);
-        el.approvedUsersList.innerHTML = `<div class="message error">Unable to load approved users.</div>`;
-        return;
-      }
-
-      if (!data?.length) {
-        el.approvedUsersList.innerHTML = '<p class="empty-note">No approved users yet.</p>';
-        return;
-      }
-
-      el.approvedUsersList.innerHTML = "";
-      data.forEach((user) => {
-        const row = document.createElement("div");
-        row.className = "request";
-        const normalizedEmail = normalizeEmail(user.email);
-
-        if (normalizedEmail === ADMIN_EMAIL) {
-          row.innerHTML = `
-            <div class="email">${escapeHtml(user.email)}</div>
-            <div class="status">Status: <strong>Administrator</strong></div>
-            <div class="admin-user">🔐 Admin account</div>
-          `;
-        } else {
-          row.innerHTML = `
-            <div class="email">${escapeHtml(user.email)}</div>
-            <div class="status">Status: <strong>${escapeHtml(user.status)}</strong></div>
-            <div class="row-actions">
-              <button type="button" class="reject" data-remove-user="${escapeHtml(user.id)}">🗑️ Remove Access</button>
-            </div>
-          `;
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("access_requests")
+      .select(
+        "id,email,status,created_at"
+      )
+      .eq(
+        "status",
+        "pending"
+      )
+      .order(
+        "created_at",
+        {
+          ascending: false
         }
+      );
 
-        el.approvedUsersList.appendChild(row);
-      });
 
-      el.approvedUsersList.querySelectorAll("[data-remove-user]").forEach((button) => {
-        button.addEventListener("click", async () => {
-          if (!confirm("Are you sure you want to remove access for this user?")) return;
-          setLoading(button, "Removing");
+  if (error) {
 
-          const { error } = await supabaseClient
-            .from("approved_users")
-            .delete()
-            .eq("id", button.dataset.removeUser);
+    console.error(
+      "Requests error:",
+      error
+    );
 
-          if (error) {
-            console.error("Remove access error:", error);
-            alert("Unable to remove access.");
-            clearLoading(button, "🗑️ Remove Access");
+    requestsList.innerHTML =
+      `<div class="message error">
+        Unable to load requests.
+      </div>`;
+
+    return;
+  }
+
+
+  if (
+    !data ||
+    data.length === 0
+  ) {
+
+    requestsList.innerHTML =
+      '<p class="empty-note">No pending requests.</p>';
+
+    return;
+  }
+
+
+  requestsList.innerHTML =
+    "";
+
+
+  data.forEach(
+    function(request) {
+
+      const div =
+        document.createElement("div");
+
+      div.className =
+        "request";
+
+
+      div.innerHTML = `
+
+        <div class="email">
+          ${escapeHtml(request.email)}
+        </div>
+
+        <button
+          class="approve"
+          data-approve-request="${escapeHtml(request.id)}"
+        >
+          Approve
+        </button>
+
+        <button
+          class="reject"
+          data-reject-request="${escapeHtml(request.id)}"
+        >
+          Reject
+        </button>
+
+      `;
+
+
+      requestsList.appendChild(div);
+
+    }
+  );
+
+
+  requestsList
+    .querySelectorAll("[data-approve-request]")
+    .forEach(
+      button => {
+
+        button.addEventListener(
+          "click",
+          function() {
+
+            approveRequest(
+              button.dataset.approveRequest
+            );
+
+          }
+        );
+
+      }
+    );
+
+
+  requestsList
+    .querySelectorAll("[data-reject-request]")
+    .forEach(
+      button => {
+
+        button.addEventListener(
+          "click",
+          function() {
+
+            rejectRequest(
+              button.dataset.rejectRequest
+            );
+
+          }
+        );
+
+      }
+    );
+
+}
+
+
+/* =========================================
+   APPROVE REQUEST
+========================================= */
+
+async function approveRequest(id) {
+
+  if (
+    !confirm(
+      "Approve this email?"
+    )
+  ) {
+
+    return;
+  }
+
+
+  const {
+    error
+  } =
+    await supabaseClient
+      .rpc(
+        "approve_access_request",
+        {
+          request_id: id
+        }
+      );
+
+
+  if (error) {
+
+    console.error(
+      "Approve error:",
+      error
+    );
+
+    alert(
+      "Unable to approve this request."
+    );
+
+    return;
+  }
+
+
+  await loadRequests();
+
+  await loadApprovedUsers();
+
+}
+
+
+/* =========================================
+   REJECT REQUEST
+========================================= */
+
+async function rejectRequest(id) {
+
+  if (
+    !confirm(
+      "Reject this email?"
+    )
+  ) {
+
+    return;
+  }
+
+
+  const {
+    error
+  } =
+    await supabaseClient
+      .rpc(
+        "reject_access_request",
+        {
+          request_id: id
+        }
+      );
+
+
+  if (error) {
+
+    console.error(
+      "Reject error:",
+      error
+    );
+
+    alert(
+      "Unable to reject this request."
+    );
+
+    return;
+  }
+
+
+  await loadRequests();
+
+}
+
+
+/* =========================================
+   REFRESH REQUESTS
+========================================= */
+
+document
+  .getElementById("refreshRequests")
+  .addEventListener(
+    "click",
+    loadRequests
+  );
+
+
+/* =========================================
+   ADD VIDEO
+========================================= */
+
+document
+  .getElementById("addVideo")
+  .addEventListener(
+    "click",
+    async function() {
+
+      const title =
+        videoTitle.value.trim();
+
+      const url =
+        videoUrl.value.trim();
+
+
+      if (!title || !url) {
+
+        videoMessage.innerHTML =
+          `<div class="message error">
+            Please enter the video title and YouTube link.
+          </div>`;
+
+        return;
+      }
+
+
+      const addButton =
+        document.getElementById("addVideo");
+
+      addButton.disabled = true;
+      addButton.innerHTML =
+        'Adding<span class="spinner"></span>';
+
+
+      const {
+        error
+      } =
+        await supabaseClient
+          .from("videos")
+          .insert({
+
+            title: title,
+
+            youtube_url: url
+
+          });
+
+
+      addButton.disabled = false;
+      addButton.textContent = "+ Add Video";
+
+
+      if (error) {
+
+        console.error(
+          "Add video error:",
+          error
+        );
+
+        videoMessage.innerHTML =
+          `<div class="message error">
+            Unable to add video.
+          </div>`;
+
+        return;
+      }
+
+
+      videoMessage.innerHTML =
+        `<div class="message success">
+          Video added successfully.
+        </div>`;
+
+
+      videoTitle.value = "";
+
+      videoUrl.value = "";
+
+
+      await loadVideos();
+
+    }
+  );
+
+
+/* =========================================
+   LOAD VIDEOS
+========================================= */
+
+async function loadVideos() {
+
+  videosList.innerHTML =
+    '<div class="loading-line">Loading<span class="spinner"></span></div>';
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("videos")
+      .select(
+        "id,title,youtube_url,created_at"
+      )
+      .order(
+        "created_at",
+        {
+          ascending: false
+        }
+      );
+
+
+  if (error) {
+
+    console.error(
+      "Videos error:",
+      error
+    );
+
+    videosList.innerHTML =
+      `<div class="message error">
+        Unable to load videos.
+      </div>`;
+
+    return;
+  }
+
+
+  if (
+    !data ||
+    data.length === 0
+  ) {
+
+    videosList.innerHTML =
+      '<p class="empty-note">No videos added yet.</p>';
+
+    return;
+  }
+
+
+  videosList.innerHTML =
+    "";
+
+
+  data.forEach(
+    function(video) {
+
+      const div =
+        document.createElement("div");
+
+      div.className =
+        "request";
+
+
+      div.innerHTML = `
+
+        <div class="email">
+          ${escapeHtml(video.title)}
+        </div>
+
+        <div class="video-url">
+          ${escapeHtml(video.youtube_url)}
+        </div>
+
+        <button
+          class="approve"
+          data-edit-video="${escapeHtml(video.id)}"
+        >
+          ✏️ Edit
+        </button>
+
+        <button
+          class="reject"
+          data-delete-video="${escapeHtml(video.id)}"
+        >
+          🗑️ Delete
+        </button>
+
+      `;
+
+
+      videosList.appendChild(div);
+
+    }
+  );
+
+
+  videosList
+    .querySelectorAll("[data-edit-video]")
+    .forEach(
+      button => {
+
+        button.addEventListener(
+          "click",
+          function() {
+
+            editVideo(
+              button.dataset.editVideo
+            );
+
+          }
+        );
+
+      }
+    );
+
+
+  videosList
+    .querySelectorAll("[data-delete-video]")
+    .forEach(
+      button => {
+
+        button.addEventListener(
+          "click",
+          function() {
+
+            deleteVideo(
+              button.dataset.deleteVideo
+            );
+
+          }
+        );
+
+      }
+    );
+
+}
+
+
+/* =========================================
+   EDIT VIDEO
+========================================= */
+
+async function editVideo(id) {
+
+  const newTitle =
+    prompt(
+      "Enter the new video title:"
+    );
+
+
+  if (newTitle === null) {
+    return;
+  }
+
+
+  const title =
+    newTitle.trim();
+
+
+  if (!title) {
+
+    alert(
+      "Video title cannot be empty."
+    );
+
+    return;
+  }
+
+
+  const newUrl =
+    prompt(
+      "Enter the new YouTube link:"
+    );
+
+
+  if (newUrl === null) {
+    return;
+  }
+
+
+  const youtube_url =
+    newUrl.trim();
+
+
+  if (!youtube_url) {
+
+    alert(
+      "YouTube link cannot be empty."
+    );
+
+    return;
+  }
+
+
+  const {
+    error
+  } =
+    await supabaseClient
+      .from("videos")
+      .update({
+
+        title: title,
+
+        youtube_url: youtube_url
+
+      })
+      .eq(
+        "id",
+        id
+      );
+
+
+  if (error) {
+
+    console.error(
+      "Edit video error:",
+      error
+    );
+
+    alert(
+      "Unable to update video."
+    );
+
+    return;
+  }
+
+
+  await loadVideos();
+
+}
+
+
+/* =========================================
+   DELETE VIDEO
+========================================= */
+
+async function deleteVideo(id) {
+
+  if (
+    !confirm(
+      "Are you sure you want to delete this video?"
+    )
+  ) {
+
+    return;
+  }
+
+
+  const {
+    error
+  } =
+    await supabaseClient
+      .from("videos")
+      .delete()
+      .eq(
+        "id",
+        id
+      );
+
+
+  if (error) {
+
+    console.error(
+      "Delete video error:",
+      error
+    );
+
+    alert(
+      "Unable to delete video."
+    );
+
+    return;
+  }
+
+
+  await loadVideos();
+
+}
+
+
+/* =========================================
+   LOAD APPROVED USERS
+========================================= */
+
+async function loadApprovedUsers() {
+
+  approvedUsersList.innerHTML =
+    '<div class="loading-line">Loading<span class="spinner"></span></div>';
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("approved_users")
+      .select(
+        "id,email,status"
+      )
+      .order(
+        "email",
+        {
+          ascending: true
+        }
+      );
+
+
+  if (error) {
+
+    console.error(
+      "Approved users error:",
+      error
+    );
+
+    approvedUsersList.innerHTML =
+      `<div class="message error">
+        Unable to load approved users.
+      </div>`;
+
+    return;
+  }
+
+
+  if (
+    !data ||
+    data.length === 0
+  ) {
+
+    approvedUsersList.innerHTML =
+      '<p class="empty-note">No approved users yet.</p>';
+
+    return;
+  }
+
+
+  approvedUsersList.innerHTML =
+    "";
+
+
+  data.forEach(
+    function(user) {
+
+      const row =
+        document.createElement("div");
+
+      row.className =
+        "request";
+
+
+      const normalizedEmail =
+        String(user.email)
+          .trim()
+          .toLowerCase();
+
+
+      /* ADMIN ACCOUNT */
+
+      if (
+        normalizedEmail ===
+        ADMIN_EMAIL
+      ) {
+
+        row.innerHTML = `
+
+          <div class="email">
+            ${escapeHtml(user.email)}
+          </div>
+
+          <div class="status">
+            Status:
+            <strong>Administrator</strong>
+          </div>
+
+          <div class="admin-user">
+            🔐 Admin account
+          </div>
+
+        `;
+
+      }
+
+
+      /* NORMAL USER */
+
+      else {
+
+        row.innerHTML = `
+
+          <div class="email">
+            ${escapeHtml(user.email)}
+          </div>
+
+          <div class="status">
+            Status:
+            <strong>
+              ${escapeHtml(user.status)}
+            </strong>
+          </div>
+
+          <div class="user-actions">
+
+            <button
+              type="button"
+              class="reject"
+              data-remove-user="${escapeHtml(user.id)}"
+            >
+              🗑️ Remove Access
+            </button>
+
+          </div>
+
+        `;
+
+      }
+
+
+      approvedUsersList.appendChild(row);
+
+    }
+  );
+
+
+  /* =====================================
+     REMOVE ACCESS BUTTONS
+  ===================================== */
+
+  const removeButtons =
+    approvedUsersList
+      .querySelectorAll(
+        "[data-remove-user]"
+      );
+
+
+  removeButtons.forEach(
+    function(button) {
+
+      button.addEventListener(
+        "click",
+        async function() {
+
+          const userId =
+            button.dataset.removeUser;
+
+
+          const confirmed =
+            confirm(
+              "Are you sure you want to remove access for this user?"
+            );
+
+
+          if (!confirmed) {
             return;
           }
 
+
+          button.disabled =
+            true;
+
+          button.innerHTML =
+            'Removing<span class="spinner"></span>';
+
+
+          const {
+            error
+          } =
+            await supabaseClient
+              .from("approved_users")
+              .delete()
+              .eq(
+                "id",
+                userId
+              );
+
+
+          if (error) {
+
+            console.error(
+              "Remove access error:",
+              error
+            );
+
+
+            alert(
+              "Unable to remove access.\n\nCheck the browser console for details."
+            );
+
+
+            button.disabled =
+              false;
+
+            button.textContent =
+              "🗑️ Remove Access";
+
+            return;
+          }
+
+
           await loadApprovedUsers();
-        });
-      });
+
+        }
+      );
+
     }
+  );
 
-    el.approveUserButton.addEventListener("click", async () => {
-      const email = normalizeEmail(el.approvedEmailInput.value);
-      if (!validEmail(email)) {
-        showMessage(el.approvedUserMessage, "Please enter a valid email address.", "error");
+}
+
+
+/* =========================================
+   APPROVE USER
+========================================= */
+
+approveUserButton
+  .addEventListener(
+    "click",
+    async function() {
+
+      const email =
+        approvedEmailInput.value
+          .trim()
+          .toLowerCase();
+
+
+      if (
+        !email ||
+        !email.includes("@")
+      ) {
+
+        showApprovedUserMessage(
+          "Please enter a valid email address.",
+          "error"
+        );
+
         return;
       }
-      if (email === ADMIN_EMAIL) {
-        showMessage(el.approvedUserMessage, "This email is already the administrator.", "error");
+
+
+      if (
+        email === ADMIN_EMAIL
+      ) {
+
+        showApprovedUserMessage(
+          "This email is already the administrator.",
+          "error"
+        );
+
         return;
       }
 
-      setLoading(el.approveUserButton, "Approving");
 
-      const { error } = await supabaseClient.rpc("approve_email_direct", { user_email: email });
+      approveUserButton.disabled =
+        true;
+
+      approveUserButton.innerHTML =
+        'Approving<span class="spinner"></span>';
+
+
+      const {
+        error
+      } =
+        await supabaseClient
+          .from("approved_users")
+          .upsert(
+            {
+              email: email,
+              status: "approved"
+            },
+            {
+              onConflict: "email"
+            }
+          );
+
+
+      approveUserButton.disabled =
+        false;
+
+      approveUserButton.textContent =
+        "+ Approve User";
+
 
       if (error) {
-        console.error("Approve user error:", error);
-        showMessage(el.approvedUserMessage, "Unable to approve this user.", "error");
-        clearLoading(el.approveUserButton, "+ Approve User");
+
+        console.error(
+          "Approve user error:",
+          error
+        );
+
+
+        showApprovedUserMessage(
+          "Unable to approve this user.",
+          "error"
+        );
+
         return;
       }
 
-      el.approvedEmailInput.value = "";
-      showMessage(el.approvedUserMessage, "User approved successfully.", "success");
-      clearLoading(el.approveUserButton, "+ Approve User");
+
+      approvedEmailInput.value =
+        "";
+
+
+      showApprovedUserMessage(
+        "User approved successfully.",
+        "success"
+      );
+
+
       await loadApprovedUsers();
-    });
 
-    el.refreshUsersButton.addEventListener("click", loadApprovedUsers);
+    }
+  );
 
-    el.logoutButton.addEventListener("click", async () => {
-      await supabaseClient.auth.signOut();
-      el.adminPanel.classList.add("hidden");
-      el.loginBox.classList.remove("hidden");
-      el.adminEmail.value = "";
-      el.adminPassword.value = "";
-      showMessage(el.loginMessage, "You have been logged out.", "success");
-    });
 
-    supabaseClient.auth.onAuthStateChange(async (_event, session) => {
-      if (session?.user?.email && await isAllowedAdmin(session.user.email)) {
-        await renderAdminPanel();
-      }
-    });
+/* =========================================
+   REFRESH APPROVED USERS
+========================================= */
 
-    (async () => {
-      const session = await requireAdminSession();
-      if (session) await renderAdminPanel();
-    })();
-  </script>
+refreshUsersButton
+  .addEventListener(
+    "click",
+    async function() {
+
+      await loadApprovedUsers();
+
+    }
+  );
+
+
+/* =========================================
+   LOGOUT
+========================================= */
+
+document
+  .getElementById("logout")
+  .addEventListener(
+    "click",
+    async function() {
+
+      await supabaseClient
+        .auth
+        .signOut();
+
+
+      adminPanel
+        .classList
+        .add("hidden");
+
+
+      loginBox
+        .classList
+        .remove("hidden");
+
+
+      adminEmail.value =
+        "";
+
+      adminPassword.value =
+        "";
+
+
+      loginMessage.innerHTML =
+        `<div class="message success">
+          You have been logged out.
+        </div>`;
+
+    }
+  );
+
+
+</script>
+
+
 </body>
+
 </html>
