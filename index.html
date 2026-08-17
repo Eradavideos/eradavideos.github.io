@@ -550,6 +550,41 @@
       text-align: center;
     }
 
+    .fullscreen-btn {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #fff;
+      border-radius: 6px;
+      font-size: 13px;
+      padding: 5px 9px;
+      cursor: pointer;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    .fullscreen-btn:hover {
+      background: rgba(255,255,255,0.22);
+    }
+
+    .video:fullscreen,
+    .video:-webkit-full-screen {
+      padding-top: 0;
+      height: 100vh;
+      background: #000;
+    }
+
+    .video:fullscreen iframe,
+    .video:fullscreen .video-overlay,
+    .video:-webkit-full-screen iframe,
+    .video:-webkit-full-screen .video-overlay {
+      height: 100%;
+    }
+
+    .video:fullscreen .video-controls-row,
+    .video:-webkit-full-screen .video-controls-row {
+      opacity: 1;
+    }
+
     .video-info {
       color: var(--text-faint);
       font-size: 12.5px;
@@ -1497,10 +1532,19 @@ function renderPrivateVideos(
       skipForward.textContent = "10 ⏩";
       skipForward.setAttribute("aria-label", "Skip forward 10 seconds");
 
+      const fullscreenBtn =
+        document.createElement("button");
+
+      fullscreenBtn.type = "button";
+      fullscreenBtn.className = "fullscreen-btn";
+      fullscreenBtn.textContent = "⛶";
+      fullscreenBtn.setAttribute("aria-label", "Toggle fullscreen");
+
       controlsRow.appendChild(skipBack);
       controlsRow.appendChild(seekTrack);
       controlsRow.appendChild(timeLabel);
       controlsRow.appendChild(skipForward);
+      controlsRow.appendChild(fullscreenBtn);
 
       videoContainer.appendChild(controlsRow);
 
@@ -1587,6 +1631,27 @@ function renderPrivateVideos(
         const ratio = (event.clientX - rect.left) / rect.width;
 
         seekTo(ratio * (duration || 0));
+
+      });
+
+
+      fullscreenBtn.addEventListener("click", function(event) {
+
+        event.stopPropagation();
+
+        if (document.fullscreenElement) {
+
+          document.exitFullscreen();
+
+        } else if (videoContainer.requestFullscreen) {
+
+          videoContainer.requestFullscreen();
+
+        } else if (videoContainer.webkitRequestFullscreen) {
+
+          videoContainer.webkitRequestFullscreen();
+
+        }
 
       });
 
