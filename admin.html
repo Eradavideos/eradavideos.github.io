@@ -14,22 +14,23 @@
   <style>
     :root {
       --bg:#060a17; --surface:#0b1226; --surface-2:#101a35; --border:#22315a; --border-soft:#16213f;
-      --accent:#fff; --accent-soft:rgba(255,255,255,.10); --accent-dim:rgba(255,255,255,.35);
-      --text:#fff; --text-muted:#aab4d4; --text-faint:#6b76a0;
+      --accent:#ffffff; --accent-soft:rgba(255,255,255,0.10); --accent-dim:rgba(255,255,255,0.35);
+      --text:#ffffff; --text-muted:#aab4d4; --text-faint:#6b76a0;
       --success-bg:#0f2a1e; --success-text:#86e0aa; --error-bg:#341318; --error-text:#f2a3a3;
       --approve:#3fbd6f; --reject:#e05a5a; --radius:14px;
     }
     *{box-sizing:border-box}
-    @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important}}
-    body{margin:0;font-family:"IBM Plex Sans",Arial,sans-serif;background:radial-gradient(60% 40% at 50% 0%,rgba(60,90,180,.22),transparent 65%),var(--bg);background-attachment:fixed;color:var(--text);min-height:100vh}
+    @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:0.001ms!important;transition-duration:0.001ms!important}}
+    body{margin:0;font-family:"IBM Plex Sans",Arial,sans-serif;background:radial-gradient(60% 40% at 50% 0%,rgba(60,90,180,0.22),transparent 65%),var(--bg);background-attachment:fixed;color:var(--text);min-height:100vh}
     header{text-align:center;padding:46px 20px 34px}
     header h1{margin:0;font-family:"El Messiri",serif;font-weight:700;font-size:28px}
     header p{margin:8px 0 0;color:var(--text-muted);font-size:13px;letter-spacing:2px;text-transform:uppercase}
     .container{max-width:900px;margin:0 auto;padding:0 20px 60px}
-    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:22px;box-shadow:0 20px 44px -28px rgba(0,0,0,.7)}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:22px;box-shadow:0 20px 44px -28px rgba(0,0,0,0.7)}
     .card h2{margin:0 0 16px;font-family:"El Messiri",serif;font-weight:600;font-size:18px}
     .card>p{color:var(--text-muted);font-size:13.5px;margin:-6px 0 16px}
-    .request{border:1px solid var(--border-soft);background:var(--surface-2);border-radius:10px;padding:15px 16px;margin-top:12px}
+    .request{border:1px solid var(--border-soft);background:var(--surface-2);border-radius:10px;padding:15px 16px;margin-top:12px;animation:rise .3s ease both}
+    @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
     .email{font-weight:600;margin-bottom:8px;word-break:break-word;color:var(--text)}
     .status{margin-bottom:10px;color:var(--text-muted);font-size:13.5px}
     .video-url{word-break:break-all;margin:4px 0 12px;color:var(--text-faint);font-size:12.5px}
@@ -43,23 +44,20 @@
     .approve{background:var(--approve);color:#06210f}
     .reject{background:var(--reject);color:#2c0a0a}
     .logout{background:transparent;color:var(--text-muted);border-color:var(--border)}
-    .logout:hover{color:var(--error-text);border-color:rgba(240,163,163,.3)}
     .refresh{background:transparent;color:var(--text);border-color:var(--border)}
-    .refresh:hover{border-color:var(--accent-dim)}
     .forgot{background:transparent;color:var(--text-muted);padding:6px 0;margin-top:6px;text-decoration:underline;font-weight:400}
-    .forgot:hover{color:var(--text);opacity:1}
     #loginBox{max-width:420px;margin:40px auto 0;padding:34px 32px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 24px 60px -20px rgba(0,0,0,.6)}
     #loginBox h2{margin:0 0 18px;font-family:"El Messiri",serif;font-weight:600;font-size:20px;text-align:center}
     .hidden{display:none}
     .message{margin-top:12px;padding:10px 12px;border-radius:8px;background:var(--surface-2);font-size:13.5px}
     .success{background:var(--success-bg);color:var(--success-text)}
     .error{background:var(--error-bg);color:var(--error-text)}
-    .user-actions{margin-top:10px}
     .admin-user{background:var(--surface-2);border:1px solid var(--border-soft);color:var(--text-muted);padding:7px 12px;border-radius:7px;display:inline-block;font-size:12.5px}
-    .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.25);border-top-color:currentColor;border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px;margin-left:6px}
+    .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.25);border-top-color:currentColor;border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px;margin-left:6px}
     @keyframes spin{to{transform:rotate(360deg)}}
     .loading-line{display:flex;align-items:center;gap:6px;color:var(--text-muted);padding:14px 0;font-size:13.5px}
     .empty-note{color:var(--text-faint);font-size:13.5px;padding:6px 0}
+    .row-actions{margin-top:10px}
   </style>
 </head>
 <body>
@@ -165,6 +163,16 @@
       target.innerHTML = `<div class="message ${type}">${escapeHtml(text)}</div>`;
     }
 
+    function setLoading(button, text) {
+      button.disabled = true;
+      button.innerHTML = `${escapeHtml(text)}<span class="spinner"></span>`;
+    }
+
+    function clearLoading(button, text) {
+      button.disabled = false;
+      button.textContent = text;
+    }
+
     async function getSession() {
       const { data } = await supabaseClient.auth.getSession();
       return data.session || null;
@@ -188,33 +196,21 @@
       return !!data;
     }
 
+    async function renderAdminPanel() {
+      el.loginBox.classList.add("hidden");
+      el.adminPanel.classList.remove("hidden");
+      await Promise.all([loadRequests(), loadVideos(), loadApprovedUsers()]);
+    }
+
     async function requireAdminSession() {
       const session = await getSession();
       if (!session?.user?.email) return null;
-
       const allowed = await isAllowedAdmin(session.user.email);
       if (!allowed) {
         await supabaseClient.auth.signOut();
         return null;
       }
-
       return session;
-    }
-
-    function setLoading(button, text) {
-      button.disabled = true;
-      button.innerHTML = `${escapeHtml(text)}<span class="spinner"></span>`;
-    }
-
-    function clearLoading(button, text) {
-      button.disabled = false;
-      button.textContent = text;
-    }
-
-    async function renderAdminPanel() {
-      el.loginBox.classList.add("hidden");
-      el.adminPanel.classList.remove("hidden");
-      await Promise.all([loadRequests(), loadVideos(), loadApprovedUsers()]);
     }
 
     el.adminLoginButton.addEventListener("click", async () => {
@@ -236,10 +232,6 @@
         const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
         if (error) {
           showMessage(el.loginMessage, "Invalid email or password.", "error");
-          return;
-        }
-        if (!data.session) {
-          showMessage(el.loginMessage, "Login succeeded but no session was created.", "error");
           return;
         }
 
@@ -309,6 +301,7 @@
         div.className = "request";
         div.innerHTML = `
           <div class="email">${escapeHtml(request.email)}</div>
+          <div class="status">Status: <strong>${escapeHtml(request.status)}</strong></div>
           <button class="approve" data-approve-request="${escapeHtml(request.id)}">Approve</button>
           <button class="reject" data-reject-request="${escapeHtml(request.id)}">Reject</button>
         `;
@@ -495,7 +488,7 @@
           row.innerHTML = `
             <div class="email">${escapeHtml(user.email)}</div>
             <div class="status">Status: <strong>${escapeHtml(user.status)}</strong></div>
-            <div class="user-actions">
+            <div class="row-actions">
               <button type="button" class="reject" data-remove-user="${escapeHtml(user.id)}">🗑️ Remove Access</button>
             </div>
           `;
@@ -566,8 +559,7 @@
     });
 
     supabaseClient.auth.onAuthStateChange(async (_event, session) => {
-      if (!session?.user?.email) return;
-      if (await isAllowedAdmin(session.user.email)) {
+      if (session?.user?.email && await isAllowedAdmin(session.user.email)) {
         await renderAdminPanel();
       }
     });
