@@ -1,612 +1,1958 @@
 <!doctype html>
 <html lang="en">
- <style>
-html, body {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
-}
 
-@media (max-width: 768px) {
+<head>
+
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <title>ERADA Admin</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=El+Messiri:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+
+    :root {
+      --bg: #060a17;
+      --surface: #0b1226;
+      --surface-2: #101a35;
+      --border: #22315a;
+      --border-soft: #16213f;
+      --accent: #ffffff;
+      --accent-soft: rgba(255, 255, 255, 0.10);
+      --accent-dim: rgba(255, 255, 255, 0.35);
+      --text: #ffffff;
+      --text-muted: #aab4d4;
+      --text-faint: #6b76a0;
+      --success-bg: #0f2a1e;
+      --success-text: #86e0aa;
+      --error-bg: #341318;
+      --error-text: #f2a3a3;
+      --approve: #3fbd6f;
+      --reject: #e05a5a;
+      --radius: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        transition-duration: 0.001ms !important;
+      }
+    }
 
     body {
-        min-width: 0 !important;
-        width: 100% !important;
+      margin: 0;
+      font-family: "IBM Plex Sans", Arial, sans-serif;
+      background:
+        radial-gradient(60% 40% at 50% 0%, rgba(60,90,180,0.22), transparent 65%),
+        var(--bg);
+      background-attachment: fixed;
+      color: var(--text);
+      min-height: 100vh;
     }
 
-    .sidebar {
-        width: 280px !important;
-        max-width: 85vw !important;
+    header {
+      text-align: center;
+      padding: 46px 20px 34px;
     }
 
-    .main,
-    .content,
+    header h1 {
+      margin: 0;
+      font-family: "El Messiri", serif;
+      font-weight: 700;
+      font-size: 28px;
+    }
+
+    header p {
+      margin: 8px 0 0;
+      color: var(--text-muted);
+      font-size: 13px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
     .container {
-        width: 100% !important;
-        max-width: 100% !important;
-        box-sizing: border-box;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 20px 60px;
     }
 
-    table {
-        min-width: 600px;
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 22px;
+      box-shadow: 0 20px 44px -28px rgba(0,0,0,0.7);
     }
 
-    .table-container {
-        width: 100%;
-        overflow-x: auto;
+    .card h2 {
+      margin: 0 0 16px;
+      font-family: "El Messiri", serif;
+      font-weight: 600;
+      font-size: 18px;
     }
 
-    input,
-    button,
-    select,
-    textarea {
-        max-width: 100%;
-        box-sizing: border-box;
-    }
-}
-</style> 
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ERADA Admin v2</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:Arial,sans-serif;
-      background:#071426;
-      color:#fff;
-    }
-    button,input{font:inherit}
-    button{
-      border:1px solid rgba(255,255,255,.32);
-      border-radius:9px;
-      padding:10px 15px;
-      cursor:pointer;
-      background:rgba(255,255,255,.08);
-      color:#fff;
-      transition:.2s;
-    }
-    button:hover{
-      background:rgba(255,255,255,.16);
-      border-color:rgba(255,255,255,.58);
-    }
-    button:disabled{opacity:.55;cursor:not-allowed}
-
-    .login-wrap{
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:20px;
-      background:
-        radial-gradient(circle at 50% 42%, rgba(35,125,255,.20) 0, rgba(20,85,180,.10) 25%, transparent 52%),
-        #071426;
-    }
-    .login-card{
-      width:100%;
-      max-width:430px;
-      background:rgba(10,27,50,.90);
-      padding:32px;
-      border-radius:18px;
-      border:1px solid rgba(255,255,255,.22);
-      box-shadow:
-        0 0 45px rgba(31,111,235,.18),
-        0 15px 45px rgba(0,0,0,.35);
-      backdrop-filter:blur(12px);
-    }
-    .brand{text-align:center;margin-bottom:25px}
-    .brand h1{margin:0;font-size:30px;color:#fff}
-    .brand p{color:rgba(255,255,255,.70)}
-
-    label{color:rgba(255,255,255,.88)}
-    input{
-      width:100%;
-      padding:12px 13px;
-      border:1px solid rgba(255,255,255,.25);
-      border-radius:9px;
-      margin:7px 0 12px;
-      background:rgba(255,255,255,.07);
-      color:#fff;
-      outline:none;
-    }
-    input::placeholder{color:rgba(255,255,255,.48)}
-    input:focus{
-      border-color:rgba(255,255,255,.70);
-      box-shadow:0 0 0 3px rgba(255,255,255,.08);
+    .card > p {
+      color: var(--text-muted);
+      font-size: 13.5px;
+      margin: -6px 0 16px;
     }
 
-    .btn-primary,.btn-success,.btn-danger,.btn-secondary,.btn-warning,.btn-light{
-      background:rgba(255,255,255,.10);
-      color:#fff;
-      border:1px solid rgba(255,255,255,.32);
-    }
-    .btn-primary:hover,.btn-success:hover,.btn-danger:hover,.btn-secondary:hover,.btn-warning:hover,.btn-light:hover{
-      background:rgba(255,255,255,.18);
-      border-color:rgba(255,255,255,.62);
-    }
-
-    .hidden{display:none!important}
-
-    .app{
-      min-height:100vh;
-      background:
-        radial-gradient(circle at 70% 10%, rgba(30,100,220,.08), transparent 35%),
-        #071426;
-    }
-    .topbar{
-      height:68px;
-      background:rgba(5,18,36,.94);
-      color:#fff;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:0 24px;
-      position:sticky;
-      top:0;
-      z-index:20;
-      border-bottom:1px solid rgba(255,255,255,.14);
-      backdrop-filter:blur(10px);
-    }
-    .topbar h1{font-size:20px;margin:0;color:#fff}
-    .top-actions{display:flex;align-items:center;gap:10px}
-
-    .sidebar{
-      position:fixed;
-      top:68px;
-      bottom:0;
-      left:0;
-      width:235px;
-      background:rgba(5,18,36,.94);
-      border-right:1px solid rgba(255,255,255,.14);
-      padding:18px 12px;
-    }
-    .nav-btn{
-      width:100%;
-      text-align:left;
-      background:transparent;
-      color:rgba(255,255,255,.72);
-      margin:3px 0;
-      border:1px solid transparent;
-    }
-    .nav-btn.active,.nav-btn:hover{
-      background:rgba(255,255,255,.10);
-      color:#fff;
-      border-color:rgba(255,255,255,.18);
+    .request {
+      border: 1px solid var(--border-soft);
+      background: var(--surface-2);
+      border-radius: 10px;
+      padding: 15px 16px;
+      margin-top: 12px;
+      animation: rise 0.3s ease both;
     }
 
-    .main{margin-left:235px;padding:28px;max-width:1500px}
-    .page-title{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin-bottom:22px
-    }
-    .page-title h2{margin:0;color:#fff}
-    .muted{color:rgba(255,255,255,.58)}
-
-    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-    .stat{
-      background:rgba(255,255,255,.055);
-      border-radius:15px;
-      padding:20px;
-      border:1px solid rgba(255,255,255,.13);
-      box-shadow:0 8px 25px rgba(0,0,0,.16);
-    }
-    .stat .label{color:rgba(255,255,255,.58);font-size:14px}
-    .stat .value{font-size:30px;font-weight:700;margin-top:8px;color:#fff}
-
-    .card{
-      background:rgba(255,255,255,.055);
-      border-radius:15px;
-      padding:20px;
-      margin-bottom:18px;
-      border:1px solid rgba(255,255,255,.13);
-      box-shadow:0 8px 25px rgba(0,0,0,.16);
-    }
-    .card h3{margin-top:0;color:#fff}
-
-    .two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-    .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px}
-    .toolbar input{max-width:350px;margin:0}
-
-    .table-wrap{overflow:auto}
-    table{width:100%;border-collapse:collapse;min-width:650px}
-    th,td{
-      text-align:left;
-      padding:12px;
-      border-bottom:1px solid rgba(255,255,255,.10);
-      vertical-align:middle;
-      color:rgba(255,255,255,.88);
-    }
-    th{
-      background:rgba(255,255,255,.05);
-      color:rgba(255,255,255,.68);
-      font-size:13px;
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    .badge{
-      display:inline-block;
-      padding:5px 9px;
-      border-radius:999px;
-      font-size:12px;
-      font-weight:bold;
-      border:1px solid rgba(255,255,255,.22);
-      background:rgba(255,255,255,.10);
-      color:#fff;
-    }
-    .approved,.pending,.rejected{
-      background:rgba(255,255,255,.10);
-      color:#fff;
+    .email {
+      font-weight: 600;
+      margin-bottom: 8px;
+      word-break: break-word;
+      color: var(--text);
     }
 
-    .actions{display:flex;gap:7px;flex-wrap:wrap}
-    .actions button{padding:7px 10px;font-size:13px}
-
-    .message{
-      padding:11px 13px;
-      border-radius:9px;
-      margin-top:12px;
-      background:rgba(255,255,255,.07);
-      color:rgba(255,255,255,.88);
-      border:1px solid rgba(255,255,255,.13);
-    }
-    .message.success,.message.error{
-      background:rgba(255,255,255,.08);
-      color:#fff;
-      border-color:rgba(255,255,255,.25);
+    .status {
+      margin-bottom: 10px;
+      color: var(--text-muted);
+      font-size: 13.5px;
     }
 
-    .video-card{
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.035);
-      border-radius:12px;
-      padding:14px;
-      margin-bottom:10px;
-    }
-    .video-title{font-weight:bold;color:#fff}
-    .url{font-size:13px;color:rgba(255,255,255,.55);word-break:break-all;margin:7px 0}
-
-    .empty{padding:25px;text-align:center;color:rgba(255,255,255,.55)}
-    .status-line{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      align-items:center
+    .video-url {
+      word-break: break-all;
+      margin: 4px 0 12px;
+      color: var(--text-faint);
+      font-size: 12.5px;
     }
 
-    .mobile-menu{display:none}
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px 14px;
+      margin: 0 0 12px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      font-size: 15px;
+      background: var(--surface-2);
+      color: var(--text);
+      font-family: "IBM Plex Sans", Arial, sans-serif;
+      transition: border-color 0.15s ease;
+    }
 
-    @media(max-width:900px){
-      .grid{grid-template-columns:repeat(2,1fr)}
-      .sidebar{
-        transform:translateX(-100%);
-        transition:.2s;
-        z-index:30
-      }
-      .sidebar.open{transform:translateX(0)}
-      .main{margin-left:0}
-      .mobile-menu{display:block}
-      .two{grid-template-columns:1fr}
+    input::placeholder {
+      color: var(--text-faint);
     }
-    @media(max-width:550px){
-      .grid{grid-template-columns:1fr}
-      .main{padding:16px}
-      .topbar{padding:0 14px}
-      .top-actions .admin-name{display:none}
+
+    input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
     }
+
+    button {
+      border: 1px solid transparent;
+      border-radius: 8px;
+      padding: 10px 16px;
+      cursor: pointer;
+      margin-right: 8px;
+      margin-top: 5px;
+      font-family: "IBM Plex Sans", Arial, sans-serif;
+      font-weight: 600;
+      font-size: 13.5px;
+      transition: transform 0.12s ease, opacity 0.12s ease;
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .approve {
+      background: var(--approve);
+      color: #06210f;
+    }
+
+    .reject {
+      background: var(--reject);
+      color: #2c0a0a;
+    }
+
+    .logout {
+      background: transparent;
+      color: var(--text-muted);
+      border-color: var(--border);
+    }
+
+    .logout:hover {
+      color: var(--error-text);
+      border-color: rgba(240,163,163,0.3);
+    }
+
+    .refresh {
+      background: transparent;
+      color: var(--text);
+      border-color: var(--border);
+    }
+
+    .refresh:hover {
+      border-color: var(--accent-dim);
+    }
+
+    .forgot {
+      background: transparent;
+      color: var(--text-muted);
+      padding: 6px 0;
+      margin-top: 6px;
+      text-decoration: underline;
+      font-weight: 400;
+    }
+
+    .forgot:hover {
+      color: var(--text);
+      opacity: 1;
+    }
+
+    #loginBox {
+      max-width: 420px;
+      margin: 40px auto 0;
+      padding: 34px 32px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 24px 60px -20px rgba(0,0,0,0.6);
+    }
+
+    #loginBox h2 {
+      margin: 0 0 18px;
+      font-family: "El Messiri", serif;
+      font-weight: 600;
+      font-size: 20px;
+      text-align: center;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .message {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: var(--surface-2);
+      font-size: 13.5px;
+    }
+
+    .success {
+      background: var(--success-bg);
+      color: var(--success-text);
+    }
+
+    .error {
+      background: var(--error-bg);
+      color: var(--error-text);
+    }
+
+    .user-actions {
+      margin-top: 10px;
+    }
+
+    .admin-user {
+      background: var(--surface-2);
+      border: 1px solid var(--border-soft);
+      color: var(--text-muted);
+      padding: 7px 12px;
+      border-radius: 7px;
+      display: inline-block;
+      font-size: 12.5px;
+    }
+
+    /* =========================================
+       LOADING SPINNER
+    ========================================= */
+
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,255,255,0.25);
+      border-top-color: currentColor;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: -2px;
+      margin-left: 6px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-line {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+      padding: 14px 0;
+      font-size: 13.5px;
+    }
+
+    .empty-note {
+      color: var(--text-faint);
+      font-size: 13.5px;
+      padding: 6px 0;
+    }
+
   </style>
+
 </head>
+
+
 <body>
 
-<div id="loginScreen" class="login-wrap">
-  <div class="login-card">
-    <div class="brand">
-      <h1>ERADA Admin</h1>
-      <p>Video Library Management</p>
-    </div>
-    <label>Administrator Email</label>
-    <input id="adminEmail" type="email" placeholder="it@erada.ly" autocomplete="email">
-    <label>Password</label>
-    <input id="adminPassword" type="password" placeholder="Enter password" autocomplete="current-password">
-    <button id="loginBtn" class="btn-success" style="width:100%">Login</button>
-    <button id="forgotBtn" class="btn-light" style="width:100%;margin-top:8px">Forgot Password?</button>
-    <div id="loginMessage"></div>
+
+<header>
+
+  <h1>ERADA Admin</h1>
+
+  <p>Access Management</p>
+
+</header>
+
+
+<!-- =========================================
+     ADMIN LOGIN
+========================================= -->
+
+<div id="loginBox">
+
+  <h2>Administrator Login</h2>
+
+  <input
+    type="email"
+    id="adminEmail"
+    placeholder="Enter admin email"
+    autocomplete="email"
+  >
+
+  <input
+    type="password"
+    id="adminPassword"
+    placeholder="Enter admin password"
+    autocomplete="current-password"
+  >
+
+  <button
+    id="adminLogin"
+    class="approve"
+    style="width:100%"
+  >
+    Login
+  </button>
+
+  <br>
+
+  <button
+    id="forgotPassword"
+    class="forgot"
+    type="button"
+  >
+    Forgot Password?
+  </button>
+
+  <div id="loginMessage"></div>
+
+</div>
+
+
+<!-- =========================================
+     ADMIN PANEL
+========================================= -->
+
+<div
+  id="adminPanel"
+  class="container hidden"
+>
+
+
+  <!-- =======================================
+       ADD VIDEO
+  ======================================== -->
+
+  <div class="card">
+
+    <h2>🎬 Add New Video</h2>
+
+    <input
+      type="text"
+      id="videoTitle"
+      placeholder="Enter video title"
+    >
+
+    <input
+      type="url"
+      id="videoUrl"
+      placeholder="Paste YouTube video link"
+    >
+
+    <button
+      id="addVideo"
+      class="approve"
+    >
+      + Add Video
+    </button>
+
+    <div id="videoMessage"></div>
+
   </div>
+
+
+  <!-- =======================================
+       VIDEOS
+  ======================================== -->
+
+  <div class="card">
+
+    <h2>🎬 Videos</h2>
+
+    <div id="videosList">
+      <div class="loading-line">Loading<span class="spinner"></span></div>
+    </div>
+
+  </div>
+
+
+  <!-- =======================================
+       APPROVED USERS
+  ======================================== -->
+
+  <div class="card">
+
+    <h2>👥 Approved Users</h2>
+
+    <p>
+      Add an email address to give access to the ERADA Video Library.
+    </p>
+
+    <input
+      type="email"
+      id="approvedEmail"
+      placeholder="Enter user email"
+    >
+
+    <button
+      id="approveUser"
+      class="approve"
+    >
+      + Approve User
+    </button>
+
+    <button
+      id="refreshUsers"
+      class="refresh"
+      type="button"
+    >
+      🔄 Refresh Users
+    </button>
+
+    <div id="approvedUserMessage"></div>
+
+    <div
+      id="approvedUsersList"
+      style="margin-top: 15px;"
+    >
+      <div class="loading-line">Loading<span class="spinner"></span></div>
+    </div>
+
+  </div>
+
+
+  <!-- =======================================
+       ACCESS REQUESTS
+  ======================================== -->
+
+  <div class="card">
+
+    <h2>📩 Access Requests</h2>
+
+    <button
+      id="refreshRequests"
+      class="refresh"
+      type="button"
+    >
+      🔄 Refresh
+    </button>
+
+    <button
+      id="logout"
+      class="logout"
+      type="button"
+    >
+      Logout
+    </button>
+
+    <div id="requestsList">
+      <div class="loading-line">Loading<span class="spinner"></span></div>
+    </div>
+
+  </div>
+
+
 </div>
 
-<div id="app" class="app hidden">
-  <header class="topbar">
-    <div class="top-actions">
-      <button id="mobileMenu" class="btn-light mobile-menu">☰</button>
-      <h1>ERADA Admin</h1>
-    </div>
-    <div class="top-actions">
-      <span id="adminName" class="admin-name"></span>
-      <button id="logoutBtn" class="btn-secondary">Logout</button>
-    </div>
-  </header>
-
-  <aside id="sidebar" class="sidebar">
-    <button class="nav-btn active" data-page="dashboard">📊 Dashboard</button>
-    <button class="nav-btn" data-page="requests">📩 Access Requests</button>
-    <button class="nav-btn" data-page="users">👥 Users</button>
-    <button class="nav-btn" data-page="videos">🎬 Videos</button>
-    <button class="nav-btn" data-page="drive">☁️ Google Drive</button>
-  </aside>
-
-  <main class="main">
-    <section id="dashboardPage" class="page">
-      <div class="page-title"><div><h2>Dashboard</h2><div class="muted">ERADA Video Library overview</div></div><button id="dashboardRefresh" class="btn-primary">🔄 Refresh</button></div>
-      <div class="grid">
-        <div class="stat"><div class="label">Approved Users</div><div id="statUsers" class="value">0</div></div>
-        <div class="stat"><div class="label">Pending Requests</div><div id="statRequests" class="value">0</div></div>
-        <div class="stat"><div class="label">YouTube Videos</div><div id="statVideos" class="value">0</div></div>
-        <div class="stat"><div class="label">Private Drive Files</div><div id="statDrive" class="value">—</div></div>
-      </div>
-      <div class="two" style="margin-top:18px">
-        <div class="card"><h3>Recent Access Requests</h3><div id="recentRequests"></div></div>
-        <div class="card"><h3>System Status</h3><div id="systemStatus"></div></div>
-      </div>
-    </section>
-
-    <section id="requestsPage" class="page hidden">
-      <div class="page-title"><div><h2>Access Requests</h2><div class="muted">Approve or reject library access</div></div><button id="refreshRequests" class="btn-primary">🔄 Refresh</button></div>
-      <div class="card">
-        <div class="toolbar"><input id="requestSearch" placeholder="Search email..."></div>
-        <div class="table-wrap"><table><thead><tr><th>Email</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead><tbody id="requestsTable"></tbody></table></div>
-      </div>
-    </section>
-
-    <section id="usersPage" class="page hidden">
-      <div class="page-title"><div><h2>Users</h2><div class="muted">Manage approved users</div></div><button id="refreshUsers" class="btn-primary">🔄 Refresh</button></div>
-      <div class="card">
-        <div class="toolbar">
-          <input id="newUserEmail" type="email" placeholder="Enter user email">
-          <button id="addUserBtn" class="btn-success">+ Approve User</button>
-        </div>
-        <div id="userMessage"></div>
-      </div>
-      <div class="card"><div class="toolbar"><input id="userSearch" placeholder="Search users..."></div><div class="table-wrap"><table><thead><tr><th>Email</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead><tbody id="usersTable"></tbody></table></div></div>
-    </section>
-
-    <section id="videosPage" class="page hidden">
-      <div class="page-title"><div><h2>YouTube Videos</h2><div class="muted">Manage public/library video entries</div></div><button id="refreshVideos" class="btn-primary">🔄 Refresh</button></div>
-      <div class="card">
-        <h3>Add New Video</h3>
-        <input id="videoTitle" placeholder="Video title">
-        <input id="videoUrl" type="url" placeholder="YouTube video link">
-        <button id="addVideoBtn" class="btn-success">+ Add Video</button>
-        <div id="videoMessage"></div>
-      </div>
-      <div class="card"><div class="toolbar"><input id="videoSearch" placeholder="Search videos..."></div><div id="videosList"></div></div>
-    </section>
-
-    <section id="drivePage" class="page hidden">
-      <div class="page-title"><div><h2>Google Drive</h2><div class="muted">Private video connection</div></div><button id="refreshDrive" class="btn-primary">🔄 Refresh</button></div>
-      <div class="card"><div id="driveStatus"></div><div id="driveFiles" style="margin-top:15px"></div></div>
-    </section>
-  </main>
-</div>
 
 <script>
-const SUPABASE_URL = "https://laqwnqnnqtfhqfadjyvo.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_ropVS738K5BJiOoaZ-TeWA_WmkineZh";
-const ADMIN_EMAIL = "it@erada.ly";
-const GET_VIDEO_FUNCTION = SUPABASE_URL + "/functions/v1/get-video";
 
-const db = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-const $ = id => document.getElementById(id);
-const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
-const dateText = value => value ? new Date(value).toLocaleString() : "—";
-const badge = status => `<span class="badge ${esc(status)}">${esc(status)}</span>`;
+/* =========================================
+   SUPABASE SETTINGS
+========================================= */
 
-function message(el, text, type="success"){ el.innerHTML = `<div class="message ${type}">${esc(text)}</div>`; }
+const SUPABASE_URL =
+  "https://laqwnqnnqtfhqfadjyvo.supabase.co";
 
-async function checkAdmin(email){
-  const {data,error} = await db.from("admin_users").select("id,email").ilike("email",email).maybeSingle();
-  if(error){console.error(error);return false}
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_ropVS738K5BJiOoaZ-TeWA_WmkineZh";
+
+
+const supabaseClient =
+  supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
+
+
+/* =========================================
+   ADMIN EMAIL
+========================================= */
+
+const ADMIN_EMAIL =
+  "it@erada.ly";
+
+
+/* =========================================
+   ELEMENTS
+========================================= */
+
+const adminEmail =
+  document.getElementById("adminEmail");
+
+const adminPassword =
+  document.getElementById("adminPassword");
+
+const loginMessage =
+  document.getElementById("loginMessage");
+
+const loginBox =
+  document.getElementById("loginBox");
+
+const adminPanel =
+  document.getElementById("adminPanel");
+
+const requestsList =
+  document.getElementById("requestsList");
+
+const videoTitle =
+  document.getElementById("videoTitle");
+
+const videoUrl =
+  document.getElementById("videoUrl");
+
+const videoMessage =
+  document.getElementById("videoMessage");
+
+const videosList =
+  document.getElementById("videosList");
+
+const approvedEmailInput =
+  document.getElementById("approvedEmail");
+
+const approveUserButton =
+  document.getElementById("approveUser");
+
+const approvedUserMessage =
+  document.getElementById("approvedUserMessage");
+
+const approvedUsersList =
+  document.getElementById("approvedUsersList");
+
+const refreshUsersButton =
+  document.getElementById("refreshUsers");
+
+
+/* =========================================
+   ESCAPE HTML
+========================================= */
+
+function escapeHtml(text) {
+
+  return String(text ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+}
+
+
+/* =========================================
+   LOGIN MESSAGE
+========================================= */
+
+function showLoginMessage(
+  text,
+  type = ""
+) {
+
+  loginMessage.innerHTML =
+    `<div class="message ${type}">
+      ${escapeHtml(text)}
+    </div>`;
+
+}
+
+
+/* =========================================
+   APPROVED USER MESSAGE
+========================================= */
+
+function showApprovedUserMessage(
+  text,
+  type = "success"
+) {
+
+  approvedUserMessage.innerHTML =
+    `<div class="message ${type}">
+      ${escapeHtml(text)}
+    </div>`;
+
+}
+
+
+/* =========================================
+   CHECK ADMIN USER
+========================================= */
+
+async function checkAdminUser(email) {
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("admin_users")
+      .select("id,email")
+      .ilike("email", email)
+      .maybeSingle();
+
+
+  if (error) {
+
+    console.error(
+      "Admin check error:",
+      error
+    );
+
+    return false;
+  }
+
+
   return !!data;
+
 }
 
-async function login(){
-  const email = $("adminEmail").value.trim().toLowerCase();
-  const password = $("adminPassword").value;
-  if(email !== ADMIN_EMAIL){message($("loginMessage"),"Only IT@erada.ly can access the admin panel.","error");return}
-  if(!password){message($("loginMessage"),"Please enter your password.","error");return}
-  message($("loginMessage"),"Signing in...");
-  const {data,error} = await db.auth.signInWithPassword({email,password});
-  if(error){console.error(error);message($("loginMessage"),"Invalid email or password.","error");return}
-  const authEmail = data.user?.email?.trim().toLowerCase();
-  if(authEmail !== ADMIN_EMAIL || !(await checkAdmin(authEmail))){
-    await db.auth.signOut();message($("loginMessage"),"You are not authorized to access the admin panel.","error");return;
-  }
-  $("loginMessage").innerHTML="";
-  $("adminName").textContent=authEmail;
-  $("loginScreen").classList.add("hidden");
-  $("app").classList.remove("hidden");
-  await refreshAll();
-}
 
-$("loginBtn").onclick=login;
-$("adminPassword").addEventListener("keydown",e=>{if(e.key==="Enter")login()});
+/* =========================================
+   SHOW ADMIN PANEL
+========================================= */
 
-$("forgotBtn").onclick=async()=>{
-  const email=$("adminEmail").value.trim().toLowerCase();
-  if(email!==ADMIN_EMAIL){message($("loginMessage"),"Enter IT@erada.ly first.","error");return}
-  const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:"https://eradavideos.github.io/reset-password.html"});
-  if(error){console.error(error);message($("loginMessage"),"Unable to send recovery email.","error");return}
-  message($("loginMessage"),"Password recovery link has been sent to IT@erada.ly.");
-};
+async function showAdminPanel() {
 
-async function loadRequests(){
-  const {data,error}=await db.from("access_requests").select("id,email,status,created_at").order("created_at",{ascending:false});
-  if(error){console.error(error);$("requestsTable").innerHTML='<tr><td colspan="4">Unable to load requests.</td></tr>';return []}
-  const pending=data.filter(x=>x.status==="pending");
-  $("statRequests").textContent=pending.length;
-  renderRequests(data);
-  renderRecent(pending.slice(0,5));
-  return data;
-}
+  loginBox.classList.add("hidden");
 
-function renderRequests(data){
-  const search=$("requestSearch").value.trim().toLowerCase();
-  const rows=data.filter(x=>String(x.email).toLowerCase().includes(search));
-  $("requestsTable").innerHTML=rows.length?rows.map(r=>`
-    <tr><td>${esc(r.email)}</td><td>${badge(r.status)}</td><td>${dateText(r.created_at)}</td><td>
-    <div class="actions">
-      ${r.status==="pending"?`<button class="btn-success" onclick="approveRequest('${esc(r.id)}')">Approve</button><button class="btn-danger" onclick="rejectRequest('${esc(r.id)}')">Reject</button>`:"—"}
-    </div></td></tr>`).join(""):'<tr><td colspan="4" class="empty">No requests found.</td></tr>';
-}
+  adminPanel.classList.remove("hidden");
 
-function renderRecent(data){
-  $("recentRequests").innerHTML=data.length?data.map(r=>`<div class="status-line" style="padding:10px 0;border-bottom:1px solid #eee"><span>${esc(r.email)}</span>${badge(r.status)}</div>`).join(""):'<div class="empty">No pending requests.</div>';
-}
 
-async function approveRequest(id){
-  if(!confirm("Approve this email?"))return;
-  const {error}=await db.rpc("approve_access_request",{request_id:id});
-  if(error){console.error(error);alert("Unable to approve this request.");return}
-  await loadRequests();await loadUsers();
-}
-
-async function rejectRequest(id){
-  if(!confirm("Reject this request?"))return;
-  const {error}=await db.rpc("reject_access_request",{request_id:id});
-  if(error){console.error(error);alert("Unable to reject this request.");return}
   await loadRequests();
-}
 
-async function loadUsers(){
-  const {data,error}=await db.from("approved_users").select("id,email,status,created_at").order("email",{ascending:true});
-  if(error){console.error(error);$("usersTable").innerHTML='<tr><td colspan="4">Unable to load users.</td></tr>';return []}
-  $("statUsers").textContent=data.filter(x=>x.status==="approved").length;
-  renderUsers(data);
-  return data;
-}
-
-function renderUsers(data){
-  const search=$("userSearch").value.trim().toLowerCase();
-  const rows=data.filter(x=>String(x.email).toLowerCase().includes(search));
-  $("usersTable").innerHTML=rows.length?rows.map(u=>`
-    <tr><td>${esc(u.email)}</td><td>${u.email.toLowerCase()===ADMIN_EMAIL?"<span class='badge approved'>Administrator</span>":badge(u.status)}</td><td>${dateText(u.created_at)}</td><td>
-    ${u.email.toLowerCase()===ADMIN_EMAIL?"—":`<button class="btn-danger" onclick="removeUser('${esc(u.id)}')">Remove Access</button>`}
-    </td></tr>`).join(""):'<tr><td colspan="4" class="empty">No users found.</td></tr>';
-}
-
-async function removeUser(id){
-  if(!confirm("Remove access for this user?"))return;
-  const {error}=await db.from("approved_users").delete().eq("id",id);
-  if(error){console.error(error);alert("Unable to remove access.");return}
-  await loadUsers();
-}
-
-$("addUserBtn").onclick=async()=>{
-  const email=$("newUserEmail").value.trim().toLowerCase();
-  if(!email || !email.includes("@")){message($("userMessage"),"Please enter a valid email address.","error");return}
-  if(email===ADMIN_EMAIL){message($("userMessage"),"This email is already the administrator.","error");return}
-  const {error}=await db.from("approved_users").upsert({email,status:"approved"},{onConflict:"email"});
-  if(error){console.error(error);message($("userMessage"),"Unable to approve this user.","error");return}
-  $("newUserEmail").value="";message($("userMessage"),"User approved successfully.");await loadUsers();
-};
-
-async function loadVideos(){
-  const {data,error}=await db.from("videos").select("id,title,youtube_url,created_at").order("created_at",{ascending:false});
-  if(error){console.error(error);$("videosList").innerHTML='<div class="message error">Unable to load videos.</div>';return []}
-  $("statVideos").textContent=data.length;
-  renderVideos(data);return data;
-}
-
-function renderVideos(data){
-  const search=$("videoSearch").value.trim().toLowerCase();
-  const rows=data.filter(v=>(String(v.title)+" "+String(v.youtube_url)).toLowerCase().includes(search));
-  $("videosList").innerHTML=rows.length?rows.map(v=>`
-    <div class="video-card"><div class="video-title">🎬 ${esc(v.title)}</div>
-    <div class="url">${esc(v.youtube_url)}</div><div class="muted">${dateText(v.created_at)}</div>
-    <div class="actions" style="margin-top:10px"><button class="btn-primary" onclick="editVideo('${esc(v.id)}')">✏️ Edit</button><button class="btn-danger" onclick="deleteVideo('${esc(v.id)}')">🗑️ Delete</button></div></div>`).join(""):'<div class="empty">No videos found.</div>';
-}
-
-$("addVideoBtn").onclick=async()=>{
-  const title=$("videoTitle").value.trim(), url=$("videoUrl").value.trim();
-  if(!title||!url){message($("videoMessage"),"Enter the video title and YouTube link.","error");return}
-  const {error}=await db.from("videos").insert({title,youtube_url:url});
-  if(error){console.error(error);message($("videoMessage"),"Unable to add video.","error");return}
-  $("videoTitle").value="";$("videoUrl").value="";message($("videoMessage"),"Video added successfully.");await loadVideos();
-};
-
-async function editVideo(id){
-  const {data,error}=await db.from("videos").select("title,youtube_url").eq("id",id).single();
-  if(error){alert("Unable to load video.");return}
-  const title=prompt("Video title:",data.title);if(title===null)return;
-  const url=prompt("YouTube link:",data.youtube_url);if(url===null)return;
-  if(!title.trim()||!url.trim()){alert("Title and URL cannot be empty.");return}
-  const {error:e}=await db.from("videos").update({title:title.trim(),youtube_url:url.trim()}).eq("id",id);
-  if(e){console.error(e);alert("Unable to update video.");return}
   await loadVideos();
+
+  await loadApprovedUsers();
+
 }
 
-async function deleteVideo(id){
-  if(!confirm("Delete this video?"))return;
-  const {error}=await db.from("videos").delete().eq("id",id);
-  if(error){console.error(error);alert("Unable to delete video.");return}
+
+/* =========================================
+   ADMIN LOGIN
+========================================= */
+
+document
+  .getElementById("adminLogin")
+  .addEventListener(
+    "click",
+    async function() {
+
+      const email =
+        adminEmail.value
+          .trim()
+          .toLowerCase();
+
+      const password =
+        adminPassword.value;
+
+
+      if (email !== ADMIN_EMAIL) {
+
+        showLoginMessage(
+          "Only IT@erada.ly can access the admin panel.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      if (!password) {
+
+        showLoginMessage(
+          "Please enter your password.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      const loginButton =
+        document.getElementById("adminLogin");
+
+      loginButton.disabled = true;
+      loginButton.innerHTML =
+        'Signing in<span class="spinner"></span>';
+
+
+      const {
+        data,
+        error
+      } =
+        await supabaseClient
+          .auth
+          .signInWithPassword({
+
+            email: email,
+
+            password: password
+
+          });
+
+
+      if (error) {
+
+        console.error(
+          "Login error:",
+          error
+        );
+
+        showLoginMessage(
+          "Invalid email or password.",
+          "error"
+        );
+
+        loginButton.disabled = false;
+        loginButton.textContent = "Login";
+
+        return;
+      }
+
+
+      const authenticatedEmail =
+        data.user?.email
+          ?.trim()
+          .toLowerCase();
+
+
+      if (
+        authenticatedEmail !==
+        ADMIN_EMAIL
+      ) {
+
+        await supabaseClient
+          .auth
+          .signOut();
+
+        showLoginMessage(
+          "Only IT@erada.ly can access the admin panel.",
+          "error"
+        );
+
+        loginButton.disabled = false;
+        loginButton.textContent = "Login";
+
+        return;
+      }
+
+
+      const isAdmin =
+        await checkAdminUser(
+          authenticatedEmail
+        );
+
+
+      if (!isAdmin) {
+
+        await supabaseClient
+          .auth
+          .signOut();
+
+        showLoginMessage(
+          "You are not authorized to access the admin panel.",
+          "error"
+        );
+
+        loginButton.disabled = false;
+        loginButton.textContent = "Login";
+
+        return;
+      }
+
+
+      adminPassword.value = "";
+
+
+      showLoginMessage(
+        "Login successful.",
+        "success"
+      );
+
+
+      await showAdminPanel();
+
+
+      loginButton.disabled = false;
+      loginButton.textContent = "Login";
+
+    }
+  );
+
+
+/* =========================================
+   FORGOT PASSWORD
+========================================= */
+
+document
+  .getElementById("forgotPassword")
+  .addEventListener(
+    "click",
+    async function() {
+
+      const email =
+        adminEmail.value
+          .trim()
+          .toLowerCase();
+
+
+      if (email !== ADMIN_EMAIL) {
+
+        showLoginMessage(
+          "Enter IT@erada.ly first.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      showLoginMessage(
+        "Sending password recovery email...",
+        ""
+      );
+
+
+      const {
+        error
+      } =
+        await supabaseClient
+          .auth
+          .resetPasswordForEmail(
+            email,
+            {
+              redirectTo:
+                "https://eradavideos.github.io/reset-password.html"
+            }
+          );
+
+
+      if (error) {
+
+        console.error(
+          "Password reset error:",
+          error
+        );
+
+        showLoginMessage(
+          "Unable to send password recovery email.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      showLoginMessage(
+        "Password recovery link has been sent to IT@erada.ly.",
+        "success"
+      );
+
+    }
+  );
+
+
+/* =========================================
+   LOAD ACCESS REQUESTS
+========================================= */
+
+async function loadRequests() {
+
+  requestsList.innerHTML =
+    '<div class="loading-line">Loading<span class="spinner"></span></div>';
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("access_requests")
+      .select(
+        "id,email,status,created_at"
+      )
+      .eq(
+        "status",
+        "pending"
+      )
+      .order(
+        "created_at",
+        {
+          ascending: false
+        }
+      );
+
+
+  if (error) {
+
+    console.error(
+      "Requests error:",
+      error
+    );
+
+    requestsList.innerHTML =
+      `<div class="message error">
+        Unable to load requests.
+      </div>`;
+
+    return;
+  }
+
+
+  if (
+    !data ||
+    data.length === 0
+  ) {
+
+    requestsList.innerHTML =
+      '<p class="empty-note">No pending requests.</p>';
+
+    return;
+  }
+
+
+  requestsList.innerHTML =
+    "";
+
+
+  data.forEach(
+    function(request) {
+
+      const div =
+        document.createElement("div");
+
+      div.className =
+        "request";
+
+
+      div.innerHTML = `
+
+        <div class="email">
+          ${escapeHtml(request.email)}
+        </div>
+
+        <button
+          class="approve"
+          data-approve-request="${escapeHtml(request.id)}"
+        >
+          Approve
+        </button>
+
+        <button
+          class="reject"
+          data-reject-request="${escapeHtml(request.id)}"
+        >
+          Reject
+        </button>
+
+      `;
+
+
+      requestsList.appendChild(div);
+
+    }
+  );
+
+
+  requestsList
+    .querySelectorAll("[data-approve-request]")
+    .forEach(
+      button => {
+
+        button.addEventListener(
+          "click",
+          function() {
+
+            approveRequest(
+              button.dataset.approveRequest
+            );
+
+          }
+        );
+
+      }
+    );
+
+
+  requestsList
+    .querySelectorAll("[data-reject-request]")
+    .forEach(
+      button => {
+
+        button.addEventListener(
+          "click",
+          function() {
+
+            rejectRequest(
+              button.dataset.rejectRequest
+            );
+
+          }
+        );
+
+      }
+    );
+
+}
+
+
+/* =========================================
+   APPROVE REQUEST
+========================================= */
+
+async function approveRequest(id) {
+
+  if (
+    !confirm(
+      "Approve this email?"
+    )
+  ) {
+
+    return;
+  }
+
+
+  const {
+    error
+  } =
+    await supabaseClient
+      .rpc(
+        "approve_access_request",
+        {
+          request_id: id
+        }
+      );
+
+
+  if (error) {
+
+    console.error(
+      "Approve error:",
+      error
+    );
+
+    alert(
+      "Unable to approve this request."
+    );
+
+    return;
+  }
+
+
+  await loadRequests();
+
+  await loadApprovedUsers();
+
+}
+
+
+/* =========================================
+   REJECT REQUEST
+========================================= */
+
+async function rejectRequest(id) {
+
+  if (
+    !confirm(
+      "Reject this email?"
+    )
+  ) {
+
+    return;
+  }
+
+
+  const {
+    error
+  } =
+    await supabaseClient
+      .rpc(
+        "reject_access_request",
+        {
+          request_id: id
+        }
+      );
+
+
+  if (error) {
+
+    console.error(
+      "Reject error:",
+      error
+    );
+
+    alert(
+      "Unable to reject this request."
+    );
+
+    return;
+  }
+
+
+  await loadRequests();
+
+}
+
+
+/* =========================================
+   REFRESH REQUESTS
+========================================= */
+
+document
+  .getElementById("refreshRequests")
+  .addEventListener(
+    "click",
+    loadRequests
+  );
+
+
+/* =========================================
+   ADD VIDEO
+========================================= */
+
+document
+  .getElementById("addVideo")
+  .addEventListener(
+    "click",
+    async function() {
+
+      const title =
+        videoTitle.value.trim();
+
+      const url =
+        videoUrl.value.trim();
+
+
+      if (!title || !url) {
+
+        videoMessage.innerHTML =
+          `<div class="message error">
+            Please enter the video title and YouTube link.
+          </div>`;
+
+        return;
+      }
+
+
+      const addButton =
+        document.getElementById("addVideo");
+
+      addButton.disabled = true;
+      addButton.innerHTML =
+        'Adding<span class="spinner"></span>';
+
+
+      const {
+        error
+      } =
+        await supabaseClient
+          .from("videos")
+          .insert({
+
+            title: title,
+
+            youtube_url: url
+
+          });
+
+
+      addButton.disabled = false;
+      addButton.textContent = "+ Add Video";
+
+
+      if (error) {
+
+        console.error(
+          "Add video error:",
+          error
+        );
+
+        videoMessage.innerHTML =
+          `<div class="message error">
+            Unable to add video.
+          </div>`;
+
+        return;
+      }
+
+
+      videoMessage.innerHTML =
+        `<div class="message success">
+          Video added successfully.
+        </div>`;
+
+
+      videoTitle.value = "";
+
+      videoUrl.value = "";
+
+
+      await loadVideos();
+
+    }
+  );
+
+
+/* =========================================
+   LOAD VIDEOS
+========================================= */
+
+async function loadVideos() {
+
+  videosList.innerHTML =
+    '<div class="loading-line">Loading<span class="spinner"></span></div>';
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("videos")
+      .select(
+        "id,title,youtube_url,created_at"
+      )
+      .order(
+        "created_at",
+        {
+          ascending: false
+        }
+      );
+
+
+  if (error) {
+
+    console.error(
+      "Videos error:",
+      error
+    );
+
+    videosList.innerHTML =
+      `<div class="message error">
+        Unable to load videos.
+      </div>`;
+
+    return;
+  }
+
+
+  if (
+    !data ||
+    data.length === 0
+  ) {
+
+    videosList.innerHTML =
+      '<p class="empty-note">No videos added yet.</p>';
+
+    return;
+  }
+
+
+  videosList.innerHTML =
+    "";
+
+
+  data.forEach(
+    function(video) {
+
+      const div =
+        document.createElement("div");
+
+      div.className =
+        "request";
+
+
+      div.innerHTML = `
+
+        <div class="email">
+          ${escapeHtml(video.title)}
+        </div>
+
+        <div class="video-url">
+          ${escapeHtml(video.youtube_url)}
+        </div>
+
+        <button
+          class="approve"
+          data-edit-video="${escapeHtml(video.id)}"
+        >
+          ✏️ Edit
+        </button>
+
+        <button
+          class="reject"
+          data-delete-video="${escapeHtml(video.id)}"
+        >
+          🗑️ Delete
+        </button>
+
+      `;
+
+
+      videosList.appendChild(div);
+
+    }
+  );
+
+
+  videosList
+    .querySelectorAll("[data-edit-video]")
+    .forEach(
+      button => {
+
+        button.addEventListener(
+          "click",
+          function() {
+
+            editVideo(
+              button.dataset.editVideo
+            );
+
+          }
+        );
+
+      }
+    );
+
+
+  videosList
+    .querySelectorAll("[data-delete-video]")
+    .forEach(
+      button => {
+
+        button.addEventListener(
+          "click",
+          function() {
+
+            deleteVideo(
+              button.dataset.deleteVideo
+            );
+
+          }
+        );
+
+      }
+    );
+
+}
+
+
+/* =========================================
+   EDIT VIDEO
+========================================= */
+
+async function editVideo(id) {
+
+  const newTitle =
+    prompt(
+      "Enter the new video title:"
+    );
+
+
+  if (newTitle === null) {
+    return;
+  }
+
+
+  const title =
+    newTitle.trim();
+
+
+  if (!title) {
+
+    alert(
+      "Video title cannot be empty."
+    );
+
+    return;
+  }
+
+
+  const newUrl =
+    prompt(
+      "Enter the new YouTube link:"
+    );
+
+
+  if (newUrl === null) {
+    return;
+  }
+
+
+  const youtube_url =
+    newUrl.trim();
+
+
+  if (!youtube_url) {
+
+    alert(
+      "YouTube link cannot be empty."
+    );
+
+    return;
+  }
+
+
+  const {
+    error
+  } =
+    await supabaseClient
+      .from("videos")
+      .update({
+
+        title: title,
+
+        youtube_url: youtube_url
+
+      })
+      .eq(
+        "id",
+        id
+      );
+
+
+  if (error) {
+
+    console.error(
+      "Edit video error:",
+      error
+    );
+
+    alert(
+      "Unable to update video."
+    );
+
+    return;
+  }
+
+
   await loadVideos();
+
 }
 
-async function loadDrive(){
-  $("driveStatus").innerHTML='<div class="message">Connecting to private Google Drive videos...</div>';
-  $("driveFiles").innerHTML="";
-  $("statDrive").textContent="…";
-  const {data:{session}}=await db.auth.getSession();
-  if(!session){$("driveStatus").innerHTML='<div class="message error">Admin session expired. Please login again.</div>';return}
-  try{
-    const response=await fetch(GET_VIDEO_FUNCTION,{method:"GET",headers:{Authorization:"Bearer "+session.access_token,apikey:SUPABASE_PUBLISHABLE_KEY,Accept:"application/json"}});
-    const result=await response.json().catch(()=>({}));
-    if(!response.ok || !result.success)throw new Error(result.error||("HTTP "+response.status));
-    const files=result.files||[];
-    $("statDrive").textContent=files.length;
-    $("driveStatus").innerHTML=`<div class="message success">Google Drive connected successfully. ${files.length} private file(s) found.</div>`;
-    $("driveFiles").innerHTML=files.length?files.map(f=>`<div class="video-card"><div class="video-title">🎬 ${esc(f.name)}</div><div class="muted">${esc(f.mimeType||"")} ${f.size?"• "+Math.round(Number(f.size)/1024/1024)+" MB":""}</div></div>`).join(""):'<div class="empty">No private files found.</div>';
-  }catch(e){
-    console.error(e);$("statDrive").textContent="Error";$("driveStatus").innerHTML=`<div class="message error">Google Drive connection failed: ${esc(e.message)}</div>`;
+
+/* =========================================
+   DELETE VIDEO
+========================================= */
+
+async function deleteVideo(id) {
+
+  if (
+    !confirm(
+      "Are you sure you want to delete this video?"
+    )
+  ) {
+
+    return;
   }
-}
 
-async function refreshAll(){await Promise.all([loadRequests(),loadUsers(),loadVideos()]);await loadDrive();$("systemStatus").innerHTML='<div class="message success">✓ Supabase authentication is active.</div><div class="message success">✓ Admin authorization is active.</div><div class="message">Google Drive status is shown in the Google Drive section.</div>'}
 
-function showPage(page){
-  document.querySelectorAll(".page").forEach(x=>x.classList.add("hidden"));
-  $(page+"Page").classList.remove("hidden");
-  document.querySelectorAll(".nav-btn").forEach(x=>x.classList.toggle("active",x.dataset.page===page));
-  $("sidebar").classList.remove("open");
-  if(page==="drive")loadDrive();
-}
+  const {
+    error
+  } =
+    await supabaseClient
+      .from("videos")
+      .delete()
+      .eq(
+        "id",
+        id
+      );
 
-document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>showPage(b.dataset.page));
-$("mobileMenu").onclick=()=>$("sidebar").classList.toggle("open");
-$("dashboardRefresh").onclick=refreshAll;
-$("refreshRequests").onclick=loadRequests;
-$("refreshUsers").onclick=loadUsers;
-$("refreshVideos").onclick=loadVideos;
-$("refreshDrive").onclick=loadDrive;
-$("requestSearch").oninput=loadRequestsSearch;
-$("userSearch").oninput=loadUsersSearch;
-$("videoSearch").oninput=loadVideosSearch;
 
-async function loadRequestsSearch(){const {data}=await db.from("access_requests").select("id,email,status,created_at").order("created_at",{ascending:false});if(data)renderRequests(data)}
-async function loadUsersSearch(){const {data}=await db.from("approved_users").select("id,email,status,created_at").order("email",{ascending:true});if(data)renderUsers(data)}
-async function loadVideosSearch(){const {data}=await db.from("videos").select("id,title,youtube_url,created_at").order("created_at",{ascending:false});if(data)renderVideos(data)}
+  if (error) {
 
-$("logoutBtn").onclick=async()=>{await db.auth.signOut();location.reload()};
+    console.error(
+      "Delete video error:",
+      error
+    );
 
-(async()=>{
-  const {data:{session}}=await db.auth.getSession();
-  if(session && session.user?.email?.toLowerCase()===ADMIN_EMAIL && await checkAdmin(ADMIN_EMAIL)){
-    $("adminName").textContent=ADMIN_EMAIL;$("loginScreen").classList.add("hidden");$("app").classList.remove("hidden");await refreshAll();
+    alert(
+      "Unable to delete video."
+    );
+
+    return;
   }
-})();
+
+
+  await loadVideos();
+
+}
+
+
+/* =========================================
+   LOAD APPROVED USERS
+========================================= */
+
+async function loadApprovedUsers() {
+
+  approvedUsersList.innerHTML =
+    '<div class="loading-line">Loading<span class="spinner"></span></div>';
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("approved_users")
+      .select(
+        "id,email,status"
+      )
+      .order(
+        "email",
+        {
+          ascending: true
+        }
+      );
+
+
+  if (error) {
+
+    console.error(
+      "Approved users error:",
+      error
+    );
+
+    approvedUsersList.innerHTML =
+      `<div class="message error">
+        Unable to load approved users.
+      </div>`;
+
+    return;
+  }
+
+
+  if (
+    !data ||
+    data.length === 0
+  ) {
+
+    approvedUsersList.innerHTML =
+      '<p class="empty-note">No approved users yet.</p>';
+
+    return;
+  }
+
+
+  approvedUsersList.innerHTML =
+    "";
+
+
+  data.forEach(
+    function(user) {
+
+      const row =
+        document.createElement("div");
+
+      row.className =
+        "request";
+
+
+      const normalizedEmail =
+        String(user.email)
+          .trim()
+          .toLowerCase();
+
+
+      /* ADMIN ACCOUNT */
+
+      if (
+        normalizedEmail ===
+        ADMIN_EMAIL
+      ) {
+
+        row.innerHTML = `
+
+          <div class="email">
+            ${escapeHtml(user.email)}
+          </div>
+
+          <div class="status">
+            Status:
+            <strong>Administrator</strong>
+          </div>
+
+          <div class="admin-user">
+            🔐 Admin account
+          </div>
+
+        `;
+
+      }
+
+
+      /* NORMAL USER */
+
+      else {
+
+        row.innerHTML = `
+
+          <div class="email">
+            ${escapeHtml(user.email)}
+          </div>
+
+          <div class="status">
+            Status:
+            <strong>
+              ${escapeHtml(user.status)}
+            </strong>
+          </div>
+
+          <div class="user-actions">
+
+            <button
+              type="button"
+              class="reject"
+              data-remove-user="${escapeHtml(user.id)}"
+            >
+              🗑️ Remove Access
+            </button>
+
+          </div>
+
+        `;
+
+      }
+
+
+      approvedUsersList.appendChild(row);
+
+    }
+  );
+
+
+  /* =====================================
+     REMOVE ACCESS BUTTONS
+  ===================================== */
+
+  const removeButtons =
+    approvedUsersList
+      .querySelectorAll(
+        "[data-remove-user]"
+      );
+
+
+  removeButtons.forEach(
+    function(button) {
+
+      button.addEventListener(
+        "click",
+        async function() {
+
+          const userId =
+            button.dataset.removeUser;
+
+
+          const confirmed =
+            confirm(
+              "Are you sure you want to remove access for this user?"
+            );
+
+
+          if (!confirmed) {
+            return;
+          }
+
+
+          button.disabled =
+            true;
+
+          button.innerHTML =
+            'Removing<span class="spinner"></span>';
+
+
+          const {
+            error
+          } =
+            await supabaseClient
+              .from("approved_users")
+              .delete()
+              .eq(
+                "id",
+                userId
+              );
+
+
+          if (error) {
+
+            console.error(
+              "Remove access error:",
+              error
+            );
+
+
+            alert(
+              "Unable to remove access.\n\nCheck the browser console for details."
+            );
+
+
+            button.disabled =
+              false;
+
+            button.textContent =
+              "🗑️ Remove Access";
+
+            return;
+          }
+
+
+          await loadApprovedUsers();
+
+        }
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================
+   APPROVE USER
+========================================= */
+
+approveUserButton
+  .addEventListener(
+    "click",
+    async function() {
+
+      const email =
+        approvedEmailInput.value
+          .trim()
+          .toLowerCase();
+
+
+      if (
+        !email ||
+        !email.includes("@")
+      ) {
+
+        showApprovedUserMessage(
+          "Please enter a valid email address.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      if (
+        email === ADMIN_EMAIL
+      ) {
+
+        showApprovedUserMessage(
+          "This email is already the administrator.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      approveUserButton.disabled =
+        true;
+
+      approveUserButton.innerHTML =
+        'Approving<span class="spinner"></span>';
+
+
+      const {
+        error
+      } =
+        await supabaseClient
+          .from("approved_users")
+          .upsert(
+            {
+              email: email,
+              status: "approved"
+            },
+            {
+              onConflict: "email"
+            }
+          );
+
+
+      approveUserButton.disabled =
+        false;
+
+      approveUserButton.textContent =
+        "+ Approve User";
+
+
+      if (error) {
+
+        console.error(
+          "Approve user error:",
+          error
+        );
+
+
+        showApprovedUserMessage(
+          "Unable to approve this user.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      approvedEmailInput.value =
+        "";
+
+
+      showApprovedUserMessage(
+        "User approved successfully.",
+        "success"
+      );
+
+
+      await loadApprovedUsers();
+
+    }
+  );
+
+
+/* =========================================
+   REFRESH APPROVED USERS
+========================================= */
+
+refreshUsersButton
+  .addEventListener(
+    "click",
+    async function() {
+
+      await loadApprovedUsers();
+
+    }
+  );
+
+
+/* =========================================
+   LOGOUT
+========================================= */
+
+document
+  .getElementById("logout")
+  .addEventListener(
+    "click",
+    async function() {
+
+      await supabaseClient
+        .auth
+        .signOut();
+
+
+      adminPanel
+        .classList
+        .add("hidden");
+
+
+      loginBox
+        .classList
+        .remove("hidden");
+
+
+      adminEmail.value =
+        "";
+
+      adminPassword.value =
+        "";
+
+
+      loginMessage.innerHTML =
+        `<div class="message success">
+          You have been logged out.
+        </div>`;
+
+    }
+  );
+
+
 </script>
+
+
 </body>
+
 </html>
