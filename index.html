@@ -3,747 +3,614 @@
 
 <head>
 
-<meta charset="utf-8">
-
-<meta
-  name="viewport"
-  content="width=device-width,initial-scale=1"
->
-
-<title>ERADA Video Library</title>
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link
-  rel="preconnect"
-  href="https://fonts.gstatic.com"
-  crossorigin
->
-
-<link
-  href="https://fonts.googleapis.com/css2?family=El+Messiri:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
-  rel="stylesheet"
->
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-
-<style>
-
-:root{
-
-  --bg:#060a17;
-  --bg-glow:#0d1428;
-  --surface:#0b1226;
-  --surface-2:#101a35;
-
-  --border:#22315a;
-  --border-soft:#16213f;
-
-  --accent:#ffffff;
-  --accent-soft:rgba(255,255,255,.10);
-  --accent-dim:rgba(255,255,255,.35);
-
-  --text:#ffffff;
-  --text-muted:#aab4d4;
-  --text-faint:#6b76a0;
-
-  --success-bg:#0f2a1e;
-  --success-text:#86e0aa;
-
-  --error-bg:#341318;
-  --error-text:#f2a3a3;
-
-  --warning-bg:#302713;
-  --warning-text:#e7ca83;
-
-  --radius:14px;
-
-}
-
-*{
-  box-sizing:border-box;
-}
-
-html,
-body{
-  margin:0;
-  padding:0;
-  width:100%;
-  min-height:100%;
-}
-
-body{
-
-  font-family:
-    "IBM Plex Sans",
-    Arial,
-    sans-serif;
-
-  background:
-    var(--bg);
-
-  color:
-    var(--text);
-
-  min-height:
-    100vh;
-
-}
-
-.ambient{
-
-  position:fixed;
-  inset:0;
-
-  z-index:-1;
-
-  background:
-
-    radial-gradient(
-      60% 45% at 50% 0%,
-      rgba(60,90,180,.28),
-      transparent 65%
-    ),
-
-    radial-gradient(
-      80% 60% at 50% 100%,
-      rgba(60,90,180,.10),
-      transparent 70%
-    ),
-
-    var(--bg);
-
-}
-
-
-/* HEADER */
-
-header{
-
-  text-align:center;
-
-  padding:
-    56px 20px 40px;
-
-}
-
-.header-logo{
-
-  width:84px;
-  height:84px;
-
-  object-fit:contain;
-
-  display:block;
-
-  margin:
-    0 auto 22px;
-
-  border-radius:999px;
-
-  padding:10px;
-
-  border:
-    1px solid var(--accent-dim);
-
-  background:
-    var(--surface);
-
-}
-
-header h1{
-
-  margin:0;
-
-  font-family:
-    "El Messiri",
-    serif;
-
-  font-weight:700;
-
-  font-size:34px;
-
-}
-
-header p{
-
-  margin:
-    8px 0 0;
-
-  color:
-    var(--text-muted);
-
-  font-size:14px;
-
-  letter-spacing:2px;
-
-  text-transform:uppercase;
-
-}
-
-
-/* CONTAINER */
-
-.container{
-
-  max-width:920px;
-
-  margin:
-    0 auto;
-
-  padding:
-    0 20px 60px;
-
-}
-
-
-/* LOGIN */
-
-.login-box{
-
-  max-width:440px;
-
-  margin:
-    20px auto 0;
-
-  background:
-    var(--surface);
-
-  border:
-    1px solid var(--border);
-
-  border-radius:
-    var(--radius);
-
-  padding:
-    40px 36px 34px;
-
-  box-shadow:
-    0 24px 60px -20px rgba(0,0,0,.6);
-
-}
-
-.login-logo{
-
-  width:64px;
-  height:64px;
-
-  object-fit:contain;
-
-  display:block;
-
-  margin:
-    0 auto 18px;
-
-}
-
-.eyebrow{
-
-  display:block;
-
-  text-align:center;
-
-  font-size:11px;
-
-  letter-spacing:3px;
-
-  text-transform:uppercase;
-
-  color:
-    var(--accent);
-
-  margin-bottom:10px;
-
-  font-weight:600;
-
-}
-
-.login-title{
-
-  text-align:center;
-
-  margin:
-    0 0 8px;
-
-  font-family:
-    "El Messiri",
-    serif;
-
-  font-weight:600;
-
-  font-size:22px;
-
-}
-
-.login-description{
-
-  text-align:center;
-
-  color:
-    var(--text-muted);
-
-  font-size:14px;
-
-  margin:
-    0 0 26px;
-
-}
-
-.ticket-divider{
-
-  height:1px;
-
-  margin:
-    26px -36px 24px;
-
-  background:
-
-    repeating-linear-gradient(
-      90deg,
-      var(--border) 0,
-      var(--border) 6px,
-      transparent 6px,
-      transparent 12px
-    );
-
-}
-
-
-/* INPUT */
-
-input{
-
-  width:100%;
-
-  padding:
-    13px 14px;
-
-  margin:
-    0 0 12px;
-
-  border:
-    1px solid var(--border);
-
-  border-radius:9px;
-
-  font-size:15px;
-
-  background:
-    var(--surface-2);
-
-  color:
-    var(--text);
-
-  font-family:
-    "IBM Plex Sans",
-    Arial,
-    sans-serif;
-
-}
-
-input::placeholder{
-
-  color:
-    var(--text-faint);
-
-}
-
-input:focus{
-
-  outline:none;
-
-  border-color:
-    var(--accent);
-
-  box-shadow:
-    0 0 0 3px var(--accent-soft);
-
-}
-
-
-/* BUTTONS */
-
-button{
-
-  padding:
-    13px 20px;
-
-  border:
-    1px solid transparent;
-
-  border-radius:9px;
-
-  cursor:pointer;
-
-  font-size:14.5px;
-
-  font-weight:600;
-
-  font-family:
-    "IBM Plex Sans",
-    Arial,
-    sans-serif;
-
-  width:100%;
-
-  margin-top:8px;
-
-}
-
-button:disabled{
-
-  opacity:.5;
-
-  cursor:not-allowed;
-
-}
-
-#requestAccess{
-
-  background:
-    transparent;
-
-  color:
-    var(--text);
-
-  border-color:
-    var(--border);
-
-}
-
-#checkAccess{
-
-  background:
-    var(--accent);
-
-  color:
-    #060a17;
-
-}
-
-
-/* MESSAGE */
-
-.message{
-
-  margin-top:16px;
-
-  padding:
-    12px 14px;
-
-  border-radius:9px;
-
-  display:none;
-
-  font-size:13.5px;
-
-  text-align:center;
-
-  border:
-    1px solid transparent;
-
-  line-height:1.5;
-
-}
-
-.error{
-
-  background:
-    var(--error-bg);
-
-  color:
-    var(--error-text);
-
-}
-
-.success{
-
-  background:
-    var(--success-bg);
-
-  color:
-    var(--success-text);
-
-}
-
-.warning{
-
-  background:
-    var(--warning-bg);
-
-  color:
-    var(--warning-text);
-
-}
-
-
-/* VIDEOS */
-
-#videos{
-
-  display:none;
-
-  margin-top:10px;
-
-}
-
-.library-bar{
-
-  display:flex;
-
-  align-items:center;
-
-  justify-content:space-between;
-
-  padding:
-    4px 2px 26px;
-
-  border-bottom:
-    1px solid var(--border-soft);
-
-  margin-bottom:28px;
-
-}
-
-.library-bar .eyebrow{
-
-  text-align:left;
-
-  margin:0;
-
-}
-
-.logout{
-
-  width:auto;
-
-  margin:0;
-
-  background:
-    transparent;
-
-  color:
-    var(--text-muted);
-
-  border:
-    1px solid var(--border);
-
-  padding:
-    9px 16px;
-
-}
-
-
-/* VIDEO CARD */
-
-.card{
-
-  background:
-    var(--surface);
-
-  border:
-    1px solid var(--border);
-
-  border-top:
-    2px solid var(--border);
-
-  border-radius:
-    var(--radius);
-
-  padding:18px;
-
-  margin-bottom:22px;
-
-}
-
-.video-title{
-
-  margin:
-    0 0 14px;
-
-  font-family:
-    "El Messiri",
-    serif;
-
-  font-weight:600;
-
-  font-size:18px;
-
-}
-
-.video{
-
-  position:relative;
-
-  width:100%;
-
-  padding-top:56.25%;
-
-  background:#000;
-
-  border-radius:9px;
-
-  overflow:hidden;
-
-  border:
-    1px solid var(--border-soft);
-
-}
-
-.video iframe{
-
-  position:absolute;
-
-  top:0;
-  left:0;
-
-  width:100%;
-  height:100%;
-
-  border:0;
-
-}
-
-.video-info{
-
-  color:
-    var(--text-faint);
-
-  font-size:12.5px;
-
-  margin-top:12px;
-
-}
-
-.empty{
-
-  text-align:center;
-
-  padding:48px 20px;
-
-  color:
-    var(--text-muted);
-
-}
-
-.empty h2{
-
-  color:
-    var(--text);
-
-  font-family:
-    "El Messiri",
-    serif;
-
-}
-
-
-/* FOOTER */
-
-footer{
-
-  text-align:center;
-
-  padding:
-    30px 20px 46px;
-
-  color:
-    var(--text-faint);
-
-  font-size:12px;
-
-  letter-spacing:1px;
-
-}
-
-
-/* MOBILE */
-
-@media(max-width:480px){
-
-  header{
-
-    padding:
-      36px 15px 30px;
-
-  }
-
-  header h1{
-
-    font-size:28px;
-
-  }
-
-  .container{
-
-    padding:
-      0 12px 40px;
-
-  }
-
-  .login-box{
-
-    padding:
-      30px 22px 26px;
-
-  }
-
-  .ticket-divider{
-
-    margin:
-      22px -22px 20px;
-
-  }
-
-  .library-bar{
-
-    gap:10px;
-
-  }
-
-  .library-bar .eyebrow{
-
-    font-size:10px;
-
-  }
-
-  .logout{
-
-    padding:
-      8px 12px;
-
-  }
-
-  .card{
-
-    padding:12px;
-
-  }
-
-}
-
-</style>
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  >
+
+  <title>ERADA Video Library</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=El+Messiri:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+
+    :root {
+      --bg: #060a17;
+      --bg-glow: #0d1428;
+      --surface: #0b1226;
+      --surface-2: #101a35;
+      --border: #22315a;
+      --border-soft: #16213f;
+      --accent: #ffffff;
+      --accent-soft: rgba(255, 255, 255, 0.10);
+      --accent-dim: rgba(255, 255, 255, 0.35);
+      --text: #ffffff;
+      --text-muted: #aab4d4;
+      --text-faint: #6b76a0;
+      --success-bg: #0f2a1e;
+      --success-text: #86e0aa;
+      --error-bg: #341318;
+      --error-text: #f2a3a3;
+      --radius: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        transition-duration: 0.001ms !important;
+      }
+    }
+
+    body {
+      margin: 0;
+      font-family: "IBM Plex Sans", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* =========================================
+       AMBIENT BACKGROUND
+    ========================================= */
+
+    .ambient {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background:
+        radial-gradient(60% 45% at 50% 0%, rgba(60,90,180,0.28), transparent 65%),
+        radial-gradient(80% 60% at 50% 100%, rgba(60,90,180,0.10), transparent 70%),
+        var(--bg);
+      animation: breathe 14s ease-in-out infinite;
+    }
+
+    @keyframes breathe {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 15px;
+      height: 15px;
+      border: 2px solid rgba(255,255,255,0.25);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: -3px;
+      margin-left: 8px;
+    }
+
+    button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .welcome-line {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .skeleton {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-bottom: 22px;
+    }
+
+    .skeleton-bar {
+      height: 14px;
+      width: 40%;
+      border-radius: 6px;
+      background: linear-gradient(90deg, var(--border) 25%, var(--border-soft) 50%, var(--border) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s ease-in-out infinite;
+      margin-bottom: 14px;
+    }
+
+    .skeleton-video {
+      width: 100%;
+      padding-top: 56.25%;
+      border-radius: 9px;
+      background: linear-gradient(90deg, var(--border) 25%, var(--border-soft) 50%, var(--border) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* =========================================
+       HEADER
+    ========================================= */
+
+    header {
+      text-align: center;
+      padding: 56px 20px 40px;
+    }
+
+    .header-logo {
+      width: 84px;
+      height: 84px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto 22px;
+      border-radius: 999px;
+      padding: 10px;
+      border: 1px solid var(--accent-dim);
+      background: var(--surface);
+    }
+
+    header h1 {
+      margin: 0;
+      font-family: "El Messiri", serif;
+      font-weight: 700;
+      font-size: 34px;
+      letter-spacing: 0.5px;
+      color: var(--text);
+    }
+
+    header p {
+      margin: 8px 0 0;
+      color: var(--text-muted);
+      font-size: 14px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    /* =========================================
+       LAYOUT
+    ========================================= */
+
+    .container {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 0 20px 60px;
+    }
+
+    /* =========================================
+       LOGIN CARD — "ACCESS CARD" MOTIF
+    ========================================= */
+
+    .login-box {
+      max-width: 440px;
+      margin: 20px auto 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 40px 36px 34px;
+      position: relative;
+      box-shadow: 0 24px 60px -20px rgba(0,0,0,0.6);
+    }
+
+    .login-box::before,
+    .login-box::after {
+      content: "";
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border: 1px solid var(--accent-dim);
+    }
+
+    .login-box::before {
+      top: -1px;
+      right: -1px;
+      border-left: none;
+      border-bottom: none;
+      border-top-right-radius: var(--radius);
+    }
+
+    .login-box::after {
+      bottom: -1px;
+      left: -1px;
+      border-right: none;
+      border-top: none;
+      border-bottom-left-radius: var(--radius);
+    }
+
+    .login-logo {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto 18px;
+      opacity: 0.9;
+    }
+
+    .eyebrow {
+      display: block;
+      text-align: center;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .login-title {
+      text-align: center;
+      margin: 0 0 8px;
+      font-family: "El Messiri", serif;
+      font-weight: 600;
+      font-size: 22px;
+      color: var(--text);
+    }
+
+    .login-description {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 14px;
+      margin: 0 0 26px;
+    }
+
+    .ticket-divider {
+      position: relative;
+      height: 1px;
+      margin: 26px -36px 24px;
+      background-image: repeating-linear-gradient(
+        90deg,
+        var(--border) 0,
+        var(--border) 6px,
+        transparent 6px,
+        transparent 12px
+      );
+    }
+
+    /* =========================================
+       FORM ELEMENTS
+    ========================================= */
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 13px 14px;
+      margin: 0 0 12px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      font-size: 15px;
+      background: var(--surface-2);
+      color: var(--text);
+      font-family: "IBM Plex Sans", Arial, sans-serif;
+      transition: border-color 0.15s ease;
+    }
+
+    input::placeholder {
+      color: var(--text-faint);
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    button {
+      padding: 13px 20px;
+      border: 1px solid transparent;
+      border-radius: 9px;
+      cursor: pointer;
+      font-size: 14.5px;
+      font-weight: 600;
+      font-family: "IBM Plex Sans", Arial, sans-serif;
+      letter-spacing: 0.2px;
+      transition: transform 0.12s ease, opacity 0.12s ease, background 0.12s ease;
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    #requestAccess {
+      background: transparent;
+      color: var(--text);
+      border-color: var(--border);
+    }
+
+    #requestAccess:hover {
+      border-color: var(--accent-dim);
+      color: var(--accent);
+    }
+
+    #checkAccess {
+      background: var(--accent);
+      color: #060a17;
+    }
+
+    #checkAccess:hover {
+      opacity: 0.92;
+    }
+
+    .message {
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-radius: 9px;
+      display: none;
+      font-size: 13.5px;
+      text-align: center;
+      border: 1px solid transparent;
+    }
+
+    .error {
+      background: var(--error-bg);
+      color: var(--error-text);
+      border-color: rgba(240,163,163,0.2);
+    }
+
+    .success {
+      background: var(--success-bg);
+      color: var(--success-text);
+      border-color: rgba(127,216,160,0.2);
+    }
+
+    /* =========================================
+       VIDEO LIBRARY
+    ========================================= */
+
+    #videos {
+      display: none;
+      margin-top: 10px;
+    }
+
+    .library-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 2px 26px;
+      border-bottom: 1px solid var(--border-soft);
+      margin-bottom: 28px;
+    }
+
+    .library-bar .eyebrow {
+      text-align: left;
+      margin: 0;
+    }
+
+    .logout {
+      width: auto;
+      margin: 0;
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 9px 16px;
+      font-size: 13px;
+    }
+
+    .logout:hover {
+      color: var(--error-text);
+      border-color: rgba(240,163,163,0.3);
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-bottom: 22px;
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      border-top-color: var(--accent);
+      box-shadow: 0 20px 44px -24px rgba(0,0,0,0.6);
+    }
+
+    .video-title {
+      margin: 0 0 14px;
+      font-family: "El Messiri", serif;
+      font-weight: 600;
+      font-size: 18px;
+      color: var(--text);
+    }
+
+    .video {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%;
+      background: #000;
+      border-radius: 9px;
+      overflow: hidden;
+      border: 1px solid var(--border-soft);
+    }
+
+    .video iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      pointer-events: none;
+    }
+
+    .video-overlay {
+      position: absolute;
+      inset: 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+    }
+
+    .video-overlay .play-icon {
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      background: rgba(6,10,23,0.6);
+      border: 2px solid rgba(255,255,255,0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      color: #fff;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      opacity: 1;
+    }
+
+    .video-overlay.is-playing .play-icon {
+      opacity: 0;
+    }
+
+    .video-overlay.is-playing:hover .play-icon {
+      opacity: 1;
+    }
+
+    .video-overlay:hover .play-icon {
+      transform: scale(1.06);
+    }
+
+    .video-info {
+      color: var(--text-faint);
+      font-size: 12.5px;
+      margin-top: 12px;
+      letter-spacing: 0.4px;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--text-muted);
+      border-top-color: var(--border) !important;
+    }
+
+    .empty h2 {
+      font-family: "El Messiri", serif;
+      color: var(--text);
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 30px 20px 46px;
+      color: var(--text-faint);
+      font-size: 12px;
+      letter-spacing: 1px;
+    }
+
+    /* =========================================
+       LOADING SPINNER
+    ========================================= */
+
+    .spinner {
+      display: inline-block;
+      width: 15px;
+      height: 15px;
+      border: 2px solid rgba(255,255,255,0.25);
+      border-top-color: currentColor;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: -3px;
+      margin-left: 8px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-line {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: var(--text-muted);
+      padding: 40px 0;
+      font-size: 14px;
+    }
+
+    /* =========================================
+       WELCOME BAR
+    ========================================= */
+
+    .welcome-bar {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin: 2px 0 0;
+    }
+
+    .welcome-bar strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* =========================================
+       CARD ENTRANCE
+    ========================================= */
+
+    .card {
+      animation: rise 0.35s ease both;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .card { animation: none; }
+    }
+
+    @media (max-width: 480px) {
+      .login-box {
+        padding: 32px 24px 28px;
+      }
+      .ticket-divider {
+        margin: 22px -24px 20px;
+      }
+      header h1 {
+        font-size: 28px;
+      }
+    }
+
+  </style>
 
 </head>
 
 
 <body>
 
-
 <div class="ambient"></div>
-
 
 <header>
 
-<img
-  src="erada-logo.png"
-  alt="ERADA Logo"
-  class="header-logo"
->
+  <img
+    src="erada-logo.png"
+    alt="ERADA Logo"
+    class="header-logo"
+  >
 
-<h1>ERADA</h1>
+  <h1>ERADA</h1>
 
-<p>Private Video Library</p>
+  <p>Private Video Library</p>
 
 </header>
 
@@ -751,105 +618,92 @@ footer{
 <main class="container">
 
 
-<section
-  id="loginBox"
-  class="login-box"
->
+  <!-- =========================================
+       LOGIN / ACCESS
+  ========================================== -->
+
+  <section
+    id="loginBox"
+    class="login-box"
+  >
+
+    <img
+      src="erada-logo.png"
+      alt="ERADA Logo"
+      class="login-logo"
+    >
+
+    <span class="eyebrow">Members Only</span>
+
+    <h2 class="login-title">
+      Secure Access
+    </h2>
+
+    <p class="login-description">
+      Enter your approved email address.
+    </p>
+
+    <div class="ticket-divider"></div>
+
+    <div id="emailStep">
+
+      <input
+        id="email"
+        type="email"
+        placeholder="Enter your email"
+        autocomplete="email"
+      >
 
 
-<img
-  src="erada-logo.png"
-  alt="ERADA Logo"
-  class="login-logo"
->
+      <button id="checkAccess" type="button">
+        Check Access
+      </button>
+
+      <button id="requestAccess">
+        Request Access
+      </button>
+
+    </div>
 
 
-<span class="eyebrow">
-Members Only
-</span>
+    <div
+      id="message"
+      class="message"
+    ></div>
+
+  </section>
 
 
-<h2 class="login-title">
-Secure Access
-</h2>
+  <!-- =========================================
+       VIDEOS
+  ========================================== -->
 
+  <section id="videos">
 
-<p class="login-description">
-Enter your approved email address to access the private library.
-</p>
+    <div class="library-bar">
+      <div>
+        <span class="eyebrow">Private Library</span>
+        <p class="welcome-bar" id="welcomeBar"></p>
+      </div>
+      <button id="logout" class="logout" type="button">Logout</button>
+    </div>
 
+    <div
+      id="videosList"
+    ></div>
 
-<div class="ticket-divider"></div>
-
-
-<input
-  id="email"
-  type="email"
-  placeholder="Enter your email"
-  autocomplete="email"
->
-
-
-<button
-  id="checkAccess"
-  type="button"
->
-Check Access
-</button>
-
-
-<button
-  id="requestAccess"
-  type="button"
->
-Request Access
-</button>
-
-
-<div
-  id="message"
-  class="message"
-></div>
-
-
-</section>
-
-
-<section id="videos">
-
-
-<div class="library-bar">
-
-<span class="eyebrow">
-Private Library
-</span>
-
-<button
-  id="logout"
-  class="logout"
-  type="button"
->
-Logout
-</button>
-
-</div>
-
-
-<div id="videosList"></div>
-
-
-</section>
-
+  </section>
 
 </main>
 
 
 <footer>
-ERADA · PRIVATE VIDEO LIBRARY
+  ERADA · PRIVATE VIDEO LIBRARY
 </footer>
 
 
 <script>
+
 
 /* =========================================
    SUPABASE
@@ -864,14 +718,14 @@ const SUPABASE_PUBLISHABLE_KEY =
 
 
 const supabaseClient =
-  window.supabase.createClient(
+  supabase.createClient(
     SUPABASE_URL,
     SUPABASE_PUBLISHABLE_KEY,
     {
-      auth:{
-        persistSession:true,
-        autoRefreshToken:true,
-        detectSessionInUrl:true
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
       }
     }
   );
@@ -896,38 +750,15 @@ const message =
 const videosList =
   document.getElementById("videosList");
 
-const requestAccessButton =
-  document.getElementById("requestAccess");
-
-const checkAccessButton =
-  document.getElementById("checkAccess");
-
 
 /* =========================================
-   HELPERS
+   MESSAGE
 ========================================= */
-
-function normalizeEmail(email){
-
-  return String(email || "")
-    .trim()
-    .toLowerCase();
-
-}
-
-
-function isValidEmail(email){
-
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    .test(email);
-
-}
-
 
 function showMessage(
   text,
   type
-){
+) {
 
   message.textContent =
     text;
@@ -941,134 +772,207 @@ function showMessage(
 }
 
 
-function getEmail(){
-
-  const email =
-    normalizeEmail(
-      emailInput.value
-    );
-
-
-  if(!isValidEmail(email)){
-
-    showMessage(
-      "Please enter a valid email address.",
-      "error"
-    );
-
-    return null;
-
-  }
-
-
-  return email;
-
-}
-
-
 /* =========================================
-   CHECK APPROVAL
+   REQUEST ACCESS
 ========================================= */
 
-async function isApproved(email){
+document
+  .getElementById("requestAccess")
+  .addEventListener(
+    "click",
+    async function () {
 
-  try{
-
-    const {
-      data,
-      error
-    } =
-      await supabaseClient.rpc(
-        "check_erada_access",
-        {
-          p_email:email
-        }
-      );
+      const email =
+        emailInput.value
+          .trim()
+          .toLowerCase();
 
 
-    if(error){
-
-      console.error(
-        "Approval RPC error:",
-        error
-      );
-
-      showMessage(
-        "Unable to check your access. Please try again.",
-        "error"
-      );
-
-      return false;
-
-    }
-
-
-    return data === true;
-
-  }catch(error){
-
-    console.error(
-      "Approval check exception:",
-      error
-    );
-
-    showMessage(
-      "Unable to check your access.",
-      "error"
-    );
-
-    return false;
-
-  }
-
-}
-
-
-/* =========================================
-   CHECK ACCESS BUTTON
-========================================= */
-
-checkAccessButton.addEventListener(
-  "click",
-  async function(){
-
-    const email =
-      getEmail();
-
-
-    if(!email)
-      return;
-
-
-    checkAccessButton.disabled =
-      true;
-
-
-    showMessage(
-      "Checking access...",
-      "success"
-    );
-
-
-    try{
-
-      const approved =
-        await isApproved(
-          email
-        );
-
-
-      if(!approved){
+      if (
+        !email ||
+        !email.includes("@")
+      ) {
 
         showMessage(
-          "Your email has not been approved yet.",
-          "warning"
+          "Please enter a valid email address.",
+          "error"
         );
 
         return;
-
       }
 
+
+      const requestButton =
+        document.getElementById("requestAccess");
+
+      const originalLabel =
+        requestButton.textContent;
+
+      requestButton.disabled = true;
+      requestButton.innerHTML =
+        'Sending<span class="spinner"></span>';
+
+
+      showMessage(
+        "Sending access request...",
+        "success"
+      );
+
+
+      const {
+        error
+      } =
+        await supabaseClient
+          .from("access_requests")
+          .insert({
+            email: email
+          });
+
+
+      if (error) {
+
+        console.error(
+          "Access request error:",
+          error
+        );
+
+
+        if (
+          error.code ===
+          "23505"
+        ) {
+
+          showMessage(
+            "An access request already exists for this email.",
+            "error"
+          );
+
+        } else {
+
+          showMessage(
+            "Unable to submit access request.",
+            "error"
+          );
+
+        }
+
+        requestButton.disabled = false;
+        requestButton.textContent = originalLabel;
+
+        return;
+      }
+
+
+      showMessage(
+        "Your access request has been sent. Please wait for approval.",
+        "success"
+      );
+
+      requestButton.disabled = false;
+      requestButton.textContent = originalLabel;
+
+    }
+  );
+
+
+/* =========================================
+   CHECK ACCESS
+========================================= */
+
+document
+  .getElementById("checkAccess")
+  .addEventListener(
+    "click",
+    async function () {
+
+      const email =
+        emailInput.value
+          .trim()
+          .toLowerCase();
+
+
+      if (
+        !email ||
+        !email.includes("@")
+      ) {
+
+        showMessage(
+          "Please enter your email address.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      const checkButton =
+        document.getElementById("checkAccess");
+
+      const originalLabel =
+        checkButton.textContent;
+
+      checkButton.disabled = true;
+      checkButton.innerHTML =
+        'Checking<span class="spinner"></span>';
+
+
+      const {
+        data: approved,
+        error
+      } =
+        await supabaseClient
+          .from("approved_users")
+          .select(
+            "id,email,status"
+          )
+          .ilike(
+            "email",
+            email
+          )
+          .eq(
+            "status",
+            "approved"
+          )
+          .maybeSingle();
+
+
+      if (error) {
+
+        console.error(
+          "Approval error:",
+          error
+        );
+
+
+        showMessage(
+          "Unable to check your access.",
+          "error"
+        );
+
+        checkButton.disabled = false;
+        checkButton.textContent = originalLabel;
+
+        return;
+      }
+
+
+      if (!approved) {
+
+        showMessage(
+          "Your email has not been approved yet.",
+          "error"
+        );
+
+        checkButton.disabled = false;
+        checkButton.textContent = originalLabel;
+
+        return;
+      }
+
+
+      /*
+        Save approved email locally.
+      */
 
       localStorage.setItem(
         "eradaApprovedEmail",
@@ -1082,429 +986,83 @@ checkAccessButton.addEventListener(
       );
 
 
-      await loadPrivateVideos(
-        email
-      );
+      await loadPrivateVideos(email);
 
 
-    }finally{
-
-      checkAccessButton.disabled =
-        false;
+      checkButton.disabled = false;
+      checkButton.textContent = originalLabel;
 
     }
-
-  }
-);
-
-
-/* =========================================
-   REQUEST ACCESS
-========================================= */
-
-requestAccessButton.addEventListener(
-  "click",
-  async function(){
-
-    const email =
-      getEmail();
-
-
-    if(!email)
-      return;
-
-
-    requestAccessButton.disabled =
-      true;
-
-
-    showMessage(
-      "Checking existing access...",
-      "success"
-    );
-
-
-    try{
-
-      /* Check if already approved */
-
-      const approved =
-        await isApproved(
-          email
-        );
-
-
-      if(approved){
-
-        showMessage(
-          "This email is already approved. Click Check Access to enter.",
-          "success"
-        );
-
-        return;
-
-      }
-
-
-      /* Check existing request */
-
-      const {
-        data:existingRequest,
-        error:existingError
-      } =
-        await supabaseClient
-          .from("access_requests")
-          .select(
-            "id,email,status"
-          )
-          .ilike(
-            "email",
-            email
-          )
-          .maybeSingle();
-
-
-      if(existingError){
-
-        console.error(
-          "Existing request error:",
-          existingError
-        );
-
-      }
-
-
-      if(existingRequest){
-
-        const status =
-          String(
-            existingRequest.status || ""
-          ).toLowerCase();
-
-
-        if(status === "rejected"){
-
-          const {
-            error:updateError
-          } =
-            await supabaseClient
-              .from("access_requests")
-              .update({
-                status:"pending"
-              })
-              .eq(
-                "id",
-                existingRequest.id
-              );
-
-
-          if(updateError){
-
-            console.error(
-              "Request update error:",
-              updateError
-            );
-
-            showMessage(
-              "Unable to submit your request again.",
-              "error"
-            );
-
-            return;
-
-          }
-
-
-          showMessage(
-            "Your access request has been sent again. Please wait for approval.",
-            "success"
-          );
-
-
-          startApprovalPolling(
-            email
-          );
-
-
-          return;
-
-        }
-
-
-        if(status === "pending"){
-
-          showMessage(
-            "Your access request is already pending. Please wait for approval.",
-            "warning"
-          );
-
-
-          startApprovalPolling(
-            email
-          );
-
-
-          return;
-
-        }
-
-      }
-
-
-      /* New request */
-
-      const {
-        error
-      } =
-        await supabaseClient
-          .from("access_requests")
-          .insert({
-            email:email,
-            status:"pending"
-          });
-
-
-      if(error){
-
-        console.error(
-          "Access request error:",
-          error
-        );
-
-
-        if(error.code === "23505"){
-
-          showMessage(
-            "Your access request already exists. Please wait for approval.",
-            "warning"
-          );
-
-        }else{
-
-          showMessage(
-            "Unable to submit access request.",
-            "error"
-          );
-
-        }
-
-        return;
-
-      }
-
-
-      showMessage(
-        "Your access request has been sent successfully. Please wait for approval.",
-        "success"
-      );
-
-
-      startApprovalPolling(
-        email
-      );
-
-
-    }catch(error){
-
-      console.error(
-        "Request exception:",
-        error
-      );
-
-
-      showMessage(
-        "Something went wrong. Please try again.",
-        "error"
-      );
-
-    }finally{
-
-      requestAccessButton.disabled =
-        false;
-
-    }
-
-  }
-);
-
-
-/* =========================================
-   APPROVAL POLLING
-========================================= */
-
-let approvalTimer =
-  null;
-
-
-function startApprovalPolling(
-  email
-){
-
-  stopApprovalPolling();
-
-
-  approvalTimer =
-    setInterval(
-      async function(){
-
-        console.log(
-          "Checking approval..."
-        );
-
-
-        const approved =
-          await isApproved(
-            email
-          );
-
-
-        if(approved){
-
-          stopApprovalPolling();
-
-
-          localStorage.setItem(
-            "eradaApprovedEmail",
-            email
-          );
-
-
-          showMessage(
-            "Your access has been approved. Loading private videos...",
-            "success"
-          );
-
-
-          await loadPrivateVideos(
-            email
-          );
-
-        }
-
-      },
-      10000
-    );
-
-}
-
-
-function stopApprovalPolling(){
-
-  if(approvalTimer){
-
-    clearInterval(
-      approvalTimer
-    );
-
-    approvalTimer =
-      null;
-
-  }
-
-}
+  );
 
 
 /* =========================================
    LOAD PRIVATE VIDEOS
+   (from the "videos" table, YouTube-based)
 ========================================= */
 
-async function loadPrivateVideos(
-  email
-){
+async function loadPrivateVideos(email) {
 
   videosList.innerHTML =
     `
-      <div class="card">
-
-        <p style="
-          color:var(--text-muted);
-          margin:0;
-        ">
-          Loading private videos...
-        </p>
-
+      <div class="loading-line">
+        Loading private videos<span class="spinner"></span>
       </div>
     `;
 
 
-  const approved =
-    await isApproved(
-      email
-    );
-
-
-  if(!approved){
-
-    localStorage.removeItem(
-      "eradaApprovedEmail"
-    );
-
-
-    videos.style.display =
-      "none";
-
-    loginBox.style.display =
-      "block";
-
-
-    videosList.innerHTML =
-      "";
-
-
-    showMessage(
-      "Your access is no longer approved.",
-      "error"
-    );
-
-
-    return;
-
-  }
-
-
-  /* Get videos through secure RPC */
-
   const {
-    data:rows,
+    data: rows,
     error
   } =
-    await supabaseClient.rpc(
-      "get_erada_videos",
-      {
-        p_email:email
-      }
-    );
+    await supabaseClient
+      .from("videos")
+      .select("id,title,youtube_url")
+      .order("created_at", { ascending: true });
 
 
-  if(error){
+  if (error) {
 
     console.error(
-      "Video RPC error:",
+      "Video load error:",
       error
     );
-
-
-    videosList.innerHTML =
-      "";
-
 
     showMessage(
       "Unable to load private videos.",
       "error"
     );
 
+    videosList.innerHTML =
+      "";
 
     return;
-
   }
 
+
+  /*
+    Hide login.
+  */
 
   loginBox.style.display =
     "none";
 
-
   videos.style.display =
     "block";
+
+  message.style.display =
+    "none";
+
+
+  const welcomeBar =
+    document.getElementById("welcomeBar");
+
+  if (welcomeBar && email) {
+
+    welcomeBar.innerHTML =
+      "Welcome back, <strong>" + email + "</strong>";
+
+  }
 
 
   renderPrivateVideos(
@@ -1515,45 +1073,27 @@ async function loadPrivateVideos(
 
 
 /* =========================================
-   YOUTUBE ID
+   EXTRACT YOUTUBE ID FROM ANY URL FORMAT
 ========================================= */
 
-function extractYoutubeId(
-  url
-){
+function extractYoutubeId(url) {
 
-  if(!url)
-    return null;
-
+  if (!url) return null;
 
   const patterns = [
-
     /youtu\.be\/([a-zA-Z0-9_-]{6,})/,
-
     /[?&]v=([a-zA-Z0-9_-]{6,})/,
-
-    /embed\/([a-zA-Z0-9_-]{6,})/,
-
-    /youtube\.com\/shorts\/([a-zA-Z0-9_-]{6,})/
-
+    /embed\/([a-zA-Z0-9_-]{6,})/
   ];
 
-
-  for(
-    const pattern
-    of patterns
-  ){
+  for (const pattern of patterns) {
 
     const match =
-      String(url)
-        .match(pattern);
+      url.match(pattern);
 
-
-    if(match)
-      return match[1];
+    if (match) return match[1];
 
   }
-
 
   return null;
 
@@ -1561,21 +1101,21 @@ function extractYoutubeId(
 
 
 /* =========================================
-   RENDER VIDEOS
+   RENDER PRIVATE VIDEOS
 ========================================= */
 
 function renderPrivateVideos(
   rows
-){
+) {
 
   videosList.innerHTML =
     "";
 
 
-  if(
+  if (
     !rows ||
     rows.length === 0
-  ){
+  ) {
 
     videosList.innerHTML =
       `
@@ -1594,16 +1134,11 @@ function renderPrivateVideos(
       `;
 
     return;
-
   }
 
 
-  let rendered =
-    0;
-
-
   rows.forEach(
-    function(row){
+    function(row) {
 
       const youtubeId =
         extractYoutubeId(
@@ -1611,11 +1146,7 @@ function renderPrivateVideos(
         );
 
 
-      if(!youtubeId)
-        return;
-
-
-      rendered++;
+      if (!youtubeId) return;
 
 
       const card =
@@ -1639,8 +1170,7 @@ function renderPrivateVideos(
 
 
       title.textContent =
-        row.title ||
-        "Untitled";
+        row.title || "Untitled";
 
 
       const videoContainer =
@@ -1660,32 +1190,153 @@ function renderPrivateVideos(
 
 
       iframe.src =
-        "https://www.youtube-nocookie.com/embed/"
-        + youtubeId
-        + "?modestbranding=1"
-        + "&rel=0"
-        + "&controls=1";
+        "https://www.youtube-nocookie.com/embed/" +
+        youtubeId +
+        "?modestbranding=1&rel=0&controls=0&disablekb=1&fs=0&iv_load_policy=3&enablejsapi=1&playsinline=1&origin=" +
+        encodeURIComponent(window.location.origin);
 
 
       iframe.title =
-        row.title ||
-        "ERADA Private Video";
-
-
-      iframe.loading =
-        "lazy";
+        row.title || "video";
 
 
       iframe.allow =
-        "autoplay; encrypted-media; picture-in-picture";
+        "autoplay; encrypted-media";
 
 
-      iframe.allowFullscreen =
-        true;
+      iframe.tabIndex =
+        -1;
 
 
       videoContainer.appendChild(
         iframe
+      );
+
+
+      /*
+        Custom play/pause overlay.
+
+        The iframe itself has pointer-events
+        disabled, so the visitor never reaches
+        YouTube's own right-click menu, share
+        link, or "Watch on YouTube" logo.
+
+        Playback is controlled only through
+        postMessage commands sent from this
+        overlay.
+      */
+
+      const overlay =
+        document.createElement(
+          "div"
+        );
+
+
+      overlay.className =
+        "video-overlay";
+
+
+      overlay.setAttribute(
+        "role",
+        "button"
+      );
+
+
+      overlay.setAttribute(
+        "tabindex",
+        "0"
+      );
+
+
+      overlay.setAttribute(
+        "aria-label",
+        "Play or pause video"
+      );
+
+
+      const playIcon =
+        document.createElement(
+          "div"
+        );
+
+
+      playIcon.className =
+        "play-icon";
+
+
+      playIcon.textContent =
+        "▶";
+
+
+      overlay.appendChild(
+        playIcon
+      );
+
+
+      videoContainer.appendChild(
+        overlay
+      );
+
+
+      let isPlaying =
+        false;
+
+
+      function togglePlayback() {
+
+        const command =
+          isPlaying
+            ? "pauseVideo"
+            : "playVideo";
+
+        iframe.contentWindow.postMessage(
+          JSON.stringify({
+            event: "command",
+            func: command,
+            args: []
+          }),
+          "*"
+        );
+
+
+        isPlaying =
+          !isPlaying;
+
+
+        overlay.classList.toggle(
+          "is-playing",
+          isPlaying
+        );
+
+
+        playIcon.textContent =
+          isPlaying ? "❚❚" : "▶";
+
+      }
+
+
+      overlay.addEventListener(
+        "click",
+        togglePlayback
+      );
+
+
+      overlay.addEventListener(
+        "keydown",
+        function(event) {
+
+          if (
+            event.key === "Enter" ||
+            event.key === " "
+          ) {
+
+            event.preventDefault();
+
+            togglePlayback();
+
+          }
+
+        }
       );
 
 
@@ -1725,96 +1376,34 @@ function renderPrivateVideos(
     }
   );
 
-
-  if(rendered === 0){
-
-    videosList.innerHTML =
-      `
-        <div class="card empty">
-
-          <h2>
-            No videos available
-          </h2>
-
-          <p>
-            No valid YouTube videos were found.
-          </p>
-
-        </div>
-      `;
-
-  }
-
 }
 
 
 /* =========================================
-   RESTORE SESSION
+   RESTORE APPROVED EMAIL
 ========================================= */
 
-async function restoreApprovedSession(){
+function restoreApprovedEmail() {
 
   const savedEmail =
-    normalizeEmail(
-      localStorage.getItem(
-        "eradaApprovedEmail"
-      )
-    );
-
-
-  if(
-    !savedEmail ||
-    !isValidEmail(savedEmail)
-  ){
-
-    return;
-
-  }
-
-
-  emailInput.value =
-    savedEmail;
-
-
-  showMessage(
-    "Checking your access...",
-    "success"
-  );
-
-
-  const approved =
-    await isApproved(
-      savedEmail
-    );
-
-
-  if(!approved){
-
-    localStorage.removeItem(
+    localStorage.getItem(
       "eradaApprovedEmail"
     );
 
 
-    hideLoginError();
+  if (
+    savedEmail
+  ) {
 
-    return;
+    emailInput.value =
+      savedEmail;
 
   }
 
-
-  await loadPrivateVideos(
-    savedEmail
-  );
-
 }
 
 
-function hideLoginError(){
-
-  message.style.display =
-    "none";
-
-}
+restoreApprovedEmail();
 
 
 /* =========================================
@@ -1825,34 +1414,16 @@ document
   .getElementById("logout")
   .addEventListener(
     "click",
-    async function(){
+    async function () {
 
-      stopApprovalPolling();
-
-
-      try{
-
-        await supabaseClient
-          .auth
-          .signOut();
-
-      }catch(error){
-
-        console.error(
-          "Logout error:",
-          error
-        );
-
-      }
+      await supabaseClient
+        .auth
+        .signOut();
 
 
       localStorage.removeItem(
         "eradaApprovedEmail"
       );
-
-
-      videosList.innerHTML =
-        "";
 
 
       videos.style.display =
@@ -1863,8 +1434,16 @@ document
         "block";
 
 
-      emailInput.value =
+      videosList.innerHTML =
         "";
+
+
+      const welcomeBar =
+        document.getElementById("welcomeBar");
+
+      if (welcomeBar) {
+        welcomeBar.textContent = "";
+      }
 
 
       showMessage(
@@ -1882,11 +1461,13 @@ document
 
 document.addEventListener(
   "contextmenu",
-  function(event){
+  function(event) {
 
-    if(
-      event.target.closest(".video")
-    ){
+    if (
+      event.target.closest(
+        ".video"
+      )
+    ) {
 
       event.preventDefault();
 
@@ -1898,11 +1479,13 @@ document.addEventListener(
 
 document.addEventListener(
   "dragstart",
-  function(event){
+  function(event) {
 
-    if(
-      event.target.closest(".video")
-    ){
+    if (
+      event.target.closest(
+        ".video"
+      )
+    ) {
 
       event.preventDefault();
 
@@ -1913,12 +1496,45 @@ document.addEventListener(
 
 
 /* =========================================
-   START
+   DISABLE COMMON SHORTCUTS
 ========================================= */
 
-restoreApprovedSession();
+document.addEventListener(
+  "keydown",
+  function(event) {
+
+    /*
+      Prevent Ctrl+S
+    */
+
+    if (
+      event.ctrlKey &&
+      event.key.toLowerCase() === "s"
+    ) {
+
+      event.preventDefault();
+
+    }
+
+
+    /*
+      Prevent Ctrl+U
+    */
+
+    if (
+      event.ctrlKey &&
+      event.key.toLowerCase() === "u"
+    ) {
+
+      event.preventDefault();
+
+    }
+
+  }
+);
 
 </script>
 
 </body>
+
 </html>
