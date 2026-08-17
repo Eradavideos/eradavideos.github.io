@@ -1113,7 +1113,7 @@ document
 
 
       const {
-        data: approved,
+        data: matchingRows,
         error
       } =
         await supabaseClient
@@ -1124,12 +1124,7 @@ document
           .ilike(
             "email",
             email
-          )
-          .eq(
-            "status",
-            "approved"
-          )
-          .maybeSingle();
+          );
 
 
       if (error) {
@@ -1152,10 +1147,36 @@ document
       }
 
 
+      const row =
+        (matchingRows || [])[0];
+
+      const normalizedStatus =
+        row && row.status
+          ? String(row.status).trim().toLowerCase()
+          : null;
+
+      const approved =
+        normalizedStatus === "approved";
+
+
+      if (!row) {
+
+        showMessage(
+          "No record found for: " + email + " — click \"Request Access\" to send a request, or if this doesn't look like your real email, check for a Hide My Email / Private Relay address and enter your real one instead.",
+          "error"
+        );
+
+        checkButton.disabled = false;
+        checkButton.textContent = originalLabel;
+
+        return;
+      }
+
+
       if (!approved) {
 
         showMessage(
-          "Not approved yet: " + email + " — if this doesn't look like your real email, check for a Hide My Email / Private Relay address and enter your real one instead.",
+          "Found your record for " + email + " but status is \"" + row.status + "\" (not approved yet). Ask the admin to set status to exactly \"approved\".",
           "error"
         );
 
