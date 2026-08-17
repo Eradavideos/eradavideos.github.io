@@ -449,6 +449,8 @@
       height: 100%;
       border: 0;
       pointer-events: none;
+      transform-origin: center center;
+      transition: transform 0.2s ease;
     }
 
     .video-overlay {
@@ -495,11 +497,12 @@
       bottom: 0;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       padding: 10px 12px;
       background: linear-gradient(to top, rgba(0,0,0,0.75), transparent);
       opacity: 0;
       transition: opacity 0.2s ease;
+      flex-wrap: wrap;
     }
 
     .video:hover .video-controls-row,
@@ -507,7 +510,10 @@
       opacity: 1;
     }
 
-    .skip-btn {
+    .skip-btn,
+    .speed-btn,
+    .zoom-btn,
+    .stop-btn {
       background: rgba(255,255,255,0.12);
       border: 1px solid rgba(255,255,255,0.3);
       color: #fff;
@@ -517,15 +523,40 @@
       cursor: pointer;
       flex-shrink: 0;
       font-family: "IBM Plex Sans", Arial, sans-serif;
+      width: auto;
+      margin-top: 0;
     }
 
-    .skip-btn:hover {
+    .skip-btn:hover,
+    .speed-btn:hover,
+    .zoom-btn:hover,
+    .stop-btn:hover {
       background: rgba(255,255,255,0.22);
+    }
+
+    .speed-btn {
+      min-width: 40px;
+      text-align: center;
+    }
+
+    .zoom-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .zoom-level {
+      font-size: 10.5px;
+      color: #fff;
+      min-width: 32px;
+      text-align: center;
     }
 
     .seek-track {
       position: relative;
       flex: 1;
+      min-width: 60px;
       height: 5px;
       border-radius: 3px;
       background: rgba(255,255,255,0.25);
@@ -1425,6 +1456,35 @@ function renderPrivateVideos(
         false;
 
 
+      function sendCommand(func, args) {
+
+        iframe.contentWindow.postMessage(
+          JSON.stringify({
+            event: "command",
+            func: func,
+            args: args || []
+          }),
+          "*"
+        );
+
+      }
+
+
+      function setPlayingState(playing) {
+
+        isPlaying = playing;
+
+        overlay.classList.toggle(
+          "is-playing",
+          isPlaying
+        );
+
+        playIcon.textContent =
+          isPlaying ? "❚❚" : "▶";
+
+      }
+
+
       function togglePlayback() {
 
         const command =
@@ -1432,28 +1492,23 @@ function renderPrivateVideos(
             ? "pauseVideo"
             : "playVideo";
 
-        iframe.contentWindow.postMessage(
-          JSON.stringify({
-            event: "command",
-            func: command,
-            args: []
-          }),
-          "*"
-        );
+        sendCommand(command);
+
+        setPlayingState(!isPlaying);
+
+      }
 
 
-        isPlaying =
-          !isPlaying;
+      function stopPlayback() {
 
+        sendCommand("pauseVideo");
+        sendCommand("seekTo", [0, true]);
 
-        overlay.classList.toggle(
-          "is-playing",
-          isPlaying
-        );
+        currentTime = 0;
 
+        updateSeekUI();
 
-        playIcon.textContent =
-          isPlaying ? "❚❚" : "▶";
+        setPlayingState(false);
 
       }
 
@@ -1484,7 +1539,9 @@ function renderPrivateVideos(
 
 
       /*
-        Seek bar + skip buttons.
+        Seek bar, skip buttons, speed
+        control, zoom control and stop
+        button.
 
         Time and duration come only from
         YouTube's postMessage "infoDelivery"
@@ -1497,6 +1554,14 @@ function renderPrivateVideos(
 
       controlsRow.className =
         "video-controls-row";
+
+      const stopBtn =
+        document.createElement("button");
+
+      stopBtn.type = "button";
+      stopBtn.className = "stop-btn";
+      stopBtn.textContent = "■";
+      stopBtn.setAttribute("aria-label", "Stop video");
 
       const skipBack =
         document.createElement("button");
@@ -1532,6 +1597,45 @@ function renderPrivateVideos(
       skipForward.textContent = "10 ⏩";
       skipForward.setAttribute("aria-label", "Skip forward 10 seconds");
 
+      const speedBtn =
+        document.createElement("button");
+
+      speedBtn.type = "button";
+      speedBtn.className = "speed-btn";
+      speedBtn.textContent = "1x";
+      speedBtn.setAttribute("aria-label", "Change playback speed");
+
+      const zoomGroup =
+        document.createElement("div");
+
+      zoomGroup.className = "zoom-group";
+
+      const zoomOutBtn =
+        document.createElement("button");
+
+      zoomOutBtn.type = "button";
+      zoomOutBtn.className = "zoom-btn";
+      zoomOutBtn.textContent = "−";
+      zoomOutBtn.setAttribute("aria-label", "Zoom out");
+
+      const zoomLevelLabel =
+        document.createElement("div");
+
+      zoomLevelLabel.className = "zoom-level";
+      zoomLevelLabel.textContent = "100%";
+
+      const zoomInBtn =
+        document.createElement("button");
+
+      zoomInBtn.type = "button";
+      zoomInBtn.className = "zoom-btn";
+      zoomInBtn.textContent = "+";
+      zoomInBtn.setAttribute("aria-label", "Zoom in");
+
+      zoomGroup.appendChild(zoomOutBtn);
+      zoomGroup.appendChild(zoomLevelLabel);
+      zoomGroup.appendChild(zoomInBtn);
+
       const fullscreenBtn =
         document.createElement("button");
 
@@ -1540,10 +1644,13 @@ function renderPrivateVideos(
       fullscreenBtn.textContent = "⛶";
       fullscreenBtn.setAttribute("aria-label", "Toggle fullscreen");
 
+      controlsRow.appendChild(stopBtn);
       controlsRow.appendChild(skipBack);
       controlsRow.appendChild(seekTrack);
       controlsRow.appendChild(timeLabel);
       controlsRow.appendChild(skipForward);
+      controlsRow.appendChild(speedBtn);
+      controlsRow.appendChild(zoomGroup);
       controlsRow.appendChild(fullscreenBtn);
 
       videoContainer.appendChild(controlsRow);
@@ -1557,20 +1664,6 @@ function renderPrivateVideos(
         const s = String(seconds % 60).padStart(2, "0");
 
         return m + ":" + s;
-
-      }
-
-
-      function sendCommand(func, args) {
-
-        iframe.contentWindow.postMessage(
-          JSON.stringify({
-            event: "command",
-            func: func,
-            args: args || []
-          }),
-          "*"
-        );
 
       }
 
@@ -1633,6 +1726,94 @@ function renderPrivateVideos(
         seekTo(ratio * (duration || 0));
 
       });
+
+
+      stopBtn.addEventListener("click", function(event) {
+
+        event.stopPropagation();
+
+        stopPlayback();
+
+      });
+
+
+      /*
+        Playback speed.
+
+        Cycles through a fixed set of rates
+        via YouTube's setPlaybackRate command.
+        Works both forward (>1x) and as a
+        slow-motion rate (<1x).
+      */
+
+      const speedRates = [0.5, 0.75, 1, 1.25, 1.5, 2];
+      let speedIndex = 2; // 1x
+
+      speedBtn.addEventListener("click", function(event) {
+
+        event.stopPropagation();
+
+        speedIndex = (speedIndex + 1) % speedRates.length;
+
+        const rate = speedRates[speedIndex];
+
+        sendCommand("setPlaybackRate", [rate]);
+
+        speedBtn.textContent = rate + "x";
+
+      });
+
+
+      /*
+        Zoom in / out.
+
+        Digitally scales the video frame
+        inside its clipped container, so it
+        acts as a magnifier over the picture
+        without changing the on-page card size.
+      */
+
+      const zoomMin = 1;
+      const zoomMax = 3;
+      const zoomStep = 0.25;
+      let zoomLevel = 1;
+
+      function applyZoom() {
+
+        iframe.style.transform =
+          "scale(" + zoomLevel + ")";
+
+        zoomLevelLabel.textContent =
+          Math.round(zoomLevel * 100) + "%";
+
+        zoomOutBtn.disabled = zoomLevel <= zoomMin;
+        zoomInBtn.disabled = zoomLevel >= zoomMax;
+
+      }
+
+      zoomInBtn.addEventListener("click", function(event) {
+
+        event.stopPropagation();
+
+        zoomLevel =
+          Math.min(zoomMax, +(zoomLevel + zoomStep).toFixed(2));
+
+        applyZoom();
+
+      });
+
+      zoomOutBtn.addEventListener("click", function(event) {
+
+        event.stopPropagation();
+
+        zoomLevel =
+          Math.max(zoomMin, +(zoomLevel - zoomStep).toFixed(2));
+
+        applyZoom();
+
+      });
+
+      applyZoom();
 
 
       fullscreenBtn.addEventListener("click", function(event) {
