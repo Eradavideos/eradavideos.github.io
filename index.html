@@ -488,6 +488,68 @@
       transform: scale(1.06);
     }
 
+    .video-controls-row {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: linear-gradient(to top, rgba(0,0,0,0.75), transparent);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .video:hover .video-controls-row,
+    .video-controls-row.force-show {
+      opacity: 1;
+    }
+
+    .skip-btn {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #fff;
+      border-radius: 6px;
+      font-size: 11px;
+      padding: 5px 9px;
+      cursor: pointer;
+      flex-shrink: 0;
+      font-family: "IBM Plex Sans", Arial, sans-serif;
+    }
+
+    .skip-btn:hover {
+      background: rgba(255,255,255,0.22);
+    }
+
+    .seek-track {
+      position: relative;
+      flex: 1;
+      height: 5px;
+      border-radius: 3px;
+      background: rgba(255,255,255,0.25);
+      cursor: pointer;
+    }
+
+    .seek-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0%;
+      border-radius: 3px;
+      background: #fff;
+    }
+
+    .seek-time {
+      font-size: 10.5px;
+      color: #fff;
+      flex-shrink: 0;
+      min-width: 34px;
+      text-align: center;
+    }
+
     .video-info {
       color: var(--text-faint);
       font-size: 12.5px;
@@ -770,6 +832,50 @@ function showMessage(
     "block";
 
 }
+
+
+/* =========================================
+   YOUTUBE PLAYER MESSAGE ROUTER
+   (shared listener for all embedded videos)
+========================================= */
+
+window.addEventListener("message", function(event) {
+
+  if (
+    typeof event.origin !== "string" ||
+    event.origin.indexOf("youtube") === -1
+  ) {
+    return;
+  }
+
+  let data;
+
+  try {
+    data = JSON.parse(event.data);
+  } catch (e) {
+    return;
+  }
+
+  if (
+    !data ||
+    data.event !== "infoDelivery" ||
+    !data.info
+  ) {
+    return;
+  }
+
+  const cards = window.__eradaVideoCards || [];
+
+  for (const card of cards) {
+
+    if (card.getContentWindow() === event.source) {
+      card.onInfo(data.info);
+      break;
+    }
+
+  }
+
+});
 
 
 /* =========================================
@@ -1111,6 +1217,8 @@ function renderPrivateVideos(
   videosList.innerHTML =
     "";
 
+  window.__eradaVideoCards = [];
+
 
   if (
     !rows ||
@@ -1338,6 +1446,189 @@ function renderPrivateVideos(
 
         }
       );
+
+
+      /*
+        Seek bar + skip buttons.
+
+        Time and duration come only from
+        YouTube's postMessage "infoDelivery"
+        protocol — no direct access to the
+        iframe or its native controls.
+      */
+
+      const controlsRow =
+        document.createElement("div");
+
+      controlsRow.className =
+        "video-controls-row";
+
+      const skipBack =
+        document.createElement("button");
+
+      skipBack.type = "button";
+      skipBack.className = "skip-btn";
+      skipBack.textContent = "⏪ 10";
+      skipBack.setAttribute("aria-label", "Rewind 10 seconds");
+
+      const seekTrack =
+        document.createElement("div");
+
+      seekTrack.className = "seek-track";
+
+      const seekFill =
+        document.createElement("div");
+
+      seekFill.className = "seek-fill";
+
+      seekTrack.appendChild(seekFill);
+
+      const timeLabel =
+        document.createElement("div");
+
+      timeLabel.className = "seek-time";
+      timeLabel.textContent = "0:00";
+
+      const skipForward =
+        document.createElement("button");
+
+      skipForward.type = "button";
+      skipForward.className = "skip-btn";
+      skipForward.textContent = "10 ⏩";
+      skipForward.setAttribute("aria-label", "Skip forward 10 seconds");
+
+      controlsRow.appendChild(skipBack);
+      controlsRow.appendChild(seekTrack);
+      controlsRow.appendChild(timeLabel);
+      controlsRow.appendChild(skipForward);
+
+      videoContainer.appendChild(controlsRow);
+
+
+      function formatTime(seconds) {
+
+        seconds = Math.max(0, Math.floor(seconds || 0));
+
+        const m = Math.floor(seconds / 60);
+        const s = String(seconds % 60).padStart(2, "0");
+
+        return m + ":" + s;
+
+      }
+
+
+      function sendCommand(func, args) {
+
+        iframe.contentWindow.postMessage(
+          JSON.stringify({
+            event: "command",
+            func: func,
+            args: args || []
+          }),
+          "*"
+        );
+
+      }
+
+
+      let currentTime = 0;
+      let duration = 0;
+
+      function seekTo(seconds) {
+
+        seconds =
+          Math.max(0, Math.min(seconds, duration || seconds));
+
+        sendCommand("seekTo", [seconds, true]);
+
+        currentTime = seconds;
+
+        updateSeekUI();
+
+      }
+
+
+      function updateSeekUI() {
+
+        const pct =
+          duration > 0
+            ? (currentTime / duration) * 100
+            : 0;
+
+        seekFill.style.width = pct + "%";
+        timeLabel.textContent = formatTime(currentTime);
+
+      }
+
+
+      skipBack.addEventListener("click", function(event) {
+
+        event.stopPropagation();
+
+        seekTo(currentTime - 10);
+
+      });
+
+
+      skipForward.addEventListener("click", function(event) {
+
+        event.stopPropagation();
+
+        seekTo(currentTime + 10);
+
+      });
+
+
+      seekTrack.addEventListener("click", function(event) {
+
+        event.stopPropagation();
+
+        const rect = seekTrack.getBoundingClientRect();
+        const ratio = (event.clientX - rect.left) / rect.width;
+
+        seekTo(ratio * (duration || 0));
+
+      });
+
+
+      /*
+        Register this card so the shared
+        message listener below can route
+        infoDelivery updates to it.
+      */
+
+      window.__eradaVideoCards =
+        window.__eradaVideoCards || [];
+
+      window.__eradaVideoCards.push({
+        contentWindow: null,
+        getContentWindow: function() { return iframe.contentWindow; },
+        onInfo: function(info) {
+
+          if (typeof info.duration === "number") {
+            duration = info.duration;
+          }
+
+          if (typeof info.currentTime === "number") {
+            currentTime = info.currentTime;
+          }
+
+          updateSeekUI();
+
+        }
+      });
+
+
+      iframe.addEventListener("load", function() {
+
+        sendCommand("addEventListener", ["onReady"]);
+
+        iframe.contentWindow.postMessage(
+          JSON.stringify({ event: "listening", id: youtubeId }),
+          "*"
+        );
+
+      });
 
 
       const info =
