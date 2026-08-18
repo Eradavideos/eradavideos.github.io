@@ -1,6 +1,1430 @@
 <!doctype html>
 <html lang="en"><!doctype html>
+<html lang="en"><!doctype html>
 <html lang="en">
+
+<head>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#04070f">
+
+<title>ERADA · Private Video Library</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=El+Messiri:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+/* Hold display type until the webfont resolves, so the fallback serif is
+   never painted and faux-bolded first (that was the ghosted heading).
+   Always releases after 1.5s in case the font request fails. */
+(function () {
+  var html = document.documentElement;
+  var release = function () { html.classList.add("fonts-ready"); };
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(release);
+  setTimeout(release, 1500);
+})();
+</script>
+
+<style>
+
+:root {
+  --ink: #04070f;
+  --panel: #0a1020;
+  --panel-2: #101830;
+  --line: #1c2846;
+  --line-soft: #141d36;
+  --text: #f2f5ff;
+  --muted: #a2adcd;
+  --faint: #67719a;
+  --ok-bg: #0e2a1d;
+  --ok: #4ec98a;
+  --warn-bg: #2b2410;
+  --warn: #e8c168;
+  --bad-bg: #33141a;
+  --bad: #ef7b7b;
+  --radius: 16px;
+  --ring: 0 0 0 3px rgba(255,255,255,0.12);
+}
+
+* { box-sizing: border-box; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+html, body { min-height: 100%; }
+
+body {
+  margin: 0;
+  font-family: "IBM Plex Sans", system-ui, Arial, sans-serif;
+  background: var(--ink);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(70% 45% at 50% -5%, rgba(58,92,190,0.30), transparent 62%),
+    radial-gradient(90% 55% at 50% 105%, rgba(40,66,150,0.16), transparent 70%),
+    var(--ink);
+}
+
+.ff-display {
+  font-family: "El Messiri", Georgia, serif;
+  font-weight: 700;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.fonts-ready .ff-display { opacity: 1; }
+
+.mono {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+}
+
+/* =========================================
+   BRAND MARK
+   The supplied logo file has a solid white
+   background, so it sits on a white plate on
+   purpose rather than reading as a broken
+   square on the dark panel.
+========================================= */
+
+.mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 7px;
+  box-shadow: 0 10px 26px -14px rgba(0,0,0,0.9);
+  flex-shrink: 0;
+}
+
+.mark img { display: block; object-fit: contain; }
+.mark-lg { border-radius: 16px; padding: 9px; }
+.mark-lg img { width: 46px; height: 46px; }
+.mark-sm img { width: 26px; height: 26px; }
+
+/* =========================================
+   ENTRY SCREEN
+========================================= */
+
+.entry {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px 56px;
+}
+
+.brand-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 30px;
+}
+
+.brand-stack h1 { margin: 0; font-size: 30px; letter-spacing: 1px; line-height: 1; }
+.brand-stack .mono { color: var(--faint); }
+
+.pass {
+  position: relative;
+  width: 100%;
+  max-width: 452px;
+  background: linear-gradient(180deg, var(--panel) 0%, #080d1a 100%);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 32px 32px 28px;
+  box-shadow: 0 40px 80px -40px rgba(0,0,0,0.9);
+}
+
+.pass::before,
+.pass::after {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 1px solid rgba(255,255,255,0.3);
+  pointer-events: none;
+}
+
+.pass::before {
+  top: -1px; right: -1px;
+  border-left: 0; border-bottom: 0;
+  border-top-right-radius: var(--radius);
+}
+
+.pass::after {
+  bottom: -1px; left: -1px;
+  border-right: 0; border-top: 0;
+  border-bottom-left-radius: var(--radius);
+}
+
+.pass-head { text-align: center; }
+.pass-head .mono { color: rgba(255,255,255,0.72); display: block; }
+.pass-head h2 { margin: 10px 0 6px; font-size: 23px; }
+.pass-head p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.6; }
+
+.seam {
+  height: 1px;
+  margin: 24px -32px;
+  background-image: repeating-linear-gradient(
+    90deg, var(--line) 0, var(--line) 5px, transparent 5px, transparent 11px
+  );
+}
+
+.field-label { display: block; color: var(--faint); margin-bottom: 8px; }
+
+input[type="email"],
+input[type="text"],
+input[type="password"],
+input[type="url"] {
+  width: 100%;
+  padding: 13px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: 15px;
+  background: var(--panel-2);
+  color: var(--text);
+  font-family: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+input::placeholder { color: var(--faint); }
+
+input:focus {
+  outline: none;
+  border-color: rgba(255,255,255,0.55);
+  box-shadow: var(--ring);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 13px 18px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.12s ease, opacity 0.12s ease,
+              background 0.15s ease, border-color 0.15s ease;
+}
+
+.btn:active { transform: scale(0.985); }
+.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn:focus-visible { outline: none; box-shadow: var(--ring); }
+
+.btn-primary { background: #ffffff; color: #05091a; }
+.btn-primary:hover:not(:disabled) { background: #e7ecff; }
+
+.btn-ghost { background: transparent; color: var(--text); border-color: var(--line); }
+.btn-ghost:hover:not(:disabled) { border-color: rgba(255,255,255,0.45); }
+
+.btn-row { display: grid; gap: 10px; margin-top: 16px; }
+
+/* Arabic advisory — real dir attribute, isolated Latin run. */
+.hint {
+  margin: 14px 0 0;
+  border: 1px solid var(--line-soft);
+  background: var(--panel-2);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.hint summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 11px 13px;
+  font-size: 12.5px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hint summary::-webkit-details-marker { display: none; }
+
+.hint summary::after {
+  content: "+";
+  margin-inline-start: auto;
+  color: var(--faint);
+  font-family: "IBM Plex Mono", monospace;
+}
+
+.hint[open] summary::after { content: "−"; }
+
+.hint-body {
+  padding: 0 13px 13px;
+  font-size: 13px;
+  line-height: 1.85;
+  color: var(--muted);
+}
+
+.status-note {
+  display: none;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-size: 13.5px;
+  line-height: 1.65;
+  word-break: break-word;
+}
+
+.status-note.is-visible { display: block; }
+.status-note.ok   { background: var(--ok-bg);   color: var(--ok);   border-color: rgba(78,201,138,0.24); }
+.status-note.warn { background: var(--warn-bg); color: var(--warn); border-color: rgba(232,193,104,0.24); }
+.status-note.bad  { background: var(--bad-bg);  color: var(--bad);  border-color: rgba(239,123,123,0.24); }
+
+.spinner {
+  width: 15px;
+  height: 15px;
+  border: 2px solid rgba(255,255,255,0.25);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* =========================================
+   LIBRARY
+========================================= */
+
+#library { display: none; }
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+  background: rgba(6,10,22,0.86);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.topbar-titles { line-height: 1.25; min-width: 0; }
+.topbar-titles strong { font-size: 15px; letter-spacing: 0.4px; }
+.topbar-titles .mono { color: var(--faint); display: block; margin-top: 3px; }
+
+.topbar-spacer { margin-inline-start: auto; }
+
+.who {
+  display: none;
+  max-width: 230px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+@media (min-width: 720px) { .who { display: block; } }
+
+.btn-compact { width: auto; padding: 9px 14px; font-size: 13px; }
+
+.shell { max-width: 1120px; margin: 0 auto; padding: 28px 20px 72px; }
+
+.library-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.library-head h2 { margin: 0; font-size: 21px; }
+
+.count-chip {
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+}
+
+.search-wrap { margin-inline-start: auto; width: 100%; max-width: 280px; }
+
+.grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+}
+
+@media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
+
+.tile {
+  background: var(--panel);
+  border: 1px solid var(--line-soft);
+  border-top: 2px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+  animation: rise 0.35s ease both;
+}
+
+.tile:hover {
+  transform: translateY(-3px);
+  border-top-color: rgba(255,255,255,0.75);
+  box-shadow: 0 26px 50px -30px rgba(0,0,0,0.9);
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) { .tile { animation: none; } }
+
+.tile-body { padding: 14px 16px 16px; }
+.tile-body h3 { margin: 0 0 8px; font-size: 16.5px; line-height: 1.4; }
+.tile-body .mono { color: var(--faint); }
+
+/* =========================================
+   PLAYER STAGE
+========================================= */
+
+.stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  overflow: hidden;
+}
+
+.poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.9;
+  transition: opacity 0.2s ease, transform 0.35s ease;
+}
+
+.tile:hover .poster { transform: scale(1.03); }
+
+.stage iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  pointer-events: none;
+  transform-origin: center center;
+  transition: transform 0.2s ease;
+}
+
+.tap {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: linear-gradient(180deg, rgba(4,7,15,0.05), rgba(4,7,15,0.45));
+  border: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.tap:focus-visible { outline: 2px solid #fff; outline-offset: -4px; }
+
+.play-icon {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: rgba(6,10,23,0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1.5px solid rgba(255,255,255,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 21px;
+  color: #fff;
+  padding-inline-start: 4px;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.tap:hover .play-icon { transform: scale(1.07); }
+.tap.is-playing { background: transparent; }
+.tap.is-playing .play-icon { opacity: 0; padding-inline-start: 0; }
+.tap.is-playing:hover .play-icon { opacity: 1; }
+
+.controls {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  display: none;
+  align-items: center;
+  gap: 7px;
+  padding: 12px 11px 10px;
+  background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.5) 60%, transparent);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  flex-wrap: wrap;
+}
+
+.stage.is-live .controls { display: flex; }
+.stage.is-live:hover .controls,
+.stage.is-live:focus-within .controls,
+.controls.pinned { opacity: 1; }
+
+.ctl {
+  background: rgba(255,255,255,0.13);
+  border: 1px solid rgba(255,255,255,0.28);
+  color: #fff;
+  border-radius: 7px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  padding: 5px 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+  line-height: 1.2;
+}
+
+.ctl:hover { background: rgba(255,255,255,0.24); }
+.ctl:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.track {
+  position: relative;
+  flex: 1;
+  min-width: 60px;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.26);
+  cursor: pointer;
+}
+
+.fill {
+  position: absolute;
+  top: 0; left: 0;
+  height: 100%;
+  width: 0%;
+  border-radius: 3px;
+  background: #fff;
+}
+
+.fill::after {
+  content: "";
+  position: absolute;
+  top: 50%; right: -5px;
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.6);
+  transform: translateY(-50%);
+}
+
+.clock {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10.5px;
+  color: #fff;
+  min-width: 36px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.zoom-group { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+
+.zoom-level {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10.5px;
+  color: #fff;
+  min-width: 34px;
+  text-align: center;
+}
+
+/* iOS Safari only allows the native Fullscreen API on <video> elements,
+   so a YouTube iframe silently fails there — hence the CSS fallback. */
+body.fs-open { overflow: hidden; }
+
+.stage.fs {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  width: 100vw;
+  height: 100dvh;
+  aspect-ratio: auto;
+  border-radius: 0;
+}
+
+.stage.fs .controls { opacity: 1; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+
+.fs-close {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  right: 12px;
+  z-index: 2;
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: rgba(6,10,23,0.7);
+  border: 1px solid rgba(255,255,255,0.32);
+  color: #fff;
+  font-size: 15px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.stage.fs .fs-close { display: flex; }
+
+.stage:fullscreen, .stage:-webkit-full-screen { aspect-ratio: auto; height: 100vh; }
+.stage:fullscreen .controls, .stage:-webkit-full-screen .controls { opacity: 1; }
+
+/* =========================================
+   STATES
+========================================= */
+
+.placeholder {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 64px 24px;
+  border: 1px dashed var(--line);
+  border-radius: 14px;
+  color: var(--muted);
+}
+
+.placeholder h3 { margin: 0 0 8px; font-size: 18px; color: var(--text); }
+.placeholder p { margin: 0; font-size: 14px; }
+
+.loading-line {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 60px 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+footer {
+  border-top: 1px solid var(--line-soft);
+  padding: 22px 20px 40px;
+  text-align: center;
+  color: var(--faint);
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+<div class="ambient"></div>
+
+
+<!-- =========================================
+     ENTRY
+========================================= -->
+
+<main id="entry" class="entry">
+
+  <div class="brand-stack">
+    <span class="mark mark-lg"><img src="erada-logo.png" alt=""></span>
+    <h1 class="ff-display">ERADA</h1>
+    <span class="mono">Private Video Library</span>
+  </div>
+
+  <section class="pass">
+
+    <div class="pass-head">
+      <span class="mono">Members only</span>
+      <h2 class="ff-display">Secure access</h2>
+      <p>Enter the email address your administrator approved.</p>
+    </div>
+
+    <div class="seam"></div>
+
+    <label class="mono field-label" for="email">Email address</label>
+
+    <input
+      id="email"
+      type="email"
+      placeholder="name@erada.ly"
+      autocomplete="email"
+      autocapitalize="off"
+      autocorrect="off"
+      spellcheck="false"
+      inputmode="email"
+      enterkeyhint="go"
+    >
+
+    <details class="hint">
+      <summary>📱 Using an iPhone? Read this first</summary>
+      <div class="hint-body" dir="rtl" lang="ar">
+        إذا ظهر اقتراح <bdi dir="ltr">Hide My Email</bdi> فوق لوحة المفاتيح فلا تختره.
+        اكتب بريدك الحقيقي يدوياً، وإلا سيُسجَّل بريد عشوائي مختلف في كل مرة ولن يتعرف
+        عليه النظام.
+      </div>
+    </details>
+
+    <div class="btn-row">
+      <button id="checkAccess" class="btn btn-primary" type="button">Check access</button>
+      <button id="requestAccess" class="btn btn-ghost" type="button">Request access</button>
+    </div>
+
+    <div id="note" class="status-note"></div>
+
+  </section>
+
+</main>
+
+
+<!-- =========================================
+     LIBRARY
+========================================= -->
+
+<div id="library">
+
+  <div class="topbar">
+
+    <span class="mark mark-sm"><img src="erada-logo.png" alt=""></span>
+
+    <div class="topbar-titles">
+      <strong class="ff-display">ERADA</strong>
+      <span class="mono">Private library</span>
+    </div>
+
+    <div class="topbar-spacer"></div>
+
+    <span id="who" class="who"></span>
+
+    <button id="logout" class="btn btn-ghost btn-compact" type="button">Log out</button>
+
+  </div>
+
+  <div class="shell">
+
+    <div class="library-head">
+      <h2 class="ff-display">Recordings</h2>
+      <span id="countChip" class="count-chip mono">—</span>
+      <div class="search-wrap">
+        <input id="search" type="text" placeholder="Search recordings" autocomplete="off">
+      </div>
+    </div>
+
+    <div id="grid" class="grid"></div>
+
+  </div>
+
+  <footer class="mono">ERADA · Confidential · Do not redistribute</footer>
+
+</div>
+
+
+<script>
+
+/* =========================================
+   SUPABASE
+   Visitors never sign in. Access is decided
+   entirely by the check_access / list_videos
+   database functions.
+========================================= */
+
+const SUPABASE_URL =
+  "https://laqwnqnnqtfhqfadjyvo.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_ropVS738K5BJiOoaZ-TeWA_WmkineZh";
+
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+});
+
+const STORAGE_KEY = "eradaApprovedEmail";
+
+
+/* =========================================
+   ELEMENTS
+========================================= */
+
+const $ = (id) => document.getElementById(id);
+
+const entry         = $("entry");
+const library       = $("library");
+const emailInput    = $("email");
+const checkButton   = $("checkAccess");
+const requestButton = $("requestAccess");
+const note          = $("note");
+const grid          = $("grid");
+const searchInput   = $("search");
+const countChip     = $("countChip");
+const who           = $("who");
+
+let allVideos = [];
+let players   = [];
+
+
+/* =========================================
+   HELPERS
+========================================= */
+
+/* Text pasted from WhatsApp carries zero-width and bidi marks that trim()
+   leaves behind, so an address looks right but never matches. */
+function cleanEmail(value) {
+  return (value || "")
+    .replace(/[\u200B-\u200F\u202A-\u202E\u2060\uFEFF]/g, "")
+    .trim()
+    .toLowerCase();
+}
+
+function validEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function showNote(text, tone) {
+  note.textContent = text;
+  note.className = "status-note is-visible " + (tone || "");
+}
+
+function hideNote() {
+  note.className = "status-note";
+}
+
+function busy(button, label) {
+  button.dataset.label = button.textContent;
+  button.disabled = true;
+  button.innerHTML = '<span class="spinner"></span>' + label;
+}
+
+function idle(button) {
+  button.disabled = false;
+  button.textContent = button.dataset.label || button.textContent;
+}
+
+function youtubeId(url) {
+  if (!url) return null;
+  const patterns = [
+    /youtu\.be\/([a-zA-Z0-9_-]{6,})/,
+    /[?&]v=([a-zA-Z0-9_-]{6,})/,
+    /embed\/([a-zA-Z0-9_-]{6,})/,
+    /shorts\/([a-zA-Z0-9_-]{6,})/,
+    /live\/([a-zA-Z0-9_-]{6,})/
+  ];
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return match[1];
+  }
+  return null;
+}
+
+function clockText(seconds) {
+  seconds = Math.max(0, Math.floor(seconds || 0));
+  const m = Math.floor(seconds / 60);
+  const s = String(seconds % 60).padStart(2, "0");
+  return m + ":" + s;
+}
+
+function escapeText(value) {
+  const node = document.createElement("div");
+  node.textContent = String(value ?? "");
+  return node.innerHTML;
+}
+
+
+/* =========================================
+   ONE SHARED YOUTUBE MESSAGE ROUTER
+========================================= */
+
+window.addEventListener("message", function (event) {
+
+  if (typeof event.origin !== "string" || event.origin.indexOf("youtube") === -1) return;
+
+  let payload;
+  try { payload = JSON.parse(event.data); } catch (e) { return; }
+
+  if (!payload || payload.event !== "infoDelivery" || !payload.info) return;
+
+  for (const player of players) {
+    if (player.window() === event.source) {
+      player.info(payload.info);
+      break;
+    }
+  }
+
+});
+
+
+/* =========================================
+   REQUEST ACCESS
+========================================= */
+
+requestButton.addEventListener("click", async function () {
+
+  const email = cleanEmail(emailInput.value);
+
+  if (!validEmail(email)) {
+    showNote("Enter a valid email address.", "bad");
+    emailInput.focus();
+    return;
+  }
+
+  busy(requestButton, "Sending");
+
+  const { data: result, error } = await db.rpc("request_access", { p_email: email });
+
+  idle(requestButton);
+
+  if (error) {
+    console.error("request_access:", error);
+    showNote("The request could not be sent: " + error.message, "bad");
+    return;
+  }
+
+  if (result === "invalid") {
+    showNote("Enter a valid email address.", "bad");
+  } else if (result === "already_approved") {
+    showNote(email + " already has access. Press Check access to open the library.", "ok");
+  } else if (result === "already_pending") {
+    showNote(
+      "A request for " + email + " is already with the administrator. If that is not your real " +
+      "address, it may be an iPhone Hide My Email alias — type your own instead.",
+      "warn"
+    );
+  } else {
+    showNote("Request sent for " + email + ". You will get access once it is approved.", "ok");
+  }
+
+});
+
+
+/* =========================================
+   CHECK ACCESS
+   Exact match, decided in the database — an
+   unapproved address can never come back as
+   approved.
+========================================= */
+
+checkButton.addEventListener("click", function () {
+  verify(cleanEmail(emailInput.value), false);
+});
+
+emailInput.addEventListener("keydown", function (event) {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    verify(cleanEmail(emailInput.value), false);
+  }
+});
+
+
+async function verify(email, quiet) {
+
+  if (!validEmail(email)) {
+    if (!quiet) {
+      showNote("Enter your email address to continue.", "bad");
+      emailInput.focus();
+    }
+    return;
+  }
+
+  busy(checkButton, "Checking");
+
+  const { data: status, error } = await db.rpc("check_access", { p_email: email });
+
+  idle(checkButton);
+
+  if (error) {
+    console.error("check_access:", error);
+    if (!quiet) showNote("Your access could not be checked: " + error.message, "bad");
+    return;
+  }
+
+  if (status === "approved") {
+    localStorage.setItem(STORAGE_KEY, email);
+    await openLibrary(email);
+    return;
+  }
+
+  localStorage.removeItem(STORAGE_KEY);
+
+  if (quiet) return;
+
+  if (status === "pending") {
+    showNote(
+      "Your request for " + email + " is waiting for the administrator. Check back once it is approved.",
+      "warn"
+    );
+  } else if (status === "rejected") {
+    showNote(
+      "The request for " + email + " was not approved. Contact the administrator if that looks wrong.",
+      "bad"
+    );
+  } else if (status === "blocked") {
+    showNote(email + " is on the list but not active. Ask the administrator to re-approve it.", "bad");
+  } else {
+    showNote(
+      "No access on file for " + email + ". Press Request access to send one. If that is not your " +
+      "real address, check for an iPhone Hide My Email alias.",
+      "bad"
+    );
+  }
+
+}
+
+
+/* =========================================
+   LIBRARY
+========================================= */
+
+async function openLibrary(email) {
+
+  entry.style.display = "none";
+  library.style.display = "block";
+  hideNote();
+
+  who.textContent = email;
+  who.title = email;
+
+  grid.innerHTML =
+    '<div class="loading-line"><span class="spinner"></span>Loading your recordings</div>';
+
+  const { data: rows, error } = await db.rpc("list_videos", { p_email: email });
+
+  if (error) {
+    console.error("list_videos:", error);
+    grid.innerHTML =
+      '<div class="placeholder"><h3>Recordings unavailable</h3><p>' +
+      escapeText(error.message) + "</p></div>";
+    return;
+  }
+
+  allVideos = (rows || []).filter(row => youtubeId(row.youtube_url));
+
+  renderGrid(allVideos);
+}
+
+
+searchInput.addEventListener("input", function () {
+
+  const term = searchInput.value.trim().toLowerCase();
+
+  renderGrid(
+    term
+      ? allVideos.filter(row => String(row.title || "").toLowerCase().includes(term))
+      : allVideos
+  );
+
+});
+
+
+function renderGrid(rows) {
+
+  grid.innerHTML = "";
+  players = [];
+
+  countChip.textContent =
+    rows.length + (rows.length === 1 ? " recording" : " recordings");
+
+  if (rows.length === 0) {
+    grid.innerHTML = allVideos.length === 0
+      ? '<div class="placeholder"><h3>Nothing here yet</h3>' +
+        "<p>Your administrator has not published any recordings.</p></div>"
+      : '<div class="placeholder"><h3>No match</h3>' +
+        "<p>No recording title contains that text.</p></div>";
+    return;
+  }
+
+  rows.forEach((row, index) => grid.appendChild(buildTile(row, index)));
+}
+
+
+/* =========================================
+   TILE + LAZY PLAYER
+   The iframe is created on first play only, so
+   opening the library does not spin up a dozen
+   YouTube players at once.
+========================================= */
+
+function buildTile(row, index) {
+
+  const videoId = youtubeId(row.youtube_url);
+
+  const tile = document.createElement("article");
+  tile.className = "tile";
+  tile.style.animationDelay = Math.min(index * 40, 320) + "ms";
+
+  const stage = document.createElement("div");
+  stage.className = "stage";
+
+  const poster = document.createElement("img");
+  poster.className = "poster";
+  poster.loading = "lazy";
+  poster.alt = "";
+  poster.src = "https://i.ytimg.com/vi/" + videoId + "/hqdefault.jpg";
+  poster.addEventListener("error", function () {
+    poster.src = "https://i.ytimg.com/vi/" + videoId + "/mqdefault.jpg";
+  }, { once: true });
+
+  const tap = document.createElement("button");
+  tap.className = "tap";
+  tap.type = "button";
+  tap.setAttribute("aria-label", "Play " + (row.title || "video"));
+
+  const playIcon = document.createElement("span");
+  playIcon.className = "play-icon";
+  playIcon.textContent = "▶";
+  tap.appendChild(playIcon);
+
+  stage.appendChild(poster);
+  stage.appendChild(tap);
+
+  const body = document.createElement("div");
+  body.className = "tile-body";
+
+  const heading = document.createElement("h3");
+  heading.className = "ff-display";
+  heading.textContent = row.title || "Untitled";
+
+  const label = document.createElement("span");
+  label.className = "mono";
+  label.textContent = "🔒 Private · ERADA";
+
+  body.appendChild(heading);
+  body.appendChild(label);
+
+  tile.appendChild(stage);
+  tile.appendChild(body);
+
+  let mounted = false;
+  let iframe = null;
+  let playing = false;
+  let position = 0;
+  let duration = 0;
+
+  /* ---- controls ---- */
+
+  const controls = document.createElement("div");
+  controls.className = "controls";
+
+  function makeCtl(text, aria) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "ctl";
+    button.textContent = text;
+    button.setAttribute("aria-label", aria);
+    return button;
+  }
+
+  const stopBtn    = makeCtl("■", "Stop");
+  const backBtn    = makeCtl("−10", "Back 10 seconds");
+  const forwardBtn = makeCtl("+10", "Forward 10 seconds");
+  const speedBtn   = makeCtl("1x", "Playback speed");
+  const zoomOut    = makeCtl("−", "Zoom out");
+  const zoomIn     = makeCtl("+", "Zoom in");
+  const fsBtn      = makeCtl("⛶", "Fullscreen");
+
+  const track = document.createElement("div");
+  track.className = "track";
+  const fill = document.createElement("div");
+  fill.className = "fill";
+  track.appendChild(fill);
+
+  const clock = document.createElement("span");
+  clock.className = "clock";
+  clock.textContent = "0:00";
+
+  const zoomGroup = document.createElement("div");
+  zoomGroup.className = "zoom-group";
+  const zoomLevelLabel = document.createElement("span");
+  zoomLevelLabel.className = "zoom-level";
+  zoomLevelLabel.textContent = "100%";
+  zoomGroup.append(zoomOut, zoomLevelLabel, zoomIn);
+
+  const fsClose = document.createElement("button");
+  fsClose.type = "button";
+  fsClose.className = "fs-close";
+  fsClose.textContent = "✕";
+  fsClose.setAttribute("aria-label", "Exit fullscreen");
+
+  controls.append(stopBtn, backBtn, track, clock, forwardBtn, speedBtn, zoomGroup, fsBtn);
+  stage.append(controls, fsClose);
+
+  /* ---- playback plumbing ---- */
+
+  function send(func, args) {
+    if (!iframe || !iframe.contentWindow) return;
+    iframe.contentWindow.postMessage(
+      JSON.stringify({ event: "command", func: func, args: args || [] }),
+      "*"
+    );
+  }
+
+  function paintSeek() {
+    fill.style.width = (duration > 0 ? (position / duration) * 100 : 0) + "%";
+    clock.textContent = clockText(position);
+  }
+
+  function setPlaying(state) {
+    playing = state;
+    tap.classList.toggle("is-playing", playing);
+    playIcon.textContent = playing ? "❚❚" : "▶";
+  }
+
+  function seek(seconds) {
+    seconds = Math.max(0, Math.min(seconds, duration || seconds));
+    send("seekTo", [seconds, true]);
+    position = seconds;
+    paintSeek();
+  }
+
+  function mount() {
+
+    iframe = document.createElement("iframe");
+    iframe.title = row.title || "video";
+    iframe.allow = "autoplay; encrypted-media";
+    iframe.tabIndex = -1;
+    iframe.src =
+      "https://www.youtube-nocookie.com/embed/" + videoId +
+      "?autoplay=1&modestbranding=1&rel=0&controls=0&disablekb=1&fs=0" +
+      "&iv_load_policy=3&enablejsapi=1&playsinline=1&origin=" +
+      encodeURIComponent(window.location.origin);
+
+    stage.insertBefore(iframe, tap);
+    stage.classList.add("is-live");
+    poster.style.opacity = "0";
+
+    iframe.addEventListener("load", function () {
+      send("addEventListener", ["onReady"]);
+      if (iframe.contentWindow) {
+        iframe.contentWindow.postMessage(
+          JSON.stringify({ event: "listening", id: videoId }),
+          "*"
+        );
+      }
+    });
+
+    players.push({
+      window: function () { return iframe ? iframe.contentWindow : null; },
+      info: function (info) {
+        if (typeof info.duration === "number") duration = info.duration;
+        if (typeof info.currentTime === "number") position = info.currentTime;
+        paintSeek();
+      }
+    });
+
+    mounted = true;
+    setPlaying(true);
+    controls.classList.add("pinned");
+    setTimeout(function () { controls.classList.remove("pinned"); }, 2200);
+  }
+
+  tap.addEventListener("click", function () {
+    if (!mounted) { mount(); return; }
+    send(playing ? "pauseVideo" : "playVideo");
+    setPlaying(!playing);
+  });
+
+  stopBtn.addEventListener("click", function (event) {
+    event.stopPropagation();
+    send("pauseVideo");
+    send("seekTo", [0, true]);
+    position = 0;
+    paintSeek();
+    setPlaying(false);
+  });
+
+  backBtn.addEventListener("click", function (event) {
+    event.stopPropagation();
+    seek(position - 10);
+  });
+
+  forwardBtn.addEventListener("click", function (event) {
+    event.stopPropagation();
+    seek(position + 10);
+  });
+
+  track.addEventListener("click", function (event) {
+    event.stopPropagation();
+    const rect = track.getBoundingClientRect();
+    seek(((event.clientX - rect.left) / rect.width) * (duration || 0));
+  });
+
+  const rates = [0.5, 0.75, 1, 1.25, 1.5, 2];
+  let rateIndex = 2;
+
+  speedBtn.addEventListener("click", function (event) {
+    event.stopPropagation();
+    rateIndex = (rateIndex + 1) % rates.length;
+    send("setPlaybackRate", [rates[rateIndex]]);
+    speedBtn.textContent = rates[rateIndex] + "x";
+  });
+
+  /* Digital zoom magnifies the frame inside its clipped stage — useful
+     for reading slides in a recorded session. */
+  let zoom = 1;
+
+  function applyZoom() {
+    if (iframe) iframe.style.transform = "scale(" + zoom + ")";
+    zoomLevelLabel.textContent = Math.round(zoom * 100) + "%";
+    zoomOut.disabled = zoom <= 1;
+    zoomIn.disabled = zoom >= 3;
+  }
+
+  zoomIn.addEventListener("click", function (event) {
+    event.stopPropagation();
+    zoom = Math.min(3, +(zoom + 0.25).toFixed(2));
+    applyZoom();
+  });
+
+  zoomOut.addEventListener("click", function (event) {
+    event.stopPropagation();
+    zoom = Math.max(1, +(zoom - 0.25).toFixed(2));
+    applyZoom();
+  });
+
+  applyZoom();
+
+  /* Fullscreen with an iOS-safe fallback. */
+  const nativeFs =
+    !!(document.fullscreenEnabled || document.webkitFullscreenEnabled) &&
+    !!(stage.requestFullscreen || stage.webkitRequestFullscreen);
+
+  function openPseudo() {
+    stage.classList.add("fs");
+    document.body.classList.add("fs-open");
+    try {
+      if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock("landscape").catch(function () {});
+      }
+    } catch (e) {}
+  }
+
+  function closePseudo() {
+    stage.classList.remove("fs");
+    document.body.classList.remove("fs-open");
+    try {
+      if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
+    } catch (e) {}
+  }
+
+  fsBtn.addEventListener("click", function (event) {
+
+    event.stopPropagation();
+
+    if (nativeFs) {
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+      } else {
+        (stage.requestFullscreen || stage.webkitRequestFullscreen).call(stage);
+      }
+      return;
+    }
+
+    if (stage.classList.contains("fs")) {
+      closePseudo();
+    } else {
+      openPseudo();
+    }
+  });
+
+  fsClose.addEventListener("click", function (event) {
+    event.stopPropagation();
+    closePseudo();
+  });
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape" && stage.classList.contains("fs")) closePseudo();
+  });
+
+  return tile;
+}
+
+
+/* =========================================
+   LOG OUT
+========================================= */
+
+$("logout").addEventListener("click", function () {
+
+  localStorage.removeItem(STORAGE_KEY);
+
+  players = [];
+  allVideos = [];
+  grid.innerHTML = "";
+  searchInput.value = "";
+
+  library.style.display = "none";
+  entry.style.display = "flex";
+
+  showNote("You are logged out.", "ok");
+});
+
+
+/* =========================================
+   LIGHT PROTECTION
+========================================= */
+
+document.addEventListener("contextmenu", function (event) {
+  if (event.target.closest(".stage")) event.preventDefault();
+});
+
+document.addEventListener("dragstart", function (event) {
+  if (event.target.closest(".stage")) event.preventDefault();
+});
+
+document.addEventListener("keydown", function (event) {
+  if (!event.ctrlKey || !event.key) return;
+  const key = event.key.toLowerCase();
+  if (key === "s" || key === "u") event.preventDefault();
+});
+
+
+/* =========================================
+   START
+   A saved email is re-checked on every visit,
+   so revoked access does not survive in
+   localStorage.
+========================================= */
+
+(function start() {
+
+  const saved = localStorage.getItem(STORAGE_KEY);
+
+  if (!saved) return;
+
+  emailInput.value = saved;
+  verify(cleanEmail(saved), true);
+
+})();
+
+</script>
+
+</body>
+</html>
+
 
 <head>
 
