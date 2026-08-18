@@ -447,11 +447,19 @@
     .video {
       position: relative;
       width: 100%;
+      aspect-ratio: 16 / 9;
       padding-top: 56.25%;
       background: #000;
-      border-radius: 9px;
+      border-radius: 10px;
       overflow: hidden;
       border: 1px solid var(--border-soft);
+      box-shadow: 0 18px 40px -22px rgba(0,0,0,0.75), inset 0 0 0 1px rgba(255,255,255,0.02);
+    }
+
+    @supports (aspect-ratio: 16 / 9) {
+      .video {
+        padding-top: 0;
+      }
     }
 
     .video iframe {
@@ -466,6 +474,66 @@
       transition: transform 0.2s ease;
     }
 
+    /* =========================================
+       PSEUDO-FULLSCREEN
+       (CSS-driven fallback for browsers that
+       block the native Fullscreen API on plain
+       elements — notably iOS Safari, which only
+       allows requestFullscreen() on <video> tags.
+       Toggled via JS with a body-level class so
+       it works identically on every platform.)
+    ========================================= */
+
+    body.erada-pseudo-fullscreen-active {
+      overflow: hidden;
+    }
+
+    .video.pseudo-fullscreen {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      width: 100vw;
+      height: 100vh;
+      max-height: -webkit-fill-available;
+      aspect-ratio: auto;
+      padding-top: 0;
+      border-radius: 0;
+      border: 0;
+      box-shadow: none;
+    }
+
+    .video.pseudo-fullscreen iframe {
+      height: 100%;
+    }
+
+    .video.pseudo-fullscreen .video-controls-row {
+      opacity: 1;
+      padding-bottom: max(10px, env(safe-area-inset-bottom));
+    }
+
+    .pseudo-fullscreen-close {
+      position: absolute;
+      top: max(12px, env(safe-area-inset-top));
+      right: 12px;
+      z-index: 2;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(6,10,23,0.65);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #fff;
+      font-size: 16px;
+      line-height: 1;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .video.pseudo-fullscreen .pseudo-fullscreen-close {
+      display: flex;
+    }
+
     .video-overlay {
       position: absolute;
       inset: 0;
@@ -477,11 +545,14 @@
     }
 
     .video-overlay .play-icon {
-      width: 62px;
-      height: 62px;
+      width: 64px;
+      height: 64px;
       border-radius: 50%;
-      background: rgba(6,10,23,0.6);
-      border: 2px solid rgba(255,255,255,0.85);
+      background: rgba(6,10,23,0.55);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1.5px solid rgba(255,255,255,0.75);
+      box-shadow: 0 10px 30px -8px rgba(0,0,0,0.7);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -511,8 +582,8 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 10px 12px;
-      background: linear-gradient(to top, rgba(0,0,0,0.75), transparent);
+      padding: 12px 12px 10px;
+      background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.55) 55%, transparent 100%);
       opacity: 0;
       transition: opacity 0.2s ease;
       flex-wrap: wrap;
@@ -584,6 +655,19 @@
       width: 0%;
       border-radius: 3px;
       background: #fff;
+    }
+
+    .seek-fill::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: -5px;
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+      transform: translateY(-50%);
     }
 
     .seek-time {
@@ -1689,6 +1773,16 @@ function renderPrivateVideos(
       fullscreenBtn.textContent = "⛶";
       fullscreenBtn.setAttribute("aria-label", "Toggle fullscreen");
 
+      const pseudoCloseBtn =
+        document.createElement("button");
+
+      pseudoCloseBtn.type = "button";
+      pseudoCloseBtn.className = "pseudo-fullscreen-close";
+      pseudoCloseBtn.textContent = "✕";
+      pseudoCloseBtn.setAttribute("aria-label", "Exit fullscreen");
+
+      videoContainer.appendChild(pseudoCloseBtn);
+
       controlsRow.appendChild(stopBtn);
       controlsRow.appendChild(skipBack);
       controlsRow.appendChild(seekTrack);
@@ -1861,21 +1955,126 @@ function renderPrivateVideos(
       applyZoom();
 
 
+      /*
+        Fullscreen.
+
+        iOS Safari does not implement the
+        Fullscreen API on plain elements (only
+        on <video> tags), so requestFullscreen()
+        silently fails there and the button
+        appears broken. We feature-detect real
+        support and otherwise fall back to a
+        CSS-driven "pseudo-fullscreen" that
+        expands the player to fill the screen
+        on every platform, including iPhone.
+      */
+
+      const nativeFullscreenSupported =
+        !!(
+          document.fullscreenEnabled ||
+          document.webkitFullscreenEnabled
+        ) &&
+        !!(
+          videoContainer.requestFullscreen ||
+          videoContainer.webkitRequestFullscreen
+        );
+
+      function enterPseudoFullscreen() {
+
+        videoContainer.classList.add("pseudo-fullscreen");
+        document.body.classList.add("erada-pseudo-fullscreen-active");
+
+        try {
+
+          if (
+            screen.orientation &&
+            screen.orientation.lock
+          ) {
+
+            screen.orientation.lock("landscape").catch(function () {});
+
+          }
+
+        } catch (e) {}
+
+      }
+
+      function exitPseudoFullscreen() {
+
+        videoContainer.classList.remove("pseudo-fullscreen");
+        document.body.classList.remove("erada-pseudo-fullscreen-active");
+
+        try {
+
+          if (
+            screen.orientation &&
+            screen.orientation.unlock
+          ) {
+
+            screen.orientation.unlock();
+
+          }
+
+        } catch (e) {}
+
+      }
+
       fullscreenBtn.addEventListener("click", function(event) {
 
         event.stopPropagation();
 
-        if (document.fullscreenElement) {
+        if (nativeFullscreenSupported) {
 
-          document.exitFullscreen();
+          if (document.fullscreenElement || document.webkitFullscreenElement) {
 
-        } else if (videoContainer.requestFullscreen) {
+            if (document.exitFullscreen) {
+              document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+              document.webkitExitFullscreen();
+            }
 
-          videoContainer.requestFullscreen();
+          } else if (videoContainer.requestFullscreen) {
 
-        } else if (videoContainer.webkitRequestFullscreen) {
+            videoContainer.requestFullscreen();
 
-          videoContainer.webkitRequestFullscreen();
+          } else if (videoContainer.webkitRequestFullscreen) {
+
+            videoContainer.webkitRequestFullscreen();
+
+          }
+
+          return;
+
+        }
+
+        if (videoContainer.classList.contains("pseudo-fullscreen")) {
+
+          exitPseudoFullscreen();
+
+        } else {
+
+          enterPseudoFullscreen();
+
+        }
+
+      });
+
+      pseudoCloseBtn.addEventListener("click", function(event) {
+
+        event.stopPropagation();
+
+        exitPseudoFullscreen();
+
+      });
+
+      document.addEventListener("keydown", function(event) {
+
+        if (
+          event.key === "Escape" &&
+          videoContainer.classList.contains("pseudo-fullscreen")
+        ) {
+
+          exitPseudoFullscreen();
 
         }
 
