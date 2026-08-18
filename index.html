@@ -1,5 +1,1554 @@
 <!doctype html>
+<html lang="en"><!doctype html>
 <html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <title>ERADA Video Library</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=El+Messiri:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+
+    :root {
+      --bg: #060a17;
+      --surface: #0b1226;
+      --surface-2: #101a35;
+      --border: #22315a;
+      --border-soft: #16213f;
+      --accent: #ffffff;
+      --accent-soft: rgba(255, 255, 255, 0.10);
+      --accent-dim: rgba(255, 255, 255, 0.35);
+      --text: #ffffff;
+      --text-muted: #aab4d4;
+      --text-faint: #6b76a0;
+      --success-bg: #0f2a1e;
+      --success-text: #86e0aa;
+      --error-bg: #341318;
+      --error-text: #f2a3a3;
+      --pending-bg: #2a2410;
+      --pending-text: #e6c76a;
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        transition-duration: 0.001ms !important;
+      }
+    }
+
+    body {
+      margin: 0;
+      font-family: "IBM Plex Sans", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* =========================================
+       AMBIENT BACKGROUND
+    ========================================= */
+
+    .ambient {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background:
+        radial-gradient(60% 45% at 50% 0%, rgba(60,90,180,0.28), transparent 65%),
+        radial-gradient(80% 60% at 50% 100%, rgba(60,90,180,0.10), transparent 70%),
+        var(--bg);
+      animation: breathe 14s ease-in-out infinite;
+    }
+
+    @keyframes breathe {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 15px;
+      height: 15px;
+      border: 2px solid rgba(255,255,255,0.25);
+      border-top-color: currentColor;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: -3px;
+      margin-left: 8px;
+    }
+
+    button:disabled { opacity: 0.7; cursor: not-allowed; }
+
+    /* =========================================
+       HEADER
+    ========================================= */
+
+    header { text-align: center; padding: 56px 20px 40px; }
+
+    .header-logo {
+      width: 84px;
+      height: 84px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto 22px;
+      border-radius: 999px;
+      padding: 10px;
+      border: 1px solid var(--accent-dim);
+      background: var(--surface);
+    }
+
+    header h1 {
+      margin: 0;
+      font-family: "El Messiri", serif;
+      font-weight: 700;
+      font-size: 34px;
+      letter-spacing: 0.5px;
+      color: var(--text);
+    }
+
+    header p {
+      margin: 8px 0 0;
+      color: var(--text-muted);
+      font-size: 14px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    /* =========================================
+       LAYOUT
+    ========================================= */
+
+    .container { max-width: 920px; margin: 0 auto; padding: 0 20px 60px; }
+
+    /* =========================================
+       LOGIN CARD — "ACCESS CARD" MOTIF
+    ========================================= */
+
+    .login-box {
+      max-width: 440px;
+      margin: 20px auto 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 40px 36px 34px;
+      position: relative;
+      box-shadow: 0 24px 60px -20px rgba(0,0,0,0.6);
+    }
+
+    .login-box::before,
+    .login-box::after {
+      content: "";
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border: 1px solid var(--accent-dim);
+    }
+
+    .login-box::before {
+      top: -1px;
+      right: -1px;
+      border-left: none;
+      border-bottom: none;
+      border-top-right-radius: var(--radius);
+    }
+
+    .login-box::after {
+      bottom: -1px;
+      left: -1px;
+      border-right: none;
+      border-top: none;
+      border-bottom-left-radius: var(--radius);
+    }
+
+    .login-logo {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto 18px;
+      opacity: 0.9;
+    }
+
+    .eyebrow {
+      display: block;
+      text-align: center;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .login-title {
+      text-align: center;
+      margin: 0 0 8px;
+      font-family: "El Messiri", serif;
+      font-weight: 600;
+      font-size: 22px;
+      color: var(--text);
+    }
+
+    .login-description {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 14px;
+      margin: 0 0 26px;
+    }
+
+    .ticket-divider {
+      position: relative;
+      height: 1px;
+      margin: 26px -36px 24px;
+      background-image: repeating-linear-gradient(
+        90deg,
+        var(--border) 0,
+        var(--border) 6px,
+        transparent 6px,
+        transparent 12px
+      );
+    }
+
+    /* =========================================
+       FORM ELEMENTS
+    ========================================= */
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 13px 14px;
+      margin: 0 0 12px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      font-size: 15px;
+      background: var(--surface-2);
+      color: var(--text);
+      font-family: "IBM Plex Sans", Arial, sans-serif;
+      transition: border-color 0.15s ease;
+    }
+
+    input::placeholder { color: var(--text-faint); }
+
+    input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    button {
+      padding: 13px 20px;
+      border: 1px solid transparent;
+      border-radius: 9px;
+      cursor: pointer;
+      font-size: 14.5px;
+      font-weight: 600;
+      font-family: "IBM Plex Sans", Arial, sans-serif;
+      letter-spacing: 0.2px;
+      transition: transform 0.12s ease, opacity 0.12s ease, background 0.12s ease;
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    button:active { transform: scale(0.98); }
+
+    #requestAccess {
+      background: transparent;
+      color: var(--text);
+      border-color: var(--border);
+    }
+
+    #requestAccess:hover {
+      border-color: var(--accent-dim);
+      color: var(--accent);
+    }
+
+    #checkAccess {
+      background: var(--accent);
+      color: #060a17;
+    }
+
+    #checkAccess:hover { opacity: 0.92; }
+
+    .email-hint {
+      margin: -4px 0 14px;
+      padding: 10px 12px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--text-muted);
+      text-align: right;
+      direction: rtl;
+    }
+
+    .message {
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-radius: 9px;
+      display: none;
+      font-size: 13.5px;
+      line-height: 1.6;
+      text-align: center;
+      border: 1px solid transparent;
+      word-break: break-word;
+    }
+
+    .error {
+      background: var(--error-bg);
+      color: var(--error-text);
+      border-color: rgba(240,163,163,0.2);
+    }
+
+    .success {
+      background: var(--success-bg);
+      color: var(--success-text);
+      border-color: rgba(127,216,160,0.2);
+    }
+
+    .pending {
+      background: var(--pending-bg);
+      color: var(--pending-text);
+      border-color: rgba(230,199,106,0.2);
+    }
+
+    /* =========================================
+       VIDEO LIBRARY
+    ========================================= */
+
+    #videos { display: none; margin-top: 10px; }
+
+    .library-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 2px 26px;
+      border-bottom: 1px solid var(--border-soft);
+      margin-bottom: 28px;
+    }
+
+    .library-bar .eyebrow { text-align: left; margin: 0; }
+
+    .logout {
+      width: auto;
+      margin: 0;
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 9px 16px;
+      font-size: 13px;
+    }
+
+    .logout:hover { color: var(--error-text); border-color: rgba(240,163,163,0.3); }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-bottom: 22px;
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+      animation: rise 0.35s ease both;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      border-top-color: var(--accent);
+      box-shadow: 0 20px 44px -24px rgba(0,0,0,0.6);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .card { animation: none; }
+    }
+
+    .video-title {
+      margin: 0 0 14px;
+      font-family: "El Messiri", serif;
+      font-weight: 600;
+      font-size: 18px;
+      color: var(--text);
+    }
+
+    .video {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      padding-top: 56.25%;
+      background: #000;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border-soft);
+      box-shadow: 0 18px 40px -22px rgba(0,0,0,0.75), inset 0 0 0 1px rgba(255,255,255,0.02);
+    }
+
+    @supports (aspect-ratio: 16 / 9) {
+      .video { padding-top: 0; }
+    }
+
+    .video iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      pointer-events: none;
+      transform-origin: center center;
+      transition: transform 0.2s ease;
+    }
+
+    /* =========================================
+       PSEUDO-FULLSCREEN
+       (CSS fallback for browsers that block the
+       native Fullscreen API on plain elements —
+       notably iOS Safari, which only allows
+       requestFullscreen() on <video> tags.)
+    ========================================= */
+
+    body.erada-pseudo-fullscreen-active { overflow: hidden; }
+
+    .video.pseudo-fullscreen {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      width: 100vw;
+      height: 100vh;
+      max-height: -webkit-fill-available;
+      aspect-ratio: auto;
+      padding-top: 0;
+      border-radius: 0;
+      border: 0;
+      box-shadow: none;
+    }
+
+    .video.pseudo-fullscreen iframe { height: 100%; }
+
+    .video.pseudo-fullscreen .video-controls-row {
+      opacity: 1;
+      padding-bottom: max(10px, env(safe-area-inset-bottom));
+    }
+
+    .pseudo-fullscreen-close {
+      position: absolute;
+      top: max(12px, env(safe-area-inset-top));
+      right: 12px;
+      z-index: 2;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(6,10,23,0.65);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #fff;
+      font-size: 16px;
+      line-height: 1;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+      margin: 0;
+    }
+
+    .video.pseudo-fullscreen .pseudo-fullscreen-close { display: flex; }
+
+    .video-overlay {
+      position: absolute;
+      inset: 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+    }
+
+    .video-overlay .play-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: rgba(6,10,23,0.55);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1.5px solid rgba(255,255,255,0.75);
+      box-shadow: 0 10px 30px -8px rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      color: #fff;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      opacity: 1;
+    }
+
+    .video-overlay.is-playing .play-icon { opacity: 0; }
+    .video-overlay.is-playing:hover .play-icon { opacity: 1; }
+    .video-overlay:hover .play-icon { transform: scale(1.06); }
+
+    .video-controls-row {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 12px 10px;
+      background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.55) 55%, transparent 100%);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      flex-wrap: wrap;
+    }
+
+    .video:hover .video-controls-row,
+    .video-controls-row.force-show { opacity: 1; }
+
+    .skip-btn,
+    .speed-btn,
+    .zoom-btn,
+    .stop-btn {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #fff;
+      border-radius: 6px;
+      font-size: 11px;
+      padding: 5px 9px;
+      cursor: pointer;
+      flex-shrink: 0;
+      font-family: "IBM Plex Sans", Arial, sans-serif;
+      width: auto;
+      margin-top: 0;
+    }
+
+    .skip-btn:hover,
+    .speed-btn:hover,
+    .zoom-btn:hover,
+    .stop-btn:hover { background: rgba(255,255,255,0.22); }
+
+    .speed-btn { min-width: 40px; text-align: center; }
+
+    .zoom-group { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+
+    .zoom-level {
+      font-size: 10.5px;
+      color: #fff;
+      min-width: 32px;
+      text-align: center;
+    }
+
+    .seek-track {
+      position: relative;
+      flex: 1;
+      min-width: 60px;
+      height: 5px;
+      border-radius: 3px;
+      background: rgba(255,255,255,0.25);
+      cursor: pointer;
+    }
+
+    .seek-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0%;
+      border-radius: 3px;
+      background: #fff;
+    }
+
+    .seek-fill::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: -5px;
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+      transform: translateY(-50%);
+    }
+
+    .seek-time {
+      font-size: 10.5px;
+      color: #fff;
+      flex-shrink: 0;
+      min-width: 34px;
+      text-align: center;
+    }
+
+    .fullscreen-btn {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #fff;
+      border-radius: 6px;
+      font-size: 13px;
+      padding: 5px 9px;
+      cursor: pointer;
+      flex-shrink: 0;
+      line-height: 1;
+      width: auto;
+      margin-top: 0;
+    }
+
+    .fullscreen-btn:hover { background: rgba(255,255,255,0.22); }
+
+    .video:fullscreen,
+    .video:-webkit-full-screen {
+      padding-top: 0;
+      height: 100vh;
+      background: #000;
+    }
+
+    .video:fullscreen iframe,
+    .video:fullscreen .video-overlay,
+    .video:-webkit-full-screen iframe,
+    .video:-webkit-full-screen .video-overlay { height: 100%; }
+
+    .video:fullscreen .video-controls-row,
+    .video:-webkit-full-screen .video-controls-row { opacity: 1; }
+
+    .video-info {
+      color: var(--text-faint);
+      font-size: 12.5px;
+      margin-top: 12px;
+      letter-spacing: 0.4px;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--text-muted);
+      border-top-color: var(--border) !important;
+    }
+
+    .empty h2 {
+      font-family: "El Messiri", serif;
+      color: var(--text);
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 30px 20px 46px;
+      color: var(--text-faint);
+      font-size: 12px;
+      letter-spacing: 1px;
+    }
+
+    .loading-line {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: var(--text-muted);
+      padding: 40px 0;
+      font-size: 14px;
+    }
+
+    .welcome-bar { font-size: 13px; color: var(--text-muted); margin: 2px 0 0; }
+    .welcome-bar strong { color: var(--text); font-weight: 600; }
+
+    @media (max-width: 480px) {
+      .login-box { padding: 32px 24px 28px; }
+      .ticket-divider { margin: 22px -24px 20px; }
+      header h1 { font-size: 28px; }
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+<div class="ambient"></div>
+
+<header>
+
+  <img src="erada-logo.png" alt="ERADA Logo" class="header-logo">
+
+  <h1>ERADA</h1>
+
+  <p>Private Video Library</p>
+
+</header>
+
+
+<main class="container">
+
+
+  <!-- =========================================
+       LOGIN / ACCESS
+  ========================================== -->
+
+  <section id="loginBox" class="login-box">
+
+    <img src="erada-logo.png" alt="ERADA Logo" class="login-logo">
+
+    <span class="eyebrow">Members Only</span>
+
+    <h2 class="login-title">Secure Access</h2>
+
+    <p class="login-description">Enter your approved email address.</p>
+
+    <div class="ticket-divider"></div>
+
+    <div id="emailStep">
+
+      <input
+        id="email"
+        type="email"
+        placeholder="Enter your email"
+        autocomplete="email"
+        autocapitalize="off"
+        autocorrect="off"
+        spellcheck="false"
+        inputmode="email"
+      >
+
+      <p class="email-hint">
+        📱 مستخدم آيفون؟ إذا ظهر اقتراح
+        "Hide My Email" فوق لوحة المفاتيح،
+        لا تختاره — اكتب بريدك الحقيقي يدوياً،
+        وإلا راح يتسجل بريد عشوائي مختلف كل مرة.
+      </p>
+
+      <button id="checkAccess" type="button">Check access</button>
+
+      <button id="requestAccess" type="button">Request access</button>
+
+    </div>
+
+    <div id="message" class="message"></div>
+
+  </section>
+
+
+  <!-- =========================================
+       VIDEOS
+  ========================================== -->
+
+  <section id="videos">
+
+    <div class="library-bar">
+      <div>
+        <span class="eyebrow">Private Library</span>
+        <p class="welcome-bar" id="welcomeBar"></p>
+      </div>
+      <button id="logout" class="logout" type="button">Log out</button>
+    </div>
+
+    <div id="videosList"></div>
+
+  </section>
+
+</main>
+
+
+<footer>
+  ERADA · PRIVATE VIDEO LIBRARY
+</footer>
+
+
+<script>
+
+/* =========================================
+   SUPABASE
+   Visitors never sign in, so no auth session is
+   kept here — access is decided by the database
+   functions check_access / list_videos.
+========================================= */
+
+const SUPABASE_URL =
+  "https://laqwnqnnqtfhqfadjyvo.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_ropVS738K5BJiOoaZ-TeWA_WmkineZh";
+
+const supabaseClient = supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY,
+  {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false
+    }
+  }
+);
+
+
+/* =========================================
+   ELEMENTS
+========================================= */
+
+const emailInput   = document.getElementById("email");
+const loginBox     = document.getElementById("loginBox");
+const videos       = document.getElementById("videos");
+const message      = document.getElementById("message");
+const videosList   = document.getElementById("videosList");
+const checkButton  = document.getElementById("checkAccess");
+const requestButton= document.getElementById("requestAccess");
+
+
+/* =========================================
+   MESSAGES
+========================================= */
+
+function showMessage(text, type) {
+  message.textContent = text;
+  message.className = "message " + (type || "");
+  message.style.display = "block";
+}
+
+function hideMessage() {
+  message.style.display = "none";
+}
+
+
+/* =========================================
+   SANITIZE EMAIL INPUT
+
+   Text pasted in from messaging apps (e.g.
+   WhatsApp) can carry invisible Unicode
+   characters — zero-width spaces, joiners and
+   bidi direction marks, common when copying near
+   Arabic text. String.trim() does not remove
+   them, so the address looks identical on screen
+   but never matches the database. Strip them
+   before every lookup.
+========================================= */
+
+function sanitizeEmail(value) {
+  return (value || "")
+    .replace(/[\u200B-\u200F\u202A-\u202E\u2060\uFEFF]/g, "")
+    .trim()
+    .toLowerCase();
+}
+
+function isValidEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+
+/* =========================================
+   YOUTUBE PLAYER MESSAGE ROUTER
+   (one shared listener for every embedded video)
+========================================= */
+
+window.__eradaVideoCards = [];
+
+window.addEventListener("message", function (event) {
+
+  if (
+    typeof event.origin !== "string" ||
+    event.origin.indexOf("youtube") === -1
+  ) {
+    return;
+  }
+
+  let data;
+
+  try {
+    data = JSON.parse(event.data);
+  } catch (e) {
+    return;
+  }
+
+  if (!data || data.event !== "infoDelivery" || !data.info) {
+    return;
+  }
+
+  const cards = window.__eradaVideoCards || [];
+
+  for (const card of cards) {
+    if (card.getContentWindow() === event.source) {
+      card.onInfo(data.info);
+      break;
+    }
+  }
+
+});
+
+
+/* =========================================
+   REQUEST ACCESS
+========================================= */
+
+requestButton.addEventListener("click", async function () {
+
+  const email = sanitizeEmail(emailInput.value);
+
+  if (!isValidEmail(email)) {
+    showMessage("Enter a valid email address.", "error");
+    return;
+  }
+
+  const originalLabel = requestButton.textContent;
+  requestButton.disabled = true;
+  requestButton.innerHTML = 'Sending<span class="spinner"></span>';
+
+  const { data: result, error } = await supabaseClient.rpc("request_access", {
+    p_email: email
+  });
+
+  requestButton.disabled = false;
+  requestButton.textContent = originalLabel;
+
+  if (error) {
+    console.error("Access request error:", error);
+    showMessage("Could not send the request: " + error.message, "error");
+    return;
+  }
+
+  if (result === "invalid") {
+    showMessage("Enter a valid email address.", "error");
+    return;
+  }
+
+  if (result === "already_approved") {
+    showMessage(
+      email + " already has access. Press \u201cCheck access\u201d to open the library.",
+      "success"
+    );
+    return;
+  }
+
+  if (result === "already_pending") {
+    showMessage(
+      "A request for " + email + " is already waiting for the administrator. " +
+      "If this is not your real address, it may be an iPhone Hide My Email alias — type your real one instead.",
+      "pending"
+    );
+    return;
+  }
+
+  showMessage(
+    "Request sent for " + email + ". The administrator will review it shortly.",
+    "success"
+  );
+});
+
+
+/* =========================================
+   CHECK ACCESS
+   Exact match, decided in the database. An email
+   that is not approved can never come back as
+   approved.
+========================================= */
+
+checkButton.addEventListener("click", function () {
+  runAccessCheck(sanitizeEmail(emailInput.value), false);
+});
+
+
+async function runAccessCheck(email, silent) {
+
+  if (!isValidEmail(email)) {
+    if (!silent) showMessage("Enter your email address.", "error");
+    return;
+  }
+
+  const originalLabel = checkButton.textContent;
+  checkButton.disabled = true;
+  checkButton.innerHTML = 'Checking<span class="spinner"></span>';
+
+  const { data: status, error } = await supabaseClient.rpc("check_access", {
+    p_email: email
+  });
+
+  checkButton.disabled = false;
+  checkButton.textContent = originalLabel;
+
+  if (error) {
+    console.error("Access check error:", error);
+    if (!silent) showMessage("Could not check your access: " + error.message, "error");
+    return;
+  }
+
+  if (status === "approved") {
+    localStorage.setItem("eradaApprovedEmail", email);
+    showMessage("Access confirmed. Opening the library…", "success");
+    await loadPrivateVideos(email);
+    return;
+  }
+
+  localStorage.removeItem("eradaApprovedEmail");
+
+  if (silent) return;
+
+  if (status === "pending") {
+    showMessage(
+      "Your request for " + email + " is waiting for the administrator. " +
+      "You will be able to open the library once it is approved.",
+      "pending"
+    );
+    return;
+  }
+
+  if (status === "rejected") {
+    showMessage(
+      "The request for " + email + " was not approved. Contact the administrator if you think this is a mistake.",
+      "error"
+    );
+    return;
+  }
+
+  if (status === "blocked") {
+    showMessage(
+      email + " is on the list but is not active. Ask the administrator to re-approve it.",
+      "error"
+    );
+    return;
+  }
+
+  showMessage(
+    "No access on file for " + email + ". Press \u201cRequest access\u201d to send a request. " +
+    "If that is not your real address, check for an iPhone Hide My Email alias and type your real one.",
+    "error"
+  );
+}
+
+
+/* =========================================
+   LOAD PRIVATE VIDEOS
+========================================= */
+
+async function loadPrivateVideos(email) {
+
+  videosList.innerHTML =
+    '<div class="loading-line">Loading your videos<span class="spinner"></span></div>';
+
+  const { data: rows, error } = await supabaseClient.rpc("list_videos", {
+    p_email: email
+  });
+
+  if (error) {
+    console.error("Video load error:", error);
+    showMessage("Could not load the videos: " + error.message, "error");
+    videosList.innerHTML = "";
+    return;
+  }
+
+  loginBox.style.display = "none";
+  videos.style.display = "block";
+  hideMessage();
+
+  const welcomeBar = document.getElementById("welcomeBar");
+
+  if (welcomeBar && email) {
+    welcomeBar.innerHTML = "Signed in as <strong></strong>";
+    welcomeBar.querySelector("strong").textContent = email;
+  }
+
+  renderPrivateVideos(rows || []);
+}
+
+
+/* =========================================
+   EXTRACT YOUTUBE ID FROM ANY URL FORMAT
+========================================= */
+
+function extractYoutubeId(url) {
+
+  if (!url) return null;
+
+  const patterns = [
+    /youtu\.be\/([a-zA-Z0-9_-]{6,})/,
+    /[?&]v=([a-zA-Z0-9_-]{6,})/,
+    /embed\/([a-zA-Z0-9_-]{6,})/,
+    /shorts\/([a-zA-Z0-9_-]{6,})/,
+    /live\/([a-zA-Z0-9_-]{6,})/
+  ];
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return match[1];
+  }
+
+  return null;
+}
+
+
+/* =========================================
+   RENDER PRIVATE VIDEOS
+========================================= */
+
+function renderPrivateVideos(rows) {
+
+  videosList.innerHTML = "";
+  window.__eradaVideoCards = [];
+
+  if (!rows || rows.length === 0) {
+    videosList.innerHTML =
+      '<div class="card empty">' +
+        "<h2>Nothing here yet</h2>" +
+        "<p>The administrator has not added any videos to the library.</p>" +
+      "</div>";
+    return;
+  }
+
+  rows.forEach(function (row) {
+
+    const youtubeId = extractYoutubeId(row.youtube_url);
+
+    if (!youtubeId) return;
+
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const title = document.createElement("h2");
+    title.className = "video-title";
+    title.textContent = row.title || "Untitled";
+
+    const videoContainer = document.createElement("div");
+    videoContainer.className = "video";
+
+    const iframe = document.createElement("iframe");
+
+    iframe.src =
+      "https://www.youtube-nocookie.com/embed/" + youtubeId +
+      "?modestbranding=1&rel=0&controls=0&disablekb=1&fs=0&iv_load_policy=3" +
+      "&enablejsapi=1&playsinline=1&origin=" +
+      encodeURIComponent(window.location.origin);
+
+    iframe.title = row.title || "video";
+    iframe.allow = "autoplay; encrypted-media";
+    iframe.tabIndex = -1;
+
+    videoContainer.appendChild(iframe);
+
+
+    /*
+      Custom play/pause overlay.
+
+      The iframe has pointer-events disabled, so the
+      visitor never reaches YouTube's own right-click
+      menu, share link or "Watch on YouTube" logo.
+      Playback is driven only by postMessage commands
+      sent from this overlay.
+    */
+
+    const overlay = document.createElement("div");
+    overlay.className = "video-overlay";
+    overlay.setAttribute("role", "button");
+    overlay.setAttribute("tabindex", "0");
+    overlay.setAttribute("aria-label", "Play or pause video");
+
+    const playIcon = document.createElement("div");
+    playIcon.className = "play-icon";
+    playIcon.textContent = "▶";
+
+    overlay.appendChild(playIcon);
+    videoContainer.appendChild(overlay);
+
+    let isPlaying = false;
+    let currentTime = 0;
+    let duration = 0;
+
+    function sendCommand(func, args) {
+      if (!iframe.contentWindow) return;
+      iframe.contentWindow.postMessage(
+        JSON.stringify({ event: "command", func: func, args: args || [] }),
+        "*"
+      );
+    }
+
+    function setPlayingState(playing) {
+      isPlaying = playing;
+      overlay.classList.toggle("is-playing", isPlaying);
+      playIcon.textContent = isPlaying ? "❚❚" : "▶";
+    }
+
+    function togglePlayback() {
+      sendCommand(isPlaying ? "pauseVideo" : "playVideo");
+      setPlayingState(!isPlaying);
+    }
+
+    function stopPlayback() {
+      sendCommand("pauseVideo");
+      sendCommand("seekTo", [0, true]);
+      currentTime = 0;
+      updateSeekUI();
+      setPlayingState(false);
+    }
+
+    overlay.addEventListener("click", togglePlayback);
+
+    overlay.addEventListener("keydown", function (event) {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        togglePlayback();
+      }
+    });
+
+
+    /*
+      Seek bar, skip buttons, speed, zoom and stop.
+      Time and duration arrive only through YouTube's
+      postMessage "infoDelivery" protocol.
+    */
+
+    const controlsRow = document.createElement("div");
+    controlsRow.className = "video-controls-row";
+
+    const stopBtn = document.createElement("button");
+    stopBtn.type = "button";
+    stopBtn.className = "stop-btn";
+    stopBtn.textContent = "■";
+    stopBtn.setAttribute("aria-label", "Stop video");
+
+    const skipBack = document.createElement("button");
+    skipBack.type = "button";
+    skipBack.className = "skip-btn";
+    skipBack.textContent = "⏪ 10";
+    skipBack.setAttribute("aria-label", "Rewind 10 seconds");
+
+    const seekTrack = document.createElement("div");
+    seekTrack.className = "seek-track";
+
+    const seekFill = document.createElement("div");
+    seekFill.className = "seek-fill";
+    seekTrack.appendChild(seekFill);
+
+    const timeLabel = document.createElement("div");
+    timeLabel.className = "seek-time";
+    timeLabel.textContent = "0:00";
+
+    const skipForward = document.createElement("button");
+    skipForward.type = "button";
+    skipForward.className = "skip-btn";
+    skipForward.textContent = "10 ⏩";
+    skipForward.setAttribute("aria-label", "Skip forward 10 seconds");
+
+    const speedBtn = document.createElement("button");
+    speedBtn.type = "button";
+    speedBtn.className = "speed-btn";
+    speedBtn.textContent = "1x";
+    speedBtn.setAttribute("aria-label", "Change playback speed");
+
+    const zoomGroup = document.createElement("div");
+    zoomGroup.className = "zoom-group";
+
+    const zoomOutBtn = document.createElement("button");
+    zoomOutBtn.type = "button";
+    zoomOutBtn.className = "zoom-btn";
+    zoomOutBtn.textContent = "−";
+    zoomOutBtn.setAttribute("aria-label", "Zoom out");
+
+    const zoomLevelLabel = document.createElement("div");
+    zoomLevelLabel.className = "zoom-level";
+    zoomLevelLabel.textContent = "100%";
+
+    const zoomInBtn = document.createElement("button");
+    zoomInBtn.type = "button";
+    zoomInBtn.className = "zoom-btn";
+    zoomInBtn.textContent = "+";
+    zoomInBtn.setAttribute("aria-label", "Zoom in");
+
+    zoomGroup.appendChild(zoomOutBtn);
+    zoomGroup.appendChild(zoomLevelLabel);
+    zoomGroup.appendChild(zoomInBtn);
+
+    const fullscreenBtn = document.createElement("button");
+    fullscreenBtn.type = "button";
+    fullscreenBtn.className = "fullscreen-btn";
+    fullscreenBtn.textContent = "⛶";
+    fullscreenBtn.setAttribute("aria-label", "Toggle fullscreen");
+
+    const pseudoCloseBtn = document.createElement("button");
+    pseudoCloseBtn.type = "button";
+    pseudoCloseBtn.className = "pseudo-fullscreen-close";
+    pseudoCloseBtn.textContent = "✕";
+    pseudoCloseBtn.setAttribute("aria-label", "Exit fullscreen");
+
+    videoContainer.appendChild(pseudoCloseBtn);
+
+    controlsRow.appendChild(stopBtn);
+    controlsRow.appendChild(skipBack);
+    controlsRow.appendChild(seekTrack);
+    controlsRow.appendChild(timeLabel);
+    controlsRow.appendChild(skipForward);
+    controlsRow.appendChild(speedBtn);
+    controlsRow.appendChild(zoomGroup);
+    controlsRow.appendChild(fullscreenBtn);
+
+    videoContainer.appendChild(controlsRow);
+
+
+    function formatTime(seconds) {
+      seconds = Math.max(0, Math.floor(seconds || 0));
+      const m = Math.floor(seconds / 60);
+      const s = String(seconds % 60).padStart(2, "0");
+      return m + ":" + s;
+    }
+
+    function updateSeekUI() {
+      const pct = duration > 0 ? (currentTime / duration) * 100 : 0;
+      seekFill.style.width = pct + "%";
+      timeLabel.textContent = formatTime(currentTime);
+    }
+
+    function seekTo(seconds) {
+      seconds = Math.max(0, Math.min(seconds, duration || seconds));
+      sendCommand("seekTo", [seconds, true]);
+      currentTime = seconds;
+      updateSeekUI();
+    }
+
+    skipBack.addEventListener("click", function (event) {
+      event.stopPropagation();
+      seekTo(currentTime - 10);
+    });
+
+    skipForward.addEventListener("click", function (event) {
+      event.stopPropagation();
+      seekTo(currentTime + 10);
+    });
+
+    seekTrack.addEventListener("click", function (event) {
+      event.stopPropagation();
+      const rect = seekTrack.getBoundingClientRect();
+      const ratio = (event.clientX - rect.left) / rect.width;
+      seekTo(ratio * (duration || 0));
+    });
+
+    stopBtn.addEventListener("click", function (event) {
+      event.stopPropagation();
+      stopPlayback();
+    });
+
+
+    /* Playback speed */
+
+    const speedRates = [0.5, 0.75, 1, 1.25, 1.5, 2];
+    let speedIndex = 2;
+
+    speedBtn.addEventListener("click", function (event) {
+      event.stopPropagation();
+      speedIndex = (speedIndex + 1) % speedRates.length;
+      const rate = speedRates[speedIndex];
+      sendCommand("setPlaybackRate", [rate]);
+      speedBtn.textContent = rate + "x";
+    });
+
+
+    /* Zoom — magnifies the frame inside its clipped
+       container without changing the card size. */
+
+    const zoomMin = 1;
+    const zoomMax = 3;
+    const zoomStep = 0.25;
+    let zoomLevel = 1;
+
+    function applyZoom() {
+      iframe.style.transform = "scale(" + zoomLevel + ")";
+      zoomLevelLabel.textContent = Math.round(zoomLevel * 100) + "%";
+      zoomOutBtn.disabled = zoomLevel <= zoomMin;
+      zoomInBtn.disabled = zoomLevel >= zoomMax;
+    }
+
+    zoomInBtn.addEventListener("click", function (event) {
+      event.stopPropagation();
+      zoomLevel = Math.min(zoomMax, +(zoomLevel + zoomStep).toFixed(2));
+      applyZoom();
+    });
+
+    zoomOutBtn.addEventListener("click", function (event) {
+      event.stopPropagation();
+      zoomLevel = Math.max(zoomMin, +(zoomLevel - zoomStep).toFixed(2));
+      applyZoom();
+    });
+
+    applyZoom();
+
+
+    /* Fullscreen — iOS Safari does not implement the
+       Fullscreen API on plain elements, so we detect
+       real support and otherwise expand with CSS. */
+
+    const nativeFullscreenSupported =
+      !!(document.fullscreenEnabled || document.webkitFullscreenEnabled) &&
+      !!(videoContainer.requestFullscreen || videoContainer.webkitRequestFullscreen);
+
+    function enterPseudoFullscreen() {
+      videoContainer.classList.add("pseudo-fullscreen");
+      document.body.classList.add("erada-pseudo-fullscreen-active");
+      try {
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock("landscape").catch(function () {});
+        }
+      } catch (e) {}
+    }
+
+    function exitPseudoFullscreen() {
+      videoContainer.classList.remove("pseudo-fullscreen");
+      document.body.classList.remove("erada-pseudo-fullscreen-active");
+      try {
+        if (screen.orientation && screen.orientation.unlock) {
+          screen.orientation.unlock();
+        }
+      } catch (e) {}
+    }
+
+    fullscreenBtn.addEventListener("click", function (event) {
+
+      event.stopPropagation();
+
+      if (nativeFullscreenSupported) {
+
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+          if (document.exitFullscreen) {
+            document.exitFullscreen();
+          } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+          }
+        } else if (videoContainer.requestFullscreen) {
+          videoContainer.requestFullscreen();
+        } else if (videoContainer.webkitRequestFullscreen) {
+          videoContainer.webkitRequestFullscreen();
+        }
+
+        return;
+      }
+
+      if (videoContainer.classList.contains("pseudo-fullscreen")) {
+        exitPseudoFullscreen();
+      } else {
+        enterPseudoFullscreen();
+      }
+    });
+
+    pseudoCloseBtn.addEventListener("click", function (event) {
+      event.stopPropagation();
+      exitPseudoFullscreen();
+    });
+
+    document.addEventListener("keydown", function (event) {
+      if (
+        event.key === "Escape" &&
+        videoContainer.classList.contains("pseudo-fullscreen")
+      ) {
+        exitPseudoFullscreen();
+      }
+    });
+
+
+    /* Route infoDelivery updates back to this card. */
+
+    window.__eradaVideoCards.push({
+      getContentWindow: function () { return iframe.contentWindow; },
+      onInfo: function (info) {
+        if (typeof info.duration === "number") duration = info.duration;
+        if (typeof info.currentTime === "number") currentTime = info.currentTime;
+        updateSeekUI();
+      }
+    });
+
+    iframe.addEventListener("load", function () {
+      sendCommand("addEventListener", ["onReady"]);
+      if (iframe.contentWindow) {
+        iframe.contentWindow.postMessage(
+          JSON.stringify({ event: "listening", id: youtubeId }),
+          "*"
+        );
+      }
+    });
+
+    const info = document.createElement("div");
+    info.className = "video-info";
+    info.textContent = "🔒 PRIVATE ERADA VIDEO";
+
+    card.appendChild(title);
+    card.appendChild(videoContainer);
+    card.appendChild(info);
+
+    videosList.appendChild(card);
+  });
+}
+
+
+/* =========================================
+   LOG OUT
+========================================= */
+
+document.getElementById("logout").addEventListener("click", function () {
+
+  localStorage.removeItem("eradaApprovedEmail");
+
+  videos.style.display = "none";
+  loginBox.style.display = "block";
+  videosList.innerHTML = "";
+  window.__eradaVideoCards = [];
+
+  const welcomeBar = document.getElementById("welcomeBar");
+  if (welcomeBar) welcomeBar.textContent = "";
+
+  showMessage("You are logged out.", "success");
+});
+
+
+/* =========================================
+   PROTECTION
+========================================= */
+
+document.addEventListener("contextmenu", function (event) {
+  if (event.target.closest(".video")) event.preventDefault();
+});
+
+document.addEventListener("dragstart", function (event) {
+  if (event.target.closest(".video")) event.preventDefault();
+});
+
+document.addEventListener("keydown", function (event) {
+  if (!event.ctrlKey || !event.key) return;
+  const key = event.key.toLowerCase();
+  if (key === "s" || key === "u") event.preventDefault();
+});
+
+
+/* =========================================
+   START
+   A saved email is re-checked against the
+   database on every visit, so access that was
+   removed does not survive in localStorage.
+========================================= */
+
+(function start() {
+
+  const savedEmail = localStorage.getItem("eradaApprovedEmail");
+
+  if (!savedEmail) return;
+
+  emailInput.value = savedEmail;
+
+  runAccessCheck(sanitizeEmail(savedEmail), true);
+
+})();
+
+</script>
+
+</body>
+</html>
+
 
 <head>
 
