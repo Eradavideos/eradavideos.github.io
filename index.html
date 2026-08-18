@@ -348,7 +348,9 @@ input:focus {
 
 .btn-compact { width: auto; padding: 9px 14px; font-size: 13px; }
 
-.shell { max-width: 1120px; margin: 0 auto; padding: 28px 20px 72px; }
+.shell { max-width: 1280px; 
+        margin: 0 auto; 
+        padding: 28px 20px 72px; }
 
 .library-head {
   display: flex;
@@ -371,8 +373,8 @@ input:focus {
 
 .grid {
   display: grid;
-  gap: 20px;
-  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
 }
 
 @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
@@ -706,8 +708,27 @@ footer {
 <div id="library">
 
   <div class="topbar">
+<div class="topbar">
 
-    <span class="mark mark-sm"><img src="erada-logo.png" alt=""></span>
+  <div class="topbar-titles">
+    <strong class="ff-display">ERADA</strong>
+    <span class="mono">Private library</span>
+  </div>
+
+  <div class="topbar-spacer"></div>
+
+  <span id="who" class="who"></span>
+
+  <button
+    id="logout"
+    class="btn btn-ghost btn-compact"
+    type="button"
+  >
+    Log out
+  </button>
+
+</div>
+  
 
     <div class="topbar-titles">
       <strong class="ff-display">ERADA</strong>
