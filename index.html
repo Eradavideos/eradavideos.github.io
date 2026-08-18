@@ -1009,6 +1009,30 @@ function showMessage(
 
 
 /* =========================================
+   SANITIZE EMAIL INPUT
+
+   Text pasted in from messaging apps (e.g.
+   WhatsApp) can carry invisible Unicode
+   characters — zero-width spaces, joiners,
+   bidi direction marks (common when copying
+   near Arabic text). These are not stripped
+   by String.trim() and make the email fail
+   to match the database even though it looks
+   identical on screen. Strip them here before
+   every lookup/insert.
+========================================= */
+
+function sanitizeEmail(value) {
+
+  return (value || "")
+    .replace(/[\u200B-\u200F\u202A-\u202E\u2060\uFEFF]/g, "")
+    .trim()
+    .toLowerCase();
+
+}
+
+
+/* =========================================
    YOUTUBE PLAYER MESSAGE ROUTER
    (shared listener for all embedded videos)
 ========================================= */
@@ -1063,9 +1087,7 @@ document
     async function () {
 
       const email =
-        emailInput.value
-          .trim()
-          .toLowerCase();
+        sanitizeEmail(emailInput.value);
 
 
       if (
@@ -1105,7 +1127,8 @@ document
         await supabaseClient
           .from("access_requests")
           .insert({
-            email: email
+            email: email,
+            status: "pending"
           });
 
 
@@ -1166,9 +1189,7 @@ document
     async function () {
 
       const email =
-        emailInput.value
-          .trim()
-          .toLowerCase();
+        sanitizeEmail(emailInput.value);
 
 
       if (
